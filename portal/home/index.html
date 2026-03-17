@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    ╔══════════════════════════════════════════════════╗
+    ║  WOUND GUARD — Portal Page Template              ║
+    ║                                                  ║
+    ║  HOW TO CREATE A NEW PAGE:                       ║
+    ║  1. Copy this entire folder (css + js + this     ║
+    ║     file) into a new subfolder, e.g. portal/orders/ ║
+    ║  2. Rename this file to index.html               ║
+    ║  3. Change the <title> tag below                 ║
+    ║  4. Add class="active" to the correct sidebar    ║
+    ║     nav item (match data-page to your folder)    ║
+    ║  5. Put your page content inside .page-slot      ║
+    ║  That's it!                                      ║
+    ╚══════════════════════════════════════════════════╝
+  -->
+
+  <!-- ↓ Change this for each page ↓ -->
+  <title>Home — Wound Guard</title>
+
+  <!-- Auth0 SDK (must load before auth.js) -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/template.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ -->
+<header class="portal-header" role="banner">
+
+  <!-- Logo — links back to home -->
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <!--
+        Replace the SVG below with your real logo:
+        <img src="/guard/images/logo.svg" alt="Wound Guard" width="22" height="22" />
+      -->
+      <svg viewBox="0 0 24 24">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+
+  <!-- Right side: buttons + icons -->
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+
+    <!-- New Order button -->
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+
+    <!-- Organization button — name filled in by template.js -->
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 21V9h6v12"/>
+        <path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+
+    <!-- Divider line -->
+    <div class="header-divider" aria-hidden="true"></div>
+
+    <!-- Settings icon -->
+    <a href="/guard/portal/settings/" class="header-icon-btn" aria-label="Organization settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+
+    <!-- Notifications icon -->
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <!-- Green dot — shown when unread notifications exist -->
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     BODY — Sidebar + Content
+     ═══════════════════════════════════════ -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+
+    <!-- Collapse / expand toggle -->
+    <div class="sidebar-toggle-row">
+      <button
+        class="sidebar-toggle-btn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle sidebar"
+        title="Collapse / expand"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Nav links -->
+    <div class="sidebar-nav" role="list">
+
+      <!--
+        data-page  = the folder name for this page (no slashes)
+                     template.js uses this to highlight the active item
+        data-label = tooltip shown when sidebar is collapsed
+        class="active" — add this to whichever item is the CURRENT page
+      -->
+
+      <!-- Home -->
+      <a
+        href="/guard/portal/home/"
+        class="sidebar-nav-item active"
+        data-page="home"
+        data-label="Home"
+        role="listitem"
+        aria-label="Home"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+
+      <!-- Orders -->
+      <a
+        href="/guard/portal/orders/"
+        class="sidebar-nav-item"
+        data-page="orders"
+        data-label="Orders"
+        role="listitem"
+        aria-label="Orders"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="8"  y1="6"  x2="21" y2="6"/>
+            <line x1="8"  y1="12" x2="21" y2="12"/>
+            <line x1="8"  y1="18" x2="21" y2="18"/>
+            <line x1="3"  y1="6"  x2="3.01" y2="6"/>
+            <line x1="3"  y1="12" x2="3.01" y2="12"/>
+            <line x1="3"  y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+
+      <!--
+        ── ADD MORE NAV ITEMS HERE ──────────────────
+        Copy a block above and change:
+          href       → /guard/portal/PAGENAME/
+          data-page  → PAGENAME  (must match folder name)
+          data-label → Display name for collapsed tooltip
+          aria-label → Same as data-label
+          SVG icon   → Pick one from https://lucide.dev
+          label text → What shows in the sidebar
+        ────────────────────────────────────────────
+      -->
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+
+    <!--
+      ╔══════════════════════════════════════════╗
+      ║  YOUR PAGE CONTENT GOES HERE             ║
+      ║                                          ║
+      ║  Everything inside .page-slot is unique  ║
+      ║  to this page. Header, sidebar, and      ║
+      ║  footer are automatic.                   ║
+      ╚══════════════════════════════════════════╝
+    -->
+    <div class="page-slot">
+
+      <!-- Replace this placeholder with your actual content -->
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:60px;text-align:center;opacity:0.4">
+        ↑ Your page content goes here ↑
+      </p>
+
+    </div>
+
+  </main>
+
+</div><!-- end .portal-body -->
+
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="portal-footer" role="contentinfo">
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/support/"        class="footer-link">Support Contact</a>
+  </nav>
+
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+
+  <div class="footer-social">
+    <a
+      href="https://linkedin.com/company/YOUR-COMPANY-HERE"
+      class="footer-social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Wound Guard on LinkedIn"
+    >
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS — order matters
+       1. auth.js     — Auth0 login/logout
+       2. ui.js       — toasts, modals, loaders
+       3. template.js — sidebar + auth guard
+     ═══════════════════════════════════════ -->
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/template.js"></script>
+
+<script>
+  // Fill in copyright year automatically
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── REQUIRED on every page ──────────────────────
+  // Checks Auth0, fills in org name, enforces roles.
+  // Redirects to login if not authenticated.
+  document.addEventListener('DOMContentLoaded', () => {
+    initPortalPage();
+  });
+</script>
+
+</body>
+</html>
