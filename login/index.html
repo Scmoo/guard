@@ -132,42 +132,49 @@
     .login-right {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       background: var(--bg);
       position: relative;
       overflow: hidden;
+      padding: 0;
     }
 
-    /* Large circle — the dominant design element */
+    /* Semi-circle — large, bleeds off the right edge */
     .brand-circle {
-      width: min(90%, 520px);
-      aspect-ratio: 1;
+      /* Tall enough to fill the viewport height */
+      width: 90vw;
+      height: 90vw;
+      max-width: 860px;
+      max-height: 860px;
       border-radius: 50%;
       border: 3px solid var(--brand);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 24px;
       text-align: center;
-      padding: 48px;
-      position: relative;
-      background: radial-gradient(circle at 30% 30%, var(--accent) 0%, transparent 70%);
+      padding: 48px 80px 48px 48px;
+      position: absolute;
+      /* Push right half off screen — creates the semi-circle effect */
+      right: -42%;
+      background: radial-gradient(circle at 35% 40%, var(--accent) 0%, rgba(210,252,216,0.3) 60%, transparent 85%);
       animation: pulse-ring 4s ease-in-out infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulse-ring {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.12); }
-      50%       { box-shadow: 0 0 0 18px rgba(46,177,53,0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.10); }
+      50%       { box-shadow: 0 0 0 24px rgba(46,177,53,0); }
     }
 
     /* Second decorative ring */
     .brand-circle::before {
       content: '';
       position: absolute;
-      inset: -18px;
+      inset: -20px;
       border-radius: 50%;
-      border: 1px solid rgba(46,177,53,0.18);
+      border: 1px solid rgba(46,177,53,0.15);
     }
 
     .brand-logo-mark {
