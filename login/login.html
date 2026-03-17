@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organization Login — Client Ordering Portal</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <style>
+    /* ── Login-specific layout ── */
+    body { overflow: hidden; }
+
+    .login-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    /* ── LEFT PANEL ── */
+    .login-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 72px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-left::before {
+      /* Subtle grain texture */
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .login-heading {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 36px;
+      letter-spacing: -0.01em;
+    }
+
+    .login-form { display: flex; flex-direction: column; gap: 18px; max-width: 360px; }
+
+    /* Override pill shape to match sketch */
+    .login-form .form-input {
+      border-radius: var(--radius-full);
+      padding: 13px 20px;
+      background: var(--white);
+      border: 2px solid #dde8ee;
+      font-size: 0.9rem;
+    }
+    .login-form .form-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(46,177,53,0.1);
+    }
+
+    /* Password field eye icon */
+    .login-form .input-wrapper .form-input { padding-left: 48px; }
+    .pw-lock-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
+      font-size: 0.9rem;
+    }
+
+    /* Sign In button — green pill, matches sketch */
+    .btn-signin {
+      background: var(--brand);
+      color: var(--white);
+      border: 2px solid var(--brand);
+      border-radius: var(--radius-full);
+      padding: 13px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+      letter-spacing: 0.01em;
+    }
+    .btn-signin:hover:not(:disabled) {
+      background: #249a2a;
+      border-color: #249a2a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(46,177,53,0.3);
+    }
+    .btn-signin:active:not(:disabled) { transform: translateY(0); }
+    .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Helper links */
+    .login-links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .login-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s ease;
+    }
+    .login-links a::before { content: '▶'; font-size: 0.6rem; color: var(--brand); }
+    .login-links a:hover   { color: var(--brand); }
+
+    /* Error message */
+    .login-error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #7f1d1d;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      display: none;
+    }
+    .login-error.visible { display: block; }
+
+    /* ── RIGHT PANEL ── */
+    .login-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large circle — the dominant design element */
+    .brand-circle {
+      width: min(90%, 520px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 3px solid var(--brand);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+      padding: 48px;
+      position: relative;
+      background: radial-gradient(circle at 30% 30%, var(--accent) 0%, transparent 70%);
+      animation: pulse-ring 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.12); }
+      50%       { box-shadow: 0 0 0 18px rgba(46,177,53,0); }
+    }
+
+    /* Second decorative ring */
+    .brand-circle::before {
+      content: '';
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      border: 1px solid rgba(46,177,53,0.18);
+    }
+
+    .brand-logo-mark {
+      font-family: 'Krona One', sans-serif;
+      font-size: 1.5rem;
+      color: var(--brand);
+      letter-spacing: 0.06em;
+      border: 2px solid var(--brand);
+      padding: 8px 20px;
+      border-radius: var(--radius-full);
+      background: rgba(46,177,53,0.06);
+    }
+
+    .brand-tagline {
+      font-family: 'Krona One', sans-serif;
+      font-size: 1.25rem;
+      color: var(--text);
+      line-height: 1.4;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-sub {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      max-width: 240px;
+      line-height: 1.6;
+    }
+
+    /* Decorative background circles */
+    .bg-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .bg-dot-1 { width: 200px; height: 200px; top: -60px; right: -60px; }
+    .bg-dot-2 { width: 120px; height: 120px; bottom: 40px; left: 40px; opacity: 0.2; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .login-wrapper { grid-template-columns: 1fr; overflow: auto; }
+      .login-right   { display: none; }
+      .login-left    { padding: 48px 28px; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+  <!-- ═══════════════════════════════════
+       LEFT — Login Form (matches sketch)
+       ═══════════════════════════════════ -->
+  <div class="login-left">
+
+    <h2 class="login-heading">Organization Login</h2>
+
+    <form class="login-form" id="loginForm" onsubmit="handleSignIn(event)" novalidate>
+
+      <!-- User ID field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="userId"
+            class="form-input"
+            placeholder="User ID"
+            autocomplete="username"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Password field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <span class="pw-lock-icon">🔒</span>
+          <input
+            type="password"
+            id="password"
+            class="form-input"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          />
+          <!-- Eye toggle matches sketch -->
+          <button type="button" class="input-icon-right" onclick="togglePassword()" aria-label="Toggle password visibility" id="eyeBtn">
+            <svg id="eye-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div class="login-error" id="login-error" role="alert"></div>
+
+      <!-- Sign In button -->
+      <button type="submit" class="btn-signin" id="signInBtn">
+        Sign In
+      </button>
+
+      <!-- Helper links — match sketch -->
+      <div class="login-links">
+        <a href="#" onclick="handlePasswordReset(event)">Password Reset</a>
+        <a href="#" onclick="handleForgotId(event)">User ID, Forgot</a>
+      </div>
+
+    </form>
+
+  </div>
+
+  <!-- ═══════════════════════════════════
+       RIGHT — Brand Circle (matches sketch)
+       ═══════════════════════════════════ -->
+  <div class="login-right">
+    <div class="bg-dot bg-dot-1"></div>
+    <div class="bg-dot bg-dot-2"></div>
+
+    <div class="brand-circle">
+      <div class="brand-logo-mark">[ LOGO ]</div>
+      <div class="brand-tagline">Client Ordering<br>Portal</div>
+      <div class="brand-sub">Secure access for your healthcare organization</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════
+     Password Reset Modal
+     ═══════════════════════════════════ -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 class="card-title">Password Reset</h3>
+        <p class="card-subtitle" style="margin-top:2px">Enter your User ID to receive a reset link.</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('resetModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="resetUserId">User ID</label>
+      <input type="text" id="resetUserId" class="form-input" placeholder="Enter your User ID" />
+    </div>
+    <div id="reset-success" class="alert alert-success" style="display:none;margin-top:12px">
+      ✓ If that User ID exists, a reset link has been sent.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="submitPasswordReset()">Send Reset Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     Forgot User ID Modal
+     ═══════════════════════════════════ -->
+<div class="modal-overlay" id="forgotIdModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 class="card-title">Forgot User ID</h3>
+        <p class="card-subtitle" style="margin-top:2px">Enter your email to look up your User ID.</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('forgotIdModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="forgotEmail">Email Address</label>
+      <input type="email" id="forgotEmail" class="form-input" placeholder="you@organization.com" />
+    </div>
+    <div id="forgot-success" class="alert alert-success" style="display:none;margin-top:12px">
+      ✓ If that email is on file, your User ID has been sent.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('forgotIdModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="submitForgotId()">Look Up User ID</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', () => {
+    initLoginPage();
+  });
+
+  // ── Sign In ──
+  async function handleSignIn(e) {
+    e.preventDefault();
+    const btn = document.getElementById('signInBtn');
+    const errorEl = document.getElementById('login-error');
+    errorEl.classList.remove('visible');
+
+    // Basic client-side validation
+    const userId   = document.getElementById('userId').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!userId) {
+      showFieldError('userId', 'Please enter your User ID.');
+      return;
+    }
+    if (!password) {
+      showFieldError('password', 'Please enter your password.');
+      return;
+    }
+
+    // Show loading
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+      // Auth0 Universal Login handles credential verification.
+      // It redirects away, so code below won't run on success.
+      await loginWithRedirect();
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      showLoginError('Unable to sign in. Please check your credentials and try again.');
+    }
+  }
+
+  // ── Password eye toggle ──
+  function togglePassword() {
+    const input  = document.getElementById('password');
+    const eyeBtn = document.getElementById('eye-icon');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    eyeBtn.style.opacity = isHidden ? '0.4' : '1';
+  }
+
+  // ── Helper links ──
+  function handlePasswordReset(e) {
+    e.preventDefault();
+    document.getElementById('reset-success').style.display = 'none';
+    document.getElementById('resetUserId').value = '';
+    openModal('resetModal');
+  }
+
+  function handleForgotId(e) {
+    e.preventDefault();
+    document.getElementById('forgot-success').style.display = 'none';
+    document.getElementById('forgotEmail').value = '';
+    openModal('forgotIdModal');
+  }
+
+  async function submitPasswordReset() {
+    const userId = document.getElementById('resetUserId').value.trim();
+    if (!userId) { toast('Please enter your User ID.', 'warning'); return; }
+
+    // Auth0 can send password reset emails via its Management API
+    // (call your AWS Lambda endpoint which calls Auth0 Management API)
+    try {
+      await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+    } catch (_) { /* Always show success to avoid user enumeration */ }
+
+    document.getElementById('reset-success').style.display = 'flex';
+  }
+
+  async function submitForgotId() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { toast('Please enter your email.', 'warning'); return; }
+
+    try {
+      await fetch('/api/auth/forgot-userid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+    } catch (_) { /* Always show success */ }
+
+    document.getElementById('forgot-success').style.display = 'flex';
+  }
+
+  // ── Field error ──
+  function showFieldError(fieldId, message) {
+    const input = document.getElementById(fieldId);
+    input.classList.add('error');
+    showLoginError(message);
+    input.focus();
+    input.addEventListener('input', () => {
+      input.classList.remove('error');
+      document.getElementById('login-error').classList.remove('visible');
+    }, { once: true });
+  }
+
+  // ── Modal helpers (inline since ui.js not loaded on login) ──
+  function openModal(id)  { document.getElementById(id).classList.add('open');    }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function toast(msg, type) {
+    console.log(`[${type}]`, msg); // Simple fallback on login page
+    const el = document.getElementById('login-error');
+    if (el) { el.textContent = msg; el.classList.add('visible'); }
+  }
+</script>
+</body>
+</html>
