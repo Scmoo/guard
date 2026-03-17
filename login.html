@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0; url=login/login.html" />
+  <script>window.location.replace("login/login.html");</script>
+</head>
+</html>
+```
+
+The `<script>` line forces an immediate JavaScript redirect as a backup, so the README never gets a chance to show. Save it, then run in your terminal:
+```
+git add .
+git commit -m "fix redirect"
+git push
