@@ -72,11 +72,17 @@ function markActiveNavItem() {
 //  Called at the bottom of every portal page.
 // -----------------------------------------------
 async function initPortalPage() {
-  // Check Auth0 login — redirects to login page if not authenticated
-  const session = await requireAuth();
-  if (!session) return;
+  // Auth check temporarily disabled for testing
+  // const session = await requireAuth();
+  // if (!session) return;
 
-  const { user } = session;
+  // const { user } = session;
+
+  // Hardcoded test values — remove when Auth0 is ready
+  const user = { 
+    'https://yourapp.com/orgName': 'Test Organization',
+    'https://yourapp.com/role': 'admin'
+  };
 
   // Fill in the org name in the header "Organization" button
   // (comes from your Auth0 Action custom claim — see README)
