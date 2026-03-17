@@ -3,7 +3,7 @@
 //  Handles: sidebar toggle, Auth0 guard,
 //  user info hydration, active nav state.
 //
-//  Include on every portal page AFTER auth.js
+//  Loaded on every portal page after auth.js
 // =============================================
 
 // -----------------------------------------------
@@ -12,40 +12,33 @@
 (function initSidebar() {
   const STORAGE_KEY = 'sidebar_collapsed';
 
-  function getSidebar()    { return document.getElementById('portal-sidebar'); }
-  function getContent()    { return document.getElementById('portal-content'); }
+  function getSidebar() { return document.getElementById('portal-sidebar'); }
+  function getContent() { return document.getElementById('portal-content'); }
 
   function setCollapsed(collapsed) {
     const sidebar = getSidebar();
     const content = getContent();
     if (!sidebar) return;
 
-    if (collapsed) {
-      sidebar.classList.add('collapsed');
-      content?.classList.add('sidebar-collapsed');
-    } else {
-      sidebar.classList.remove('collapsed');
-      content?.classList.remove('sidebar-collapsed');
-    }
+    sidebar.classList.toggle('collapsed', collapsed);
+    content?.classList.toggle('sidebar-collapsed', collapsed);
 
-    // Persist user preference
     localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
   }
 
-  // Expose toggle for the button onclick
+  // The toggle button in the sidebar calls this
   window.toggleSidebar = function () {
     const sidebar = getSidebar();
     if (!sidebar) return;
-    const isNowCollapsed = !sidebar.classList.contains('collapsed');
-    setCollapsed(isNowCollapsed);
+    setCollapsed(!sidebar.classList.contains('collapsed'));
   };
 
-  // Restore preference on load
+  // On page load, restore saved preference
+  // (default: expanded on desktop, collapsed on mobile)
   document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    // Default: expanded on desktop, collapsed on mobile
-    const isMobile   = window.innerWidth < 768;
-    const collapsed  = saved !== null ? saved === '1' : isMobile;
+    const saved     = localStorage.getItem(STORAGE_KEY);
+    const isMobile  = window.innerWidth < 768;
+    const collapsed = saved !== null ? saved === '1' : isMobile;
     setCollapsed(collapsed);
     markActiveNavItem();
   });
@@ -53,11 +46,19 @@
 
 // -----------------------------------------------
 //  Mark the active sidebar nav item
-//  based on the current page filename
+//
+//  Since every page is at portal/<pagename>/index.html,
+//  we look at the second-to-last path segment:
+//    /guard/portal/home/  →  "home"
+//    /guard/portal/orders/ → "orders"
 // -----------------------------------------------
 function markActiveNavItem() {
-  const current = window.location.pathname.split('/').pop() || 'index.html';
+  // Get the folder name of the current page
+  const parts   = window.location.pathname.replace(/\/$/, '').split('/');
+  const current = parts[parts.length - 1] || '';  // e.g. "home", "orders"
+
   document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(item => {
+    // data-page should match the folder name, e.g. data-page="home"
     if (item.dataset.page === current) {
       item.classList.add('active');
     } else {
@@ -68,46 +69,43 @@ function markActiveNavItem() {
 
 // -----------------------------------------------
 //  Auth guard + user hydration
-//  Calls requireAuth() from auth.js,
-//  then fills in the org name and user details.
+//  Called at the bottom of every portal page.
 // -----------------------------------------------
 async function initPortalPage() {
-  // 1. Verify the user is logged in via Auth0
-  //    requireAuth() is defined in auth.js —
-  //    it redirects to login.html if not authenticated.
+  // Check Auth0 login — redirects to login page if not authenticated
   const session = await requireAuth();
-  if (!session) return; // redirecting
+  if (!session) return;
 
   const { user } = session;
 
-  // 2. Fill in the Organization name displayed in the header button
-  //    The org name comes from the Auth0 token custom claim.
-  //    You set this in your Auth0 Action (see README).
+  // Fill in the org name in the header "Organization" button
+  // (comes from your Auth0 Action custom claim — see README)
   const orgName = user['https://yourapp.com/orgName'] || 'My Organization';
   const orgEl   = document.getElementById('header-org-name');
   if (orgEl) orgEl.textContent = orgName;
 
-  // 3. Fill in the greeting on the page (optional — used on home page)
+  // Fill in greeting org name if element exists (home page)
   const greetingOrgEl = document.getElementById('greeting-org-name');
   if (greetingOrgEl) greetingOrgEl.textContent = orgName;
 
-  // 4. Notification badge — fetch unread count from AWS
-  //    Uncomment once your /notifications endpoint is live:
+  // Show notification badge if there are unread notifications
+  // Uncomment once your AWS /notifications endpoint is live:
   //
   // try {
   //   const data = await api.get('/notifications/unread-count');
   //   if (data?.count > 0) {
-  //     document.getElementById('notif-badge')?.style.setProperty('display', 'block');
+  //     const badge = document.getElementById('notif-badge');
+  //     if (badge) badge.style.display = 'block';
   //   }
   // } catch (_) {}
 
-  // 5. Role-based visibility
-  //    Elements with data-roles="admin,provider" are hidden
-  //    if the logged-in user's role isn't in that list.
+  // Hide nav items / sections the user's role can't access
   const role = user['https://yourapp.com/role'] || 'staff';
   enforceRoles(role);
 }
 
+// Hides elements with data-roles="admin,provider"
+// if the logged-in user's role isn't in the list
 function enforceRoles(role) {
   document.querySelectorAll('[data-roles]').forEach(el => {
     const allowed = el.dataset.roles.split(',').map(r => r.trim());
@@ -116,8 +114,8 @@ function enforceRoles(role) {
 }
 
 // -----------------------------------------------
-//  Greeting helper — "Good Morning/Afternoon/Evening"
-//  Call getGreeting() in your page's heading.
+//  Greeting — "Good Morning / Afternoon / Evening"
+//  Any element with id="greeting-time" gets filled in
 // -----------------------------------------------
 function getGreeting() {
   const h = new Date().getHours();
@@ -126,7 +124,6 @@ function getGreeting() {
   return 'Good Evening';
 }
 
-// Fill the greeting automatically if the element exists
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('greeting-time');
   if (el) el.textContent = getGreeting();
