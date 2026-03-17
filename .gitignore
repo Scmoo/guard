@@ -1,0 +1,24 @@
+# ── Environment variables (API keys, secrets) ──
+.env
+.env.local
+.env.production
+
+# ── Auth0 / AWS config if you ever move secrets to a local file ──
+auth-config.js
+aws-config.js
+
+# ── OS junk ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── VS Code settings ──
+.vscode/
+
+# ── Node (if you ever add any npm packages) ──
+node_modules/
+package-lock.json
+
+# ── Logs ──
+*.log
+npm-debug.log*
