@@ -7,221 +7,222 @@
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
 
-  <style>
-    /* ── Login-specific layout ── */
-    body { overflow: hidden; }
+<style>
+  /* ── Login-specific layout ── */
+  body { overflow: hidden; }
 
-    .login-wrapper {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 100vh;
-      background: var(--bg);
-    }
+  .login-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    background: var(--bg);
+    overflow: hidden;
+  }
 
-    /* ── LEFT PANEL ── */
-    .login-left {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 60px 72px;
-      position: relative;
-      z-index: 1;
-    }
+  /* ── LEFT PANEL ── */
+  .login-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: clamp(32px, 6vw, 80px);
+    position: relative;
+    z-index: 1;
+  }
 
-    .login-left::before {
-      /* Subtle grain texture */
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: -1;
-    }
+  .login-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: -1;
+  }
 
-    .login-heading {
-      font-family: 'Sora', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 36px;
-      letter-spacing: -0.01em;
-    }
+  .login-heading {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
 
-    .login-form { display: flex; flex-direction: column; gap: 18px; max-width: 360px; }
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: 360px;
+  }
 
-    /* Override pill shape to match sketch */
-    .login-form .form-input {
-      border-radius: var(--radius-full);
-      padding: 13px 20px;
-      background: var(--white);
-      border: 2px solid #dde8ee;
-      font-size: 0.9rem;
-    }
-    .login-form .form-input:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 4px rgba(46,177,53,0.1);
-    }
+  .login-form .form-input {
+    border-radius: var(--radius-full);
+    padding: 13px 20px;
+    background: var(--white);
+    border: 2px solid #dde8ee;
+    font-size: 0.9rem;
+  }
+  .login-form .form-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(46,177,53,0.1);
+  }
 
-    /* Password field eye icon */
-    .login-form .input-wrapper .form-input { padding-left: 48px; }
-    .pw-lock-icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-light);
-      pointer-events: none;
-      font-size: 0.9rem;
-    }
+  .login-form .input-wrapper .form-input { padding-left: 48px; }
+  .pw-lock-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    pointer-events: none;
+    font-size: 0.9rem;
+  }
 
-    /* Sign In button — green pill, matches sketch */
-    .btn-signin {
-      background: var(--brand);
-      color: var(--white);
-      border: 2px solid var(--brand);
-      border-radius: var(--radius-full);
-      padding: 13px;
-      font-family: 'Sora', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-      letter-spacing: 0.01em;
-    }
-    .btn-signin:hover:not(:disabled) {
-      background: #249a2a;
-      border-color: #249a2a;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(46,177,53,0.3);
-    }
-    .btn-signin:active:not(:disabled) { transform: translateY(0); }
-    .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-signin {
+    background: var(--brand);
+    color: var(--white);
+    border: 2px solid var(--brand);
+    border-radius: var(--radius-full);
+    padding: 13px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    letter-spacing: 0.01em;
+  }
+  .btn-signin:hover:not(:disabled) {
+    background: #249a2a;
+    border-color: #249a2a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(46,177,53,0.3);
+  }
+  .btn-signin:active:not(:disabled) { transform: translateY(0); }
+  .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Helper links */
-    .login-links {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 4px;
-    }
-    .login-links a {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.15s ease;
-    }
-    .login-links a::before { content: '▶'; font-size: 0.6rem; color: var(--brand); }
-    .login-links a:hover   { color: var(--brand); }
+  .login-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .login-links a {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s ease;
+  }
+  .login-links a::before { content: '▶'; font-size: 0.6rem; color: var(--brand); }
+  .login-links a:hover   { color: var(--brand); }
 
-    /* Error message */
-    .login-error {
-      background: #fee2e2;
-      border: 1px solid #fca5a5;
-      color: #7f1d1d;
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      font-size: 0.82rem;
-      display: none;
-    }
-    .login-error.visible { display: block; }
+  .login-error {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #7f1d1d;
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    display: none;
+  }
+  .login-error.visible { display: block; }
 
-    /* ── RIGHT PANEL ── */
-    .login-right {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-      padding: 0;
-    }
+  /* ── RIGHT PANEL ── */
+  .login-right {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 
-    /* Semi-circle — large, bleeds off the right edge */
-    .brand-circle {
-      /* Tall enough to fill the viewport height */
-      width: 90vw;
-      height: 90vw;
-      max-width: 860px;
-      max-height: 860px;
-      border-radius: 50%;
-      border: 3px solid var(--brand);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      text-align: center;
-      padding: 48px 80px 48px 48px;
-      position: absolute;
-      /* Push right half off screen — creates the semi-circle effect */
-      right: -42%;
-      background: radial-gradient(circle at 35% 40%, var(--accent) 0%, rgba(210,252,216,0.3) 60%, transparent 85%);
-      animation: pulse-ring 4s ease-in-out infinite;
-      flex-shrink: 0;
-    }
+  /* Semi-circle — anchored to right edge, always viewport height */
+  .brand-circle {
+    position: absolute;
+    /* Always a perfect circle sized to viewport height */
+    width: 100vh;
+    height: 100vh;
+    border-radius: 50%;
+    /* Push right half off screen */
+    right: -50vh;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 3px solid var(--brand);
+    background: radial-gradient(circle at 35% 40%, var(--accent) 0%, rgba(210,252,216,0.3) 60%, transparent 85%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Shift content left so it shows in the visible half */
+    padding-right: 50vh;
+    gap: 24px;
+    text-align: center;
+    animation: pulse-ring 4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
 
-    @keyframes pulse-ring {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.10); }
-      50%       { box-shadow: 0 0 0 24px rgba(46,177,53,0); }
-    }
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.10); }
+    50%       { box-shadow: 0 0 0 24px rgba(46,177,53,0); }
+  }
 
-    /* Second decorative ring */
-    .brand-circle::before {
-      content: '';
-      position: absolute;
-      inset: -20px;
-      border-radius: 50%;
-      border: 1px solid rgba(46,177,53,0.15);
-    }
+  .brand-circle::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    border: 1px solid rgba(46,177,53,0.15);
+  }
 
-    .brand-logo-mark {
-      font-family: 'Krona One', sans-serif;
-      font-size: 1.5rem;
-      color: var(--brand);
-      letter-spacing: 0.06em;
-      border: 2px solid var(--brand);
-      padding: 8px 20px;
-      border-radius: var(--radius-full);
-      background: rgba(46,177,53,0.06);
-    }
+  .brand-logo-mark {
+    font-family: 'Krona One', sans-serif;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    color: var(--brand);
+    letter-spacing: 0.06em;
+    border: 2px solid var(--brand);
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    background: rgba(46,177,53,0.06);
+  }
 
-    .brand-tagline {
-      font-family: 'Krona One', sans-serif;
-      font-size: 1.25rem;
-      color: var(--text);
-      line-height: 1.4;
-      letter-spacing: 0.01em;
-    }
+  .brand-tagline {
+    font-family: 'Krona One', sans-serif;
+    font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+    color: var(--text);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
 
-    .brand-sub {
-      font-family: 'Sora', sans-serif;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      max-width: 240px;
-      line-height: 1.6;
-    }
+  .brand-sub {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(0.72rem, 1vw, 0.82rem);
+    color: var(--text-muted);
+    max-width: 200px;
+    line-height: 1.6;
+  }
 
-    /* Decorative background circles */
-    .bg-dot {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.4;
-      pointer-events: none;
-    }
-    .bg-dot-1 { width: 200px; height: 200px; top: -60px; right: -60px; }
-    .bg-dot-2 { width: 120px; height: 120px; bottom: 40px; left: 40px; opacity: 0.2; }
+  .bg-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .bg-dot-1 { width: 200px; height: 200px; top: -60px; right: -60px; }
+  .bg-dot-2 { width: 120px; height: 120px; bottom: 40px; left: 40px; opacity: 0.2; }
 
-    /* Mobile */
-    @media (max-width: 768px) {
-      .login-wrapper { grid-template-columns: 1fr; overflow: auto; }
-      .login-right   { display: none; }
-      .login-left    { padding: 48px 28px; min-height: 100vh; }
-    }
-  </style>
+  /* Mobile */
+  @media (max-width: 768px) {
+    body { overflow: auto; }
+    .login-wrapper { grid-template-columns: 1fr; height: auto; }
+    .login-right   { display: none; }
+    .login-left    { padding: 48px 28px; min-height: 100vh; }
+  }
+</style>
 </head>
 <body>
 
