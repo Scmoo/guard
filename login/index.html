@@ -140,26 +140,23 @@
     justify-content: flex-start;
   }
 
-/* Silo shape — filled D, left edge at 60% of screen */
-  .brand-circle {
+.brand-circle {
   position: absolute;
-/* Circle diameter = 200vh so the left edge lands at ~60% screen */
-  width: 200vh;
-  height: 200vh;
+  /* Circle = viewport height, stays consistent */
+  width: 100vh;
+  height: 100vh;
   border-radius: 50%;
-/* Right-align it so it bleeds off the right edge */
-  right: -100vh;
+  /* Right edge flush with screen, left edge at 60% of screen */
+  right: -20%;
   top: 50%;
   transform: translateY(-50%);
-/* Solid fill instead of just a border */
-  background: var(--accent);
+  background: radial-gradient(circle at 30% 50%, #f0fef2 0%, var(--accent) 70%);
   border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-/* Push content into the visible left portion */
-  padding-right: 100vh;
+  padding-right: 20%;
   gap: 24px;
   text-align: center;
   animation: pulse-ring 4s ease-in-out infinite;
