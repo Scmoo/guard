@@ -140,31 +140,34 @@
     justify-content: flex-start;
   }
 
-.brand-circle {
-  position: absolute;
-  /* Circle = viewport height, stays consistent */
-  width: 100vh;
-  height: 100vh;
-  border-radius: 50%;
-  /* Right edge flush with screen, left edge at 60% of screen */
-  right: -20%;
-  top: 50%;
-  transform: translateY(-50%);
-  background: radial-gradient(circle at 30% 50%, #f0fef2 0%, var(--accent) 70%);
-  border: 2px solid var(--brand);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-right: 20%;
-  gap: 24px;
-  text-align: center;
-  animation: pulse-ring 4s ease-in-out infinite;
-}
+  .brand-circle {
+    position: absolute;
+    /* 110% of viewport height */
+    width: 110vh;
+    height: 110vh;
+    border-radius: 50%;
+    right: -20%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: radial-gradient(circle at 30% 50%, #f0fef2 0%, var(--accent) 70%);
+    /* Left/top/bottom border visible, right border blends into background */
+    border-top: 2px solid var(--brand);
+    border-left: 2px solid var(--brand);
+    border-bottom: 2px solid var(--brand);
+    border-right: 2px solid #f0fef2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-right: 20%;
+    gap: 24px;
+    text-align: center;
+    animation: pulse-ring 4s ease-in-out infinite;
+  }
 
   @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.15); }
-  50%       { box-shadow: 0 0 0 60px rgba(46,177,53,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.15); }
+    50%       { box-shadow: 0 0 0 60px rgba(46,177,53,0); }
   }
 
   .brand-logo-mark {
@@ -198,11 +201,10 @@
     position: absolute;
     border-radius: 50%;
     background: var(--accent);
-    opacity: 0.4;
     pointer-events: none;
   }
-  .bg-dot-1 { width: 200px; height: 200px; top: -60px; right: -60px; }
-  .bg-dot-2 { width: 120px; height: 120px; bottom: 40px; left: 40px; opacity: 0.2; }
+  .bg-dot-1 { width: 200px; height: 200px; top: -60px; right: -60px; opacity: 0.4; }
+  .bg-dot-2 { width: 180px; height: 180px; bottom: 40px; left: 40px; opacity: 0.6; }
 
   /* Mobile */
   @media (max-width: 768px) {
@@ -362,7 +364,6 @@
     const errorEl = document.getElementById('login-error');
     errorEl.classList.remove('visible');
 
-    // Basic client-side validation
     const userId   = document.getElementById('userId').value.trim();
     const password = document.getElementById('password').value;
 
@@ -375,13 +376,10 @@
       return;
     }
 
-    // Show loading
     btn.disabled = true;
     btn.textContent = 'Signing in…';
 
     try {
-      // Auth0 Universal Login handles credential verification.
-      // It redirects away, so code below won't run on success.
       await loginWithRedirect();
     } catch (err) {
       btn.disabled = false;
@@ -417,32 +415,26 @@
   async function submitPasswordReset() {
     const userId = document.getElementById('resetUserId').value.trim();
     if (!userId) { toast('Please enter your User ID.', 'warning'); return; }
-
-    // Auth0 can send password reset emails via its Management API
-    // (call your AWS Lambda endpoint which calls Auth0 Management API)
     try {
       await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
       });
-    } catch (_) { /* Always show success to avoid user enumeration */ }
-
+    } catch (_) {}
     document.getElementById('reset-success').style.display = 'flex';
   }
 
   async function submitForgotId() {
     const email = document.getElementById('forgotEmail').value.trim();
     if (!email) { toast('Please enter your email.', 'warning'); return; }
-
     try {
       await fetch('/api/auth/forgot-userid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-    } catch (_) { /* Always show success */ }
-
+    } catch (_) {}
     document.getElementById('forgot-success').style.display = 'flex';
   }
 
@@ -458,11 +450,11 @@
     }, { once: true });
   }
 
-  // ── Modal helpers (inline since ui.js not loaded on login) ──
+  // ── Modal helpers ──
   function openModal(id)  { document.getElementById(id).classList.add('open');    }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   function toast(msg, type) {
-    console.log(`[${type}]`, msg); // Simple fallback on login page
+    console.log(`[${type}]`, msg);
     const el = document.getElementById('login-error');
     if (el) { el.textContent = msg; el.classList.add('visible'); }
   }
