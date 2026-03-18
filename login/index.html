@@ -9,7 +9,12 @@
 
 <style>
   /* ── Login-specific layout ── */
-  body { overflow: hidden; }
+  body { 
+  overflow: hidden; 
+  height: 100vh;
+  width: 100vw;
+  position: fixed; 
+}
 
   .login-wrapper {
     display: grid;
@@ -142,7 +147,7 @@
   }
 
   .brand-circle {
-  position: fixed;
+  position: absolute;
   width: 110vh;
   height: 110vh;
   border-radius: 50%;
