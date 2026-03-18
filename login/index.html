@@ -151,10 +151,7 @@
     transform: translateY(-50%);
     background: radial-gradient(circle at 30% 50%, #f0fef2 0%, var(--accent) 70%);
     /* Left/top/bottom border visible, right border blends into background */
-    border-top: 2px solid transparent;
-    border-left: 2px solid var(--brand);
-    border-bottom: 2px solid transparent;
-    border-right: 2px solid transparent;
+    border: 2px solid var(--brand);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -275,7 +272,7 @@
       <!-- Helper links — match sketch -->
       <div class="login-links">
         <a href="#" onclick="handlePasswordReset(event)">Password Reset</a>
-        <a href="#" onclick="handleForgotId(event)">User ID, Forgot</a>
+        <a href="#" onclick="handleForgotId(event)">User ID Reset</a>
       </div>
 
     </form>
