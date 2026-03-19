@@ -478,3 +478,13 @@ tbody td { padding: 13px 16px; color: var(--text); vertical-align: middle; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c5d5dd; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+
+/* =============================================
+   LOGO
+   ============================================= */
+.login-logo {
+  height: 48px; /* adjust to taste */
+  width: auto;
+  margin-bottom: 24px;
+}
