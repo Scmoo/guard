@@ -486,5 +486,6 @@ tbody td { padding: 13px 16px; color: var(--text); vertical-align: middle; }
 .login-logo {
   height: 48px; /* adjust to taste */
   width: auto;
+  display: block;
   margin-bottom: 24px;
 }
