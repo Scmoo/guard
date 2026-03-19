@@ -9,12 +9,12 @@
 
 <style>
   /* ── Login-specific layout ── */
-  body { 
-  overflow: hidden; 
-  height: 100vh;
-  width: 100vw;
-  position: fixed; 
-}
+  body {
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+  }
 
   .login-wrapper {
     display: grid;
@@ -147,77 +147,10 @@
     overflow: visible;
   }
 
-  .brand-circle {
-  position: absolute;
-  grid-column: 2
-  width: 110vh;
-  height: 110vh;
-  border-radius: 50%;
-  right: -20%;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--accent);
-  border: none; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-right: 20%;
-  gap: 24px;
-  text-align: center;
-  animation: none;
-}
-
-.brand-circle::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  clip-path: inset(0 50% 0 0);
-  animation: pulse-ring 4s ease-in-out infinite;
-}
-
-  .brand-circle::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid var(--brand);
-  clip-path: inset(0 50% 0 0);
-  pointer-events: none;
-}
-
+  /* ── kept for future use ── */
   @keyframes pulse-ring {
     0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.15); }
     50%       { box-shadow: 0 0 0 60px rgba(46,177,53,0); }
-  }
-
-  .brand-logo-mark {
-    font-family: 'Krona One', sans-serif;
-    font-size: clamp(1rem, 1.5vw, 1.5rem);
-    color: var(--brand);
-    letter-spacing: 0.06em;
-    border: 2px solid var(--brand);
-    padding: 8px 20px;
-    border-radius: var(--radius-full);
-    background: rgba(46,177,53,0.06);
-  }
-
-  .brand-tagline {
-    font-family: 'Krona One', sans-serif;
-    font-size: clamp(0.9rem, 1.5vw, 1.25rem);
-    color: var(--text);
-    line-height: 1.4;
-    letter-spacing: 0.01em;
-  }
-
-  .brand-sub {
-    font-family: 'Sora', sans-serif;
-    font-size: clamp(0.72rem, 1vw, 0.82rem);
-    color: var(--text-muted);
-    max-width: 200px;
-    line-height: 1.6;
   }
 
   .bg-dot {
@@ -243,7 +176,7 @@
 <div class="login-wrapper">
 
   <!-- ═══════════════════════════════════
-       LEFT — Login Form (matches sketch)
+       LEFT — Login Form
        ═══════════════════════════════════ -->
   <div class="login-left">
 
@@ -277,7 +210,6 @@
             autocomplete="current-password"
             required
           />
-          <!-- Eye toggle matches sketch -->
           <button type="button" class="input-icon-right" onclick="togglePassword()" aria-label="Toggle password visibility" id="eyeBtn">
             <svg id="eye-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -295,7 +227,7 @@
         Sign In
       </button>
 
-      <!-- Helper links — match sketch -->
+      <!-- Helper links -->
       <div class="login-links">
         <a href="#" onclick="handlePasswordReset(event)">Password Reset</a>
         <a href="#" onclick="handleForgotId(event)">User ID Reset</a>
@@ -306,17 +238,11 @@
   </div>
 
   <!-- ═══════════════════════════════════
-       RIGHT — Brand Circle (matches sketch)
+       RIGHT — Brand Panel
        ═══════════════════════════════════ -->
   <div class="login-right">
     <div class="bg-dot bg-dot-1"></div>
     <div class="bg-dot bg-dot-2"></div>
-  </div>
-
-  <div class="brand-circle">
-    <div class="brand-logo-mark">[ LOGO ]</div>
-    <div class="brand-tagline">Client Ordering<br>Portal</div>
-    <div class="brand-sub">Secure access for your healthcare organization</div>
   </div>
 
 </div>
