@@ -1,0 +1,12 @@
+--> orders
+--> new-order
+--> organization
+--> account
+--> ongoing-orders
+--> completed-orders
+--> cancelled-orders
+--> [product page template for all products]
+--> patients
+--> providers
+--> users
+--> 
