@@ -84,12 +84,6 @@ async function initPortalPage() {
     'https://yourapp.com/role': 'admin'
   };
 
-  // Hardcoded test values — remove when Auth0 is ready
-  const user = { 
-    'https://yourapp.com/orgName': 'Test Organization',
-    'https://yourapp.com/role': 'admin'
-  };
-
   // Fill in the org name in the header "Organization" button
   // (comes from your Auth0 Action custom claim — see README)
   const orgName = user['https://yourapp.com/orgName'] || 'My Organization';
