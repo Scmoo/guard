@@ -256,6 +256,53 @@
       border-radius: 50%;
       background: currentColor;
     }
+
+    /* Product name link */
+    .product-name-link {
+      color: var(--brand);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .product-name-link:hover {
+      color: var(--accent-dark);
+      text-decoration: underline;
+    }
+
+    /* Load more button */
+    .load-more-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 24px 0 8px;
+    }
+
+    .btn-load-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 32px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 9999px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+      letter-spacing: 0.01em;
+    }
+    .btn-load-more:hover {
+      background: #249a2a;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46,177,53,0.3);
+    }
+    .btn-load-more:active { transform: translateY(0); }
+    .btn-load-more svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2.5; stroke-linecap: round;
+    }
   </style>
 </head>
 <body>
@@ -394,6 +441,13 @@
               <p>Try a different search term or clear your filters.</p>
             </div>
           </div>
+          <!-- Load More button — hidden when all results shown -->
+          <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+            <button class="btn-load-more" onclick="loadMore()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+              Load 30 More
+            </button>
+          </div>
         </div>
 
       </div>
@@ -437,7 +491,7 @@
   //
   //  TO CONNECT AWS:
   //  1. Remove the PRODUCTS array below
-  //  2. Replace loadProducts() with an API call:
+  //  2. Replace with an API call:
   //       const res  = await fetch('YOUR_API_URL/products', {
   //         headers: { Authorization: `Bearer ${token}` }
   //       });
@@ -445,92 +499,58 @@
   //  3. Call renderTable(PRODUCTS, '') after the fetch
   // ═══════════════════════════════════════════════════
   let PRODUCTS = [
-    {
-      name:         'Amniotic Skin Substitute (Placental Skin Sub)',
-      manufacturer: 'MiMedx',
-      insurance:    'Medicare, Advantage Plans',
-      diagnosis:    'Wound ICD 30+ Days',
-      billing:      'Q4112, Debridement'
-    },
-    {
-      name:         'Mist Therapy',
-      manufacturer: 'Celleration',
-      insurance:    'Medicare, Medicaid, UHC',
-      diagnosis:    'I483, H45.0',
-      billing:      '99012, Misting'
-    },
-    {
-      name:         'Wound Vac',
-      manufacturer: 'KCI / 3M',
-      insurance:    'Humana, Tricare, Coventry',
-      diagnosis:    'Z48.00, Z48.01',
-      billing:      '97605, 97606'
-    },
-    {
-      name:         'Collagen Wound Dressing',
-      manufacturer: 'Hollister Wound Care',
-      insurance:    'Medicare, Medicaid',
-      diagnosis:    'L89.0, L97.1',
-      billing:      'A6021, A6022'
-    },
-    {
-      name:         'Compression Bandage System',
-      manufacturer: 'Smith & Nephew',
-      insurance:    'Medicare, Aetna, BCBS',
-      diagnosis:    'I83.0, I87.2',
-      billing:      'A6448, A6449'
-    },
-    {
-      name:         'Hydrocolloid Dressing',
-      manufacturer: 'ConvaTec',
-      insurance:    'Medicare, UHC, Cigna',
-      diagnosis:    'L89.1, T14.0',
-      billing:      'A6234, A6235'
-    },
+    { name: 'Amniotic Skin Substitute (Placental Skin Sub)', manufacturer: 'MiMedx',               insurance: 'Medicare, Advantage Plans',     diagnosis: 'Wound ICD 30+ Days', billing: 'Q4112, Debridement' },
+    { name: 'Mist Therapy',                                  manufacturer: 'Celleration',           insurance: 'Medicare, Medicaid, UHC',       diagnosis: 'I483, H45.0',        billing: '99012, Misting' },
+    { name: 'Wound Vac',                                     manufacturer: 'KCI / 3M',              insurance: 'Humana, Tricare, Coventry',     diagnosis: 'Z48.00, Z48.01',     billing: '97605, 97606' },
+    { name: 'Collagen Wound Dressing',                       manufacturer: 'Hollister Wound Care',  insurance: 'Medicare, Medicaid',            diagnosis: 'L89.0, L97.1',       billing: 'A6021, A6022' },
+    { name: 'Compression Bandage System',                    manufacturer: 'Smith & Nephew',        insurance: 'Medicare, Aetna, BCBS',         diagnosis: 'I83.0, I87.2',       billing: 'A6448, A6449' },
+    { name: 'Hydrocolloid Dressing',                         manufacturer: 'ConvaTec',              insurance: 'Medicare, UHC, Cigna',          diagnosis: 'L89.1, T14.0',       billing: 'A6234, A6235' },
   ];
 
-  // Active sort state
-  let sortCol = null;
-  let sortDir = 'asc';
+  const PAGE_SIZE  = 30;
+  let visibleCount = PAGE_SIZE;   // how many rows are currently shown
+  let currentList  = [];          // current filtered+sorted list
 
-  // Active column filter
+  let sortCol  = null;
+  let sortDir  = 'asc';
   let activeCol = 'all';
 
-  // ── Fuzzy normalize: strips spaces, dashes, punctuation, lowercases ──
-  function normalize(str) {
-    return String(str).toLowerCase().replace(/[\s\-_.,()\/]/g, '');
+  // ── Convert product name to URL slug ──────────────
+  // "Wound Vac" → "wound-vac"
+  // "KCI / 3M"  → "kci-3m"
+  function toSlug(name) {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')   // remove non-alphanumeric except spaces/hyphens
+      .trim()
+      .replace(/\s+/g, '-')            // spaces → hyphens
+      .replace(/-+/g, '-');            // collapse multiple hyphens
   }
 
-  // ── Check if a query matches a value (fuzzy) ──
+  // ── Fuzzy normalize ──────────────────────────────
+  function normalize(str) {
+    return String(str).toLowerCase().replace(/[\s\-_.,()\\/]/g, '');
+  }
+
   function fuzzyMatch(value, query) {
     if (!query) return true;
-    const normVal   = normalize(value);
-    const normQuery = normalize(query);
-    return normVal.includes(normQuery);
+    return normalize(value).includes(normalize(query));
   }
 
-  // ── Highlight matched text in a cell ──
+  // ── Highlight matched text ───────────────────────
   function highlight(text, query) {
     if (!query) return escHtml(text);
     const normQuery = normalize(query);
     const normText  = normalize(text);
     const idx = normText.indexOf(normQuery);
     if (idx === -1) return escHtml(text);
-
-    // Map normalized index back to original string
-    // by walking both strings simultaneously
-    let ni = 0, oi = 0;
-    let start = -1, end = -1;
+    let ni = 0, oi = 0, start = -1, end = -1;
     while (oi < text.length) {
-      const ch = text[oi];
-      const normCh = normalize(ch);
+      const normCh = normalize(text[oi]);
       if (normCh) {
-        if (ni === idx)              start = oi;
+        if (ni === idx) start = oi;
         if (ni === idx + normQuery.length - 1) end = oi + 1;
         ni++;
-      } else {
-        // skip non-normalized chars (spaces, dashes)
-        if (ni > idx && start === -1) start = oi;
       }
       oi++;
     }
@@ -546,7 +566,7 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Filter products ──
+  // ── Filter ───────────────────────────────────────
   function filterProducts(query) {
     if (!query) return [...PRODUCTS];
     return PRODUCTS.filter(p => {
@@ -557,54 +577,84 @@
     });
   }
 
-  // ── Sort products ──
+  // ── Sort ─────────────────────────────────────────
   function sortProducts(products) {
     if (!sortCol) return products;
     return [...products].sort((a, b) => {
       const av = normalize(a[sortCol]);
       const bv = normalize(b[sortCol]);
-      return sortDir === 'asc'
-        ? av.localeCompare(bv)
-        : bv.localeCompare(av);
+      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     });
   }
 
-  // ── Render table ──
+  // ── Render table ─────────────────────────────────
   function renderTable(products, query) {
-    const sorted = sortProducts(products);
-    const tbody  = document.getElementById('product-tbody');
-    const empty  = document.getElementById('empty-state');
-    const count  = document.getElementById('result-count');
+    currentList  = sortProducts(products);
+    visibleCount = PAGE_SIZE;
+    renderRows(query);
+  }
 
-    count.textContent = sorted.length;
+  // ── Render visible rows (respects visibleCount) ──
+  function renderRows(query) {
+    const tbody      = document.getElementById('product-tbody');
+    const empty      = document.getElementById('empty-state');
+    const countEl    = document.getElementById('result-count');
+    const loadMoreEl = document.getElementById('load-more-wrap');
 
-    if (sorted.length === 0) {
+    const visible = currentList.slice(0, visibleCount);
+    const total   = currentList.length;
+
+    // Update count label
+    countEl.textContent = total <= visibleCount
+      ? total
+      : `${visibleCount} of ${total}`;
+
+    if (total === 0) {
       tbody.innerHTML = '';
-      empty.style.display = 'block';
+      empty.style.display    = 'block';
+      loadMoreEl.style.display = 'none';
       return;
     }
 
     empty.style.display = 'none';
-    tbody.innerHTML = sorted.map(p => `
-      <tr onclick="selectProduct('${escHtml(p.name)}')">
-        <td><div class="cell-main">${highlight(p.name, query)}</div></td>
-        <td>${highlight(p.manufacturer, query)}</td>
-        <td>${highlight(p.insurance, query)}</td>
-        <td>${highlight(p.diagnosis, query)}</td>
-        <td>${highlight(p.billing, query)}</td>
-      </tr>
-    `).join('');
+
+    // Show/hide Load More button
+    loadMoreEl.style.display = visibleCount < total ? 'flex' : 'none';
+
+    // Render rows — product name is a clickable link
+    tbody.innerHTML = visible.map(p => {
+      const slug    = toSlug(p.name);
+      const nameUrl = `/guard/portal/product/${slug}/`;
+      return `
+        <tr>
+          <td>
+            <a href="${nameUrl}" class="product-name-link" title="View ${escHtml(p.name)}">${highlight(p.name, query)}</a>
+          </td>
+          <td>${highlight(p.manufacturer, query)}</td>
+          <td>${highlight(p.insurance, query)}</td>
+          <td>${highlight(p.diagnosis, query)}</td>
+          <td>${highlight(p.billing, query)}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  // ── Search handler ──
+  // ── Load 30 more ─────────────────────────────────
+  function loadMore() {
+    visibleCount += PAGE_SIZE;
+    const query = document.getElementById('product-search').value;
+    renderRows(query);
+    // Smooth scroll to the new rows
+    document.getElementById('load-more-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── Search handler ───────────────────────────────
   function handleSearch(value) {
-    const clearBtn = document.getElementById('search-clear');
-    clearBtn.classList.toggle('visible', value.length > 0);
-    const filtered = filterProducts(value);
-    renderTable(filtered, value);
+    document.getElementById('search-clear').classList.toggle('visible', value.length > 0);
+    renderTable(filterProducts(value), value);
   }
 
-  // ── Clear search ──
+  // ── Clear search ─────────────────────────────────
   function clearSearch() {
     const input = document.getElementById('product-search');
     input.value = '';
@@ -613,43 +663,24 @@
     renderTable(PRODUCTS, '');
   }
 
-  // ── Column filter chips ──
+  // ── Column filter chips ──────────────────────────
   function setColFilter(col, btn) {
     activeCol = col;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     const query = document.getElementById('product-search').value;
-    const filtered = filterProducts(query);
-    renderTable(filtered, query);
+    renderTable(filterProducts(query), query);
   }
 
-  // ── Column sort ──
+  // ── Column sort ──────────────────────────────────
   function sortTable(col) {
-    if (sortCol === col) {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortCol = col;
-      sortDir = 'asc';
-    }
-    // Update header classes
-    document.querySelectorAll('thead th').forEach(th => {
-      th.classList.remove('sort-asc', 'sort-desc');
-    });
+    sortDir = sortCol === col ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+    sortCol = col;
+    document.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
     const th = document.getElementById('th-' + col);
     if (th) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-
-    const query    = document.getElementById('product-search').value;
-    const filtered = filterProducts(query);
-    renderTable(filtered, query);
-  }
-
-  // ── Row click — select a product ──
-  // When AWS is connected, this is where you'd open a
-  // product detail modal or navigate to a order form.
-  function selectProduct(name) {
-    console.log('Selected product:', name);
-    // TODO: open product detail / order form
-    // e.g. window.location.href = `/guard/portal/new-order/form/?product=${encodeURIComponent(name)}`;
+    const query = document.getElementById('product-search').value;
+    renderTable(filterProducts(query), query);
   }
 </script>
 
