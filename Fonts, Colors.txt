@@ -1,0 +1,13 @@
+Titles (important only, like same level as logo): Krona One
+Headers: Sora, Sans Serif
+Normal text: Sora, Sans Serif
+Plain Background Color: 
+#FFFEFA
+Accent: 
+#d2fcd8
+Darker Accent: 
+#61ce70
+The darkest colors (reserved for logos and other important wording): 
+#2eb135
+Text color and other blacks: 
+#061728

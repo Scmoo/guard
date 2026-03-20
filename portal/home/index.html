@@ -4,29 +4,109 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- ↓ Change this for each page ↓ -->
   <title>Home — Wound Guard</title>
 
-  <!-- Auth0 SDK (must load before auth.js) -->
   <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
-
-  <!-- Styles -->
   <link rel="stylesheet" href="../css/template.css" />
+
+  <style>
+    /* ── Home page specific styles ── */
+
+    .home-greeting {
+      text-align: center;
+      margin-bottom: 48px;
+      padding-top: 48px;
+    }
+
+    .home-greeting h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 6px;
+    }
+
+    .home-greeting p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .home-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+    }
+
+    .home-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 28px;
+      background: var(--white);
+      border: 2px solid var(--accent-dark);
+      border-radius: 16px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .home-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(46,177,53,0.15);
+      border-color: var(--brand);
+      background: #f6fef7;
+    }
+
+    .home-card:active { transform: translateY(-1px); }
+
+    .home-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .home-card-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--brand);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .home-card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .home-card-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .home-cards { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════ -->
+<!-- HEADER -->
 <header class="portal-header" role="banner">
-
-  <!-- Logo — links back to home -->
   <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
     <div class="header-logo-mark">
-      <!--
-        Replace the SVG below with your real logo:
-        <img src="/guard/images/logo.svg" alt="Wound Guard" width="22" height="22" />
-      -->
       <svg viewBox="0 0 24 24">
         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
       </svg>
@@ -34,10 +114,7 @@
     <div class="header-logo-text">Wound<br>Guard</div>
   </a>
 
-  <!-- Right side: buttons + icons -->
   <div class="header-actions" role="navigation" aria-label="Header actions">
-
-    <!-- New Order button -->
     <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
         <line x1="12" y1="5" x2="12" y2="19"/>
@@ -46,7 +123,6 @@
       New Order
     </a>
 
-    <!-- Organization button — name filled in by template.js -->
     <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -56,10 +132,8 @@
       <span id="header-org-name">Organization</span>
     </a>
 
-    <!-- Divider line -->
     <div class="header-divider" aria-hidden="true"></div>
 
-    <!-- Settings icon -->
     <a href="/guard/portal/settings/" class="header-icon-btn" aria-label="Organization settings">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3"/>
@@ -67,61 +141,32 @@
       </svg>
     </a>
 
-    <!-- Notifications icon -->
     <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
       <svg viewBox="0 0 24 24">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
-      <!-- Green dot — shown when unread notifications exist -->
       <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
     </a>
-
   </div>
 </header>
 
 
-<!-- ═══════════════════════════════════════
-     BODY — Sidebar + Content
-     ═══════════════════════════════════════ -->
+<!-- BODY -->
 <div class="portal-body">
 
   <!-- SIDEBAR -->
   <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
-
-    <!-- Collapse / expand toggle -->
     <div class="sidebar-toggle-row">
-      <button
-        class="sidebar-toggle-btn"
-        onclick="toggleSidebar()"
-        aria-label="Toggle sidebar"
-        title="Collapse / expand"
-      >
+      <button class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar" title="Collapse / expand">
         <svg viewBox="0 0 24 24">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
       </button>
     </div>
 
-    <!-- Nav links -->
     <div class="sidebar-nav" role="list">
-
-      <!--
-        data-page  = the folder name for this page (no slashes)
-                     template.js uses this to highlight the active item
-        data-label = tooltip shown when sidebar is collapsed
-        class="active" — add this to whichever item is the CURRENT page
-      -->
-
-      <!-- Home -->
-      <a
-        href="/guard/portal/home/"
-        class="sidebar-nav-item active"
-        data-page="home"
-        data-label="Home"
-        role="listitem"
-        aria-label="Home"
-      >
+      <a href="/guard/portal/home/" class="sidebar-nav-item active" data-page="home" data-label="Home" role="listitem" aria-label="Home">
         <span class="sidebar-nav-icon">
           <svg viewBox="0 0 24 24">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -131,15 +176,7 @@
         <span class="sidebar-nav-label">Home</span>
       </a>
 
-      <!-- Orders -->
-      <a
-        href="/guard/portal/orders/"
-        class="sidebar-nav-item"
-        data-page="orders"
-        data-label="Orders"
-        role="listitem"
-        aria-label="Orders"
-      >
+      <a href="/guard/portal/orders/" class="sidebar-nav-item" data-page="orders" data-label="Orders" role="listitem" aria-label="Orders">
         <span class="sidebar-nav-icon">
           <svg viewBox="0 0 24 24">
             <line x1="8"  y1="6"  x2="21" y2="6"/>
@@ -152,96 +189,138 @@
         </span>
         <span class="sidebar-nav-label">Orders</span>
       </a>
-
-      <!--
-        ── ADD MORE NAV ITEMS HERE ──────────────────
-        Copy a block above and change:
-          href       → /guard/portal/PAGENAME/
-          data-page  → PAGENAME  (must match folder name)
-          data-label → Display name for collapsed tooltip
-          aria-label → Same as data-label
-          SVG icon   → Pick one from https://lucide.dev
-          label text → What shows in the sidebar
-        ────────────────────────────────────────────
-      -->
-
     </div>
   </nav>
 
   <!-- MAIN CONTENT -->
   <main class="portal-content" id="portal-content">
-
-    <!--
-      ╔══════════════════════════════════════════╗
-      ║  YOUR PAGE CONTENT GOES HERE             ║
-      ║                                          ║
-      ║  Everything inside .page-slot is unique  ║
-      ║  to this page. Header, sidebar, and      ║
-      ║  footer are automatic.                   ║
-      ╚══════════════════════════════════════════╝
-    -->
     <div class="page-slot">
 
-      <!-- Replace this placeholder with your actual content -->
-      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:60px;text-align:center;opacity:0.4">
-        ↑ Your page content goes here ↑
-      </p>
+      <!-- Greeting -->
+      <div class="home-greeting">
+        <h1>
+          <span id="greeting-time">Good Morning</span>,
+          <!--
+            ── ORG NAME NOTE ────────────────────────────────────────
+            This span is populated by template.js via:
+              const greetingOrgEl = document.getElementById('greeting-org-name');
+              if (greetingOrgEl) greetingOrgEl.textContent = orgName;
+
+            Currently shows 'Test Organization' from the hardcoded
+            user object in template.js. When AWS is connected,
+            uncomment the requireAuth() lines in template.js and
+            the real org name will flow through automatically.
+            ─────────────────────────────────────────────────────── -->
+          <span id="greeting-org-name">Test Organization</span>
+        </h1>
+        <p>Here's a summary of what's happening today.</p>
+      </div>
+
+      <!-- Nav Cards -->
+      <div class="home-cards">
+
+        <a href="/guard/portal/new-order/" class="home-card">
+          <div class="home-card-icon">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+          <div class="home-card-title">Place A New Order</div>
+          <div class="home-card-sub">Submit a new wound care or DME supply request.</div>
+        </a>
+
+        <a href="/guard/portal/products/" class="home-card">
+          <div class="home-card-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
+          <div class="home-card-title">Browse Products and Services</div>
+          <div class="home-card-sub">View available wound care products and DME supplies.</div>
+        </a>
+
+        <a href="/guard/portal/reimbursements/" class="home-card">
+          <div class="home-card-icon">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="home-card-title">New Medicare Reimbursements</div>
+          <div class="home-card-sub">Review recent updates to Medicare billing and reimbursements.</div>
+        </a>
+
+        <a href="/guard/portal/reports/" class="home-card">
+          <div class="home-card-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <div class="home-card-title">Reports</div>
+          <div class="home-card-sub">View order history, usage summaries, and account reports.</div>
+        </a>
+
+      </div>
 
     </div>
-
   </main>
 
 </div><!-- end .portal-body -->
 
 
-<!-- ═══════════════════════════════════════
-     FOOTER
-     ═══════════════════════════════════════ -->
+<!-- FOOTER -->
 <footer class="portal-footer" role="contentinfo">
-
   <nav class="footer-links" aria-label="Footer links">
     <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
     <a href="/guard/portal/contact/"        class="footer-link">Support Contact</a>
   </nav>
-
   <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
-
   <div class="footer-social">
-    <a
-      href="https://www.linkedin.com/company/wound-guard"
-      class="footer-social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Wound Guard on LinkedIn"
-    >
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <a href="https://www.linkedin.com/company/wound-guard" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="Wound Guard on LinkedIn">
+      <svg viewBox="0 0 24 24">
         <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
         <rect x="2" y="9" width="4" height="12"/>
         <circle cx="4" cy="4" r="2"/>
       </svg>
     </a>
   </div>
-
 </footer>
 
 
-<!-- ═══════════════════════════════════════
-     SCRIPTS — order matters
-       1. auth.js     — Auth0 login/logout
-       2. ui.js       — toasts, modals, loaders
-       3. template.js — sidebar + auth guard
-     ═══════════════════════════════════════ -->
+<!-- SCRIPTS -->
 <script src="../js/auth.js"></script>
 <script src="../js/ui.js"></script>
 <script src="../js/template.js"></script>
 
 <script>
-  // Fill in copyright year automatically
+  // Copyright year
   document.getElementById('footer-year').textContent = new Date().getFullYear();
 
-  // ── REQUIRED on every page ──────────────────────
-  // Checks Auth0, fills in org name, enforces roles.
-  // Redirects to login if not authenticated.
+  // ── Time-based greeting ──────────────────────────
+  // 5am–11:59am  → Good Morning
+  // 12pm–4:59pm  → Good Afternoon
+  // 5pm–8:59pm   → Good Evening
+  // 9pm–4:59am   → Good Night
+  function setGreeting() {
+    const h = new Date().getHours();
+    let greeting;
+    if      (h >= 5  && h < 12) greeting = 'Good Morning';
+    else if (h >= 12 && h < 17) greeting = 'Good Afternoon';
+    else if (h >= 17 && h < 21) greeting = 'Good Evening';
+    else                         greeting = 'Good Night';
+    const el = document.getElementById('greeting-time');
+    if (el) el.textContent = greeting;
+  }
+  setGreeting();
+
+  // ── Init portal (auth check + org name hydration) ─
   document.addEventListener('DOMContentLoaded', () => {
     initPortalPage();
   });
