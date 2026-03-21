@@ -282,7 +282,7 @@
     /* ── Toast ── */
     .save-toast {
       position: fixed;
-      bottom: 28px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(12px);
       background: var(--text);
@@ -426,21 +426,11 @@
           <div class="acct-card" id="acct-editable-card">
             <div class="acct-card-title">Account Details</div>
 
-            <!-- Username -->
+            <!-- Username — read-only (managed via secure login software) -->
             <div class="field-row" id="row-username">
               <div class="field-view">
                 <span class="field-label">Username:</span>
                 <span class="field-value" id="val-username"></span>
-              </div>
-              <button class="field-edit-btn" onclick="startFieldEdit('username')" aria-label="Edit username">Edit</button>
-              <div class="field-edit-wrap" id="edit-username">
-                <input class="field-input" id="input-username" type="text" placeholder="username" autocomplete="username" />
-                <button class="field-save-btn"   onclick="saveField('username')" aria-label="Save username">Save</button>
-                <button class="field-cancel-btn" onclick="cancelFieldEdit('username')" aria-label="Cancel">Cancel</button>
-                <span class="field-saving" id="saving-username">
-                  <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                  Saving…
-                </span>
               </div>
             </div>
 
@@ -480,21 +470,11 @@
               </div>
             </div>
 
-            <!-- Contact Email -->
+            <!-- Contact Email — read-only (managed via secure login software) -->
             <div class="field-row" id="row-email">
               <div class="field-view">
                 <span class="field-label">Contact Email:</span>
                 <span class="field-value" id="val-email"></span>
-              </div>
-              <button class="field-edit-btn" onclick="startFieldEdit('email')" aria-label="Edit email">Edit</button>
-              <div class="field-edit-wrap" id="edit-email">
-                <input class="field-input" id="input-email" type="email" placeholder="user@email.com" autocomplete="email" />
-                <button class="field-save-btn"   onclick="saveField('email')" aria-label="Save email">Save</button>
-                <button class="field-cancel-btn" onclick="cancelFieldEdit('email')" aria-label="Cancel">Cancel</button>
-                <span class="field-saving" id="saving-email">
-                  <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                  Saving…
-                </span>
               </div>
             </div>
 
@@ -608,10 +588,10 @@
 
       renderAccountTitle(data.userName);
 
-      // Editable fields
+      // Editable fields — phone is always displayed dash-formatted
       document.getElementById('val-username').textContent = data.username;
       document.getElementById('val-owner').textContent    = data.ownerName;
-      document.getElementById('val-phone').textContent    = data.phone;
+      document.getElementById('val-phone').textContent    = formatPhone(data.phone);
       document.getElementById('val-email').textContent    = data.email;
 
       // Read-only fields
@@ -654,13 +634,6 @@
   //    if (!res.ok) throw new Error('Save failed: ' + res.status);
   // ════════════════════════════════════════════════════════════════════════════
   const FIELD_CONFIG = {
-    username: {
-      validate: v => v.length >= 2 || 'Username must be at least 2 characters.',
-      async saveToAws(value) {
-        await new Promise(r => setTimeout(r, 800));   // PLACEHOLDER
-        console.log('[Account] Save username:', value);
-      }
-    },
     owner: {
       validate: v => v.trim().includes(' ') || 'Please enter a first and last name.',
       async saveToAws(value) {
@@ -669,17 +642,19 @@
       }
     },
     phone: {
-      validate: v => /^[\d\s\-().+]+$/.test(v) || 'Please enter a valid phone number.',
+      // Strips all non-digits, requires exactly 10, then formats as ###-###-####
+      validate(v) {
+        const digits = v.replace(/\D/g, '');
+        if (digits.length !== 10) return 'Phone number must contain exactly 10 digits.';
+        return true;
+      },
+      format(v) {
+        const d = v.replace(/\D/g, '');
+        return `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6,10)}`;
+      },
       async saveToAws(value) {
         await new Promise(r => setTimeout(r, 800));
         console.log('[Account] Save phone:', value);
-      }
-    },
-    email: {
-      validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Please enter a valid email address.',
-      async saveToAws(value) {
-        await new Promise(r => setTimeout(r, 800));
-        console.log('[Account] Save email:', value);
       }
     },
   };
@@ -735,8 +710,9 @@
     try {
       await cfg.saveToAws(value);
 
-      // Update display value
-      document.getElementById('val-' + field).textContent = value;
+      // Update display — apply formatter if the field has one (e.g. phone → ###-###-####)
+      const displayValue = cfg.format ? cfg.format(value) : value;
+      document.getElementById('val-' + field).textContent = displayValue;
       cancelFieldEdit(field);
       showToast('Saved successfully!', 'success');
 
@@ -782,6 +758,13 @@
   }
 
   // ── Utility ─────────────────────────────────────────────────────────────────
+  // Normalises any 10-digit phone string to ###-###-####
+  function formatPhone(v) {
+    const d = String(v).replace(/\D/g, '');
+    if (d.length !== 10) return v;   // return as-is if not 10 digits
+    return `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6,10)}`;
+  }
+
   function escHtml(str) {
     return String(str)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
