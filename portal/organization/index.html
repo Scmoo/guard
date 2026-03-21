@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Organization — Wound Guard</title>
+
+  <!-- Auth0 SDK (must load before auth.js) -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../css/template.css" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Organization page styles ── */
+
+    :root {
+      --bg:            #FFFEFA;
+      --accent:        #d2fcd8;
+      --accent-dark:   #61ce70;
+      --brand:         #2eb135;
+      --text:          #061728;
+      --text-muted:    #4a6074;
+      --text-light:    #8fa4b4;
+      --white:         #ffffff;
+      --border:        rgba(6,23,40,0.09);
+      --radius-card:   16px;
+      --radius-btn:    12px;
+      --shadow-card:   0 2px 12px rgba(6,23,40,0.07);
+      --shadow-hover:  0 6px 24px rgba(6,23,40,0.12);
+    }
+
+    .org-content {
+      padding: 40px 40px 60px;
+      max-width: 900px;
+    }
+
+    /* ── Page hero ── */
+    .org-hero {
+      margin-bottom: 36px;
+    }
+
+    .org-hero-eyebrow {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 8px;
+    }
+
+    .org-hero-title {
+      font-family: 'Krona One', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+      margin: 0 0 4px;
+      /* Placeholder shimmer until AWS data loads */
+    }
+
+    .org-hero-title .practice-name {
+      color: var(--brand);
+    }
+
+    .org-hero-title .separator {
+      color: var(--text-light);
+      margin: 0 8px;
+      font-weight: 300;
+    }
+
+    .org-hero-title .user-name {
+      color: var(--text);
+    }
+
+    /* Loading skeleton for name placeholders */
+    .name-skeleton {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--accent) 0%, #e8fff0 50%, var(--accent) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: 6px;
+      height: 1em;
+      vertical-align: middle;
+    }
+    .name-skeleton.practice { width: 180px; }
+    .name-skeleton.user     { width: 130px; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Info cards row (Shipping + Billing) ── */
+    .org-info-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    @media (max-width: 620px) {
+      .org-info-row { grid-template-columns: 1fr; }
+      .org-content  { padding: 24px 20px 48px; }
+    }
+
+    .info-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-card);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .info-card.is-editing {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(46,177,53,0.08), var(--shadow-hover);
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .info-card-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Edit / Save / Cancel buttons */
+    .card-action-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .info-edit-btn, .info-save-btn, .info-cancel-btn {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      padding: 3px 12px;
+      border-radius: 20px;
+      transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+      line-height: 1.8;
+    }
+
+    .info-edit-btn {
+      background: var(--accent);
+      color: var(--brand);
+    }
+    .info-edit-btn:hover { background: var(--accent-dark); color: var(--white); }
+
+    .info-save-btn {
+      background: var(--brand);
+      color: var(--white);
+    }
+    .info-save-btn:hover { background: #249e2a; }
+    .info-save-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .info-cancel-btn {
+      background: transparent;
+      color: var(--text-light);
+    }
+    .info-cancel-btn:hover { background: rgba(6,23,40,0.06); color: var(--text); }
+
+    .info-card-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 12px;
+    }
+
+    /* ── View mode ── */
+    .info-card-body {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .info-card-body .info-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+
+    .info-card-body .info-icon {
+      flex-shrink: 0;
+      margin-top: 3px;
+      color: var(--accent-dark);
+    }
+
+    /* ── Edit mode form ── */
+    .info-edit-form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-card.is-editing .info-card-body { display: none; }
+    .info-card.is-editing .info-edit-form { display: flex; }
+
+    .edit-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .edit-field-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .edit-field-input {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1.5px solid rgba(6,23,40,0.14);
+      border-radius: 8px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .edit-field-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(46,177,53,0.1);
+    }
+
+    /* Saving spinner overlay on card */
+    .save-spinner {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      color: var(--brand);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .save-spinner.visible { display: flex; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .save-spinner svg {
+      animation: spin 0.8s linear infinite;
+      width: 14px; height: 14px;
+      stroke: var(--brand); fill: none;
+      stroke-width: 2.5; stroke-linecap: round;
+    }
+
+    /* Toast notification */
+    .save-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--text);
+      color: var(--white);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(6,23,40,0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .save-toast.success { background: var(--brand); }
+    .save-toast.error   { background: #d94040; }
+    .save-toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Section divider ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-divider-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      white-space: nowrap;
+    }
+
+    .section-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Button grid ── */
+    .org-btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .org-btn-grid { grid-template-columns: 1fr; }
+    }
+
+    .org-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-card);
+      text-decoration: none;
+      box-shadow: var(--shadow-card);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease, background 0.15s ease;
+      cursor: pointer;
+    }
+
+    .org-nav-btn:hover {
+      border-color: var(--accent-dark);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+      background: #fafffe;
+    }
+
+    .org-nav-btn:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-card);
+    }
+
+    .org-btn-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+
+    .org-nav-btn:hover .org-btn-icon {
+      background: var(--accent-dark);
+    }
+
+    .org-btn-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--brand);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.15s ease;
+    }
+
+    .org-nav-btn:hover .org-btn-icon svg {
+      stroke: var(--white);
+    }
+
+    .org-btn-text {
+      flex: 1;
+    }
+
+    .org-btn-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+      transition: color 0.15s ease;
+    }
+
+    .org-nav-btn:hover .org-btn-title {
+      color: var(--brand);
+    }
+
+    .org-btn-desc {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    .org-btn-arrow {
+      flex-shrink: 0;
+      color: var(--text-light);
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .org-nav-btn:hover .org-btn-arrow {
+      color: var(--brand);
+      transform: translateX(3px);
+    }
+
+    .org-btn-arrow svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* span full width (5th button "Account Settings") */
+    .org-nav-btn.full-row {
+      grid-column: 1 / -1;
+      max-width: calc(50% - 7px); /* match single column width */
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ -->
+<header class="portal-header" role="banner">
+
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <svg viewBox="0 0 24 24">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 21V9h6v12"/>
+        <path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+
+    <div class="header-divider" aria-hidden="true"></div>
+
+    <a href="/guard/portal/settings/" class="header-icon-btn" aria-label="Organization settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     BODY
+     ═══════════════════════════════════════ -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+
+    <div class="sidebar-toggle-row">
+      <button
+        class="sidebar-toggle-btn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle sidebar"
+        title="Collapse / expand"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-nav" role="list">
+
+      <a
+        href="/guard/portal/home/"
+        class="sidebar-nav-item"
+        data-page="home"
+        data-label="Home"
+        role="listitem"
+        aria-label="Home"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+
+      <a
+        href="/guard/portal/orders/"
+        class="sidebar-nav-item"
+        data-page="orders"
+        data-label="Orders"
+        role="listitem"
+        aria-label="Orders"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="8"  y1="6"  x2="21" y2="6"/>
+            <line x1="8"  y1="12" x2="21" y2="12"/>
+            <line x1="8"  y1="18" x2="21" y2="18"/>
+            <line x1="3"  y1="6"  x2="3.01" y2="6"/>
+            <line x1="3"  y1="12" x2="3.01" y2="12"/>
+            <line x1="3"  y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+
+    <div class="page-slot">
+      <div class="org-content">
+
+        <!-- ── Hero / Title ── -->
+        <div class="org-hero">
+          <p class="org-hero-eyebrow">Organization Overview</p>
+          <h1 class="org-hero-title" id="org-hero-title" aria-live="polite">
+            <!--
+              Skeletons shown while AWS data loads.
+              JS below replaces these once the API call resolves.
+              TO CONNECT AWS:
+                1. In loadOrgData(), replace the placeholder setTimeout with
+                   your real API call, e.g.:
+                     const res  = await fetch('YOUR_API/org', {
+                       headers: { Authorization: `Bearer ${token}` }
+                     });
+                     const data = await res.json();
+                     return { practiceName: data.practiceName, userName: data.userName };
+                2. The rendered title will update automatically.
+            -->
+            <span class="name-skeleton practice" aria-hidden="true"></span>
+            <span class="separator" aria-hidden="true">—</span>
+            <span class="name-skeleton user" aria-hidden="true"></span>
+          </h1>
+        </div>
+
+        <!-- ── Info cards (Shipping + Billing) ── -->
+        <div class="org-info-row">
+
+          <!-- Shipping Address -->
+          <div class="info-card" id="shipping-card">
+            <div class="info-card-header">
+              <span class="info-card-label">Shipping Address, Default</span>
+              <div class="card-action-row">
+                <!-- View mode: Edit button -->
+                <button class="info-edit-btn"   id="shipping-edit-btn"   onclick="startEdit('shipping')"  aria-label="Edit shipping address">Edit</button>
+                <!-- Edit mode: Save + Cancel (hidden until editing) -->
+                <button class="info-save-btn"   id="shipping-save-btn"   onclick="saveCard('shipping')"   aria-label="Save shipping address"   style="display:none">Save</button>
+                <button class="info-cancel-btn" id="shipping-cancel-btn" onclick="cancelEdit('shipping')" aria-label="Cancel shipping edit"    style="display:none">Cancel</button>
+              </div>
+            </div>
+            <div class="info-card-divider"></div>
+
+            <!-- VIEW MODE -->
+            <div class="info-card-body" id="shipping-view">
+              <div class="info-line">
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="shipping-street">123 Florida Ave</span>
+              </div>
+              <div class="info-line">
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="visibility:hidden"></svg>
+                <span id="shipping-city">Florida, FL 12345</span>
+              </div>
+            </div>
+
+            <!-- EDIT MODE (hidden until Edit clicked) -->
+            <div class="info-edit-form" id="shipping-form">
+              <div class="edit-field-group">
+                <label class="edit-field-label" for="input-shipping-street">Street Address</label>
+                <input class="edit-field-input" id="input-shipping-street" type="text" placeholder="123 Florida Ave" autocomplete="street-address" />
+              </div>
+              <div class="edit-field-group">
+                <label class="edit-field-label" for="input-shipping-city">City, State ZIP</label>
+                <input class="edit-field-input" id="input-shipping-city" type="text" placeholder="Florida, FL 12345" autocomplete="address-level2" />
+              </div>
+              <div class="save-spinner" id="shipping-spinner">
+                <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Saving…
+              </div>
+            </div>
+          </div>
+
+          <!-- Default Billing Info -->
+          <div class="info-card" id="billing-card">
+            <div class="info-card-header">
+              <span class="info-card-label">Default Billing Info</span>
+              <div class="card-action-row">
+                <button class="info-edit-btn"   id="billing-edit-btn"   onclick="startEdit('billing')"  aria-label="Edit billing info">Edit</button>
+                <button class="info-save-btn"   id="billing-save-btn"   onclick="saveCard('billing')"   aria-label="Save billing info"    style="display:none">Save</button>
+                <button class="info-cancel-btn" id="billing-cancel-btn" onclick="cancelEdit('billing')" aria-label="Cancel billing edit"  style="display:none">Cancel</button>
+              </div>
+            </div>
+            <div class="info-card-divider"></div>
+
+            <!-- VIEW MODE -->
+            <div class="info-card-body" id="billing-view">
+              <!--
+                TO CONNECT AWS:
+                Same pattern — call renderBilling(data) after fetch.
+                Pass in { cardLabel, achLabel }.
+              -->
+              <div class="info-line">
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <span id="billing-card-label">Card: Debit, Visa — 4567</span>
+              </div>
+              <div class="info-line">
+                <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span id="billing-ach-label">ACH: Chase Account — 8901</span>
+              </div>
+            </div>
+
+            <!-- EDIT MODE (hidden until Edit clicked) -->
+            <div class="info-edit-form" id="billing-form">
+              <div class="edit-field-group">
+                <label class="edit-field-label" for="input-billing-card">Card Info (e.g. Visa — 4567)</label>
+                <input class="edit-field-input" id="input-billing-card" type="text" placeholder="Debit, Visa — 4567" autocomplete="off" />
+              </div>
+              <div class="edit-field-group">
+                <label class="edit-field-label" for="input-billing-ach">ACH / Bank Account</label>
+                <input class="edit-field-input" id="input-billing-ach" type="text" placeholder="Chase Account — 8901" autocomplete="off" />
+              </div>
+              <div class="save-spinner" id="billing-spinner">
+                <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Saving…
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end .org-info-row -->
+
+        <!-- ── Navigation buttons ── -->
+        <div class="section-divider" aria-hidden="true">
+          <span class="section-divider-label">Manage</span>
+          <span class="section-divider-line"></span>
+        </div>
+
+        <div class="org-btn-grid">
+
+          <!-- Patient List -->
+          <a href="/guard/portal/organization/patients/" class="org-nav-btn" aria-label="Patient List">
+            <div class="org-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="org-btn-text">
+              <div class="org-btn-title">Patient List</div>
+              <div class="org-btn-desc">View and manage your patients</div>
+            </div>
+            <span class="org-btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+
+          <!-- Organization Settings -->
+          <a href="/guard/portal/organization/settings/" class="org-nav-btn" aria-label="Organization Settings">
+            <div class="org-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 21V9h6v12"/><path d="M9 12h6"/></svg>
+            </div>
+            <div class="org-btn-text">
+              <div class="org-btn-title">Organization Settings</div>
+              <div class="org-btn-desc">Configure your organization</div>
+            </div>
+            <span class="org-btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+
+          <!-- Providers, Ordering -->
+          <a href="/guard/portal/organization/providers/" class="org-nav-btn" aria-label="Providers, Ordering">
+            <div class="org-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="org-btn-text">
+              <div class="org-btn-title">Providers, Ordering</div>
+              <div class="org-btn-desc">Manage ordering providers</div>
+            </div>
+            <span class="org-btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+
+          <!-- Users List -->
+          <a href="/guard/portal/organization/users/" class="org-nav-btn" aria-label="Users List">
+            <div class="org-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="org-btn-text">
+              <div class="org-btn-title">Users List</div>
+              <div class="org-btn-desc">Add and manage portal users</div>
+            </div>
+            <span class="org-btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+
+          <!-- Account Settings — spans left column only -->
+          <a href="/guard/portal/organization/account/" class="org-nav-btn" aria-label="Account Settings">
+            <div class="org-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="org-btn-text">
+              <div class="org-btn-title">Account Settings</div>
+              <div class="org-btn-desc">Update your personal account</div>
+            </div>
+            <span class="org-btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+
+        </div><!-- end .org-btn-grid -->
+
+      </div><!-- end .org-content -->
+    </div><!-- end .page-slot -->
+
+  </main>
+
+</div><!-- end .portal-body -->
+
+<!-- Toast notification -->
+<div class="save-toast" id="save-toast" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="portal-footer" role="contentinfo">
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/contact/"        class="footer-link">Support Contact</a>
+  </nav>
+
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+
+  <div class="footer-social">
+    <a
+      href="https://www.linkedin.com/company/wound-guard"
+      class="footer-social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Wound Guard on LinkedIn"
+    >
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════ -->
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/template.js"></script>
+
+<script>
+  // ── Copyright year ──────────────────────────────────────────────────────────
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── Required portal bootstrap ───────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    initPortalPage();
+    await loadOrgData();
+  });
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  loadOrgData — fetches org details from AWS and renders them
+  //
+  //  TO CONNECT AWS (READ):
+  //  Replace the placeholder Promise.resolve({...}) with a real fetch, e.g.:
+  //
+  //    const token = await getAccessToken();           // from auth.js
+  //    const res   = await fetch(
+  //      'https://YOUR_API.execute-api.us-east-1.amazonaws.com/prod/org',
+  //      { headers: { Authorization: `Bearer ${token}` } }
+  //    );
+  //    if (!res.ok) throw new Error('API error ' + res.status);
+  //    return await res.json();
+  //    // Expected shape:
+  //    //   { practiceName, userName,
+  //    //     shippingStreet, shippingCity,
+  //    //     billingCard, billingAch }
+  // ════════════════════════════════════════════════════════════════════════════
+  async function loadOrgData() {
+    try {
+      // ── PLACEHOLDER — remove when AWS is connected ───────────────────────
+      const data = await Promise.resolve({
+        practiceName:  'Practice Name',
+        userName:      "User's Name",
+        shippingStreet:'123 Florida Ave',
+        shippingCity:  'Florida, FL 12345',
+        billingCard:   'Card: Debit, Visa — 4567',
+        billingAch:    'ACH: Chase Account — 8901',
+      });
+      // ─────────────────────────────────────────────────────────────────────
+
+      renderOrgTitle(data.practiceName, data.userName);
+      renderShipping({ street: data.shippingStreet, cityStateZip: data.shippingCity });
+      renderBilling({ cardLabel: data.billingCard, achLabel: data.billingAch });
+
+    } catch (err) {
+      console.error('Failed to load org data:', err);
+      renderOrgTitle('Practice Name', "User's Name");
+    }
+  }
+
+  // ── Render helpers ──────────────────────────────────────────────────────────
+  function renderOrgTitle(practiceName, userName) {
+    document.getElementById('org-hero-title').innerHTML =
+      `<span class="practice-name">${escHtml(practiceName)}</span>` +
+      `<span class="separator">—</span>` +
+      `<span class="user-name">${escHtml(userName)}</span>`;
+  }
+
+  function renderShipping({ street, cityStateZip }) {
+    document.getElementById('shipping-street').textContent = street;
+    document.getElementById('shipping-city').textContent   = cityStateZip;
+  }
+
+  function renderBilling({ cardLabel, achLabel }) {
+    document.getElementById('billing-card-label').textContent = cardLabel;
+    document.getElementById('billing-ach-label').textContent  = achLabel;
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  Inline edit — shared helpers for shipping & billing cards
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // Config for each card: which inputs map to which display spans
+  const CARD_CONFIG = {
+    shipping: {
+      inputs: [
+        { inputId: 'input-shipping-street', displayId: 'shipping-street' },
+        { inputId: 'input-shipping-city',   displayId: 'shipping-city'   },
+      ],
+      // ════════════════════════════════════════════════════════════════════
+      //  TO CONNECT AWS (SAVE — Shipping):
+      //  Replace the body of saveToAws with your real PUT/PATCH call:
+      //
+      //    const token = await getAccessToken();
+      //    const res   = await fetch(
+      //      'https://YOUR_API.execute-api.us-east-1.amazonaws.com/prod/org/shipping',
+      //      {
+      //        method:  'PUT',
+      //        headers: { 'Content-Type': 'application/json',
+      //                   Authorization: `Bearer ${token}` },
+      //        body:    JSON.stringify(values),
+      //        // values = { 'input-shipping-street': '...', 'input-shipping-city': '...' }
+      //      }
+      //    );
+      //    if (!res.ok) throw new Error('Save failed: ' + res.status);
+      // ════════════════════════════════════════════════════════════════════
+      async saveToAws(values) {
+        // PLACEHOLDER — replace with real AWS call above
+        await new Promise(r => setTimeout(r, 900));   // simulate network delay
+        console.log('[Shipping] Would save to AWS:', values);
+      }
+    },
+
+    billing: {
+      inputs: [
+        { inputId: 'input-billing-card', displayId: 'billing-card-label' },
+        { inputId: 'input-billing-ach',  displayId: 'billing-ach-label'  },
+      ],
+      // ════════════════════════════════════════════════════════════════════
+      //  TO CONNECT AWS (SAVE — Billing):
+      //  Same pattern as shipping above, point to your billing endpoint:
+      //    'https://YOUR_API.../prod/org/billing'
+      // ════════════════════════════════════════════════════════════════════
+      async saveToAws(values) {
+        // PLACEHOLDER — replace with real AWS call above
+        await new Promise(r => setTimeout(r, 900));
+        console.log('[Billing] Would save to AWS:', values);
+      }
+    },
+  };
+
+  // ── Enter edit mode ─────────────────────────────────────────────────────────
+  function startEdit(card) {
+    const cfg = CARD_CONFIG[card];
+
+    // Populate inputs with current display values
+    cfg.inputs.forEach(({ inputId, displayId }) => {
+      document.getElementById(inputId).value =
+        document.getElementById(displayId).textContent;
+    });
+
+    // Toggle card visual state
+    document.getElementById(card + '-card').classList.add('is-editing');
+
+    // Swap buttons
+    document.getElementById(card + '-edit-btn').style.display   = 'none';
+    document.getElementById(card + '-save-btn').style.display   = '';
+    document.getElementById(card + '-cancel-btn').style.display = '';
+
+    // Focus first input
+    document.getElementById(cfg.inputs[0].inputId).focus();
+  }
+
+  // ── Cancel edit ─────────────────────────────────────────────────────────────
+  function cancelEdit(card) {
+    document.getElementById(card + '-card').classList.remove('is-editing');
+    document.getElementById(card + '-edit-btn').style.display   = '';
+    document.getElementById(card + '-save-btn').style.display   = 'none';
+    document.getElementById(card + '-cancel-btn').style.display = 'none';
+    document.getElementById(card + '-spinner').classList.remove('visible');
+  }
+
+  // ── Save to AWS ─────────────────────────────────────────────────────────────
+  async function saveCard(card) {
+    const cfg     = CARD_CONFIG[card];
+    const saveBtn = document.getElementById(card + '-save-btn');
+    const spinner = document.getElementById(card + '-spinner');
+
+    // Collect new values
+    const values = {};
+    cfg.inputs.forEach(({ inputId }) => {
+      values[inputId] = document.getElementById(inputId).value.trim();
+    });
+
+    // Basic non-empty validation
+    const empty = cfg.inputs.find(({ inputId }) => !values[inputId]);
+    if (empty) {
+      document.getElementById(empty.inputId).focus();
+      showToast('Please fill in all fields.', 'error');
+      return;
+    }
+
+    // Disable save + show spinner
+    saveBtn.disabled = true;
+    spinner.classList.add('visible');
+
+    try {
+      await cfg.saveToAws(values);
+
+      // Update display spans with new values
+      cfg.inputs.forEach(({ inputId, displayId }) => {
+        document.getElementById(displayId).textContent = values[inputId];
+      });
+
+      cancelEdit(card);
+      showToast('Saved successfully!', 'success');
+
+    } catch (err) {
+      console.error('Save failed:', err);
+      showToast('Save failed. Please try again.', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      spinner.classList.remove('visible');
+    }
+  }
+
+  // ── Allow Enter key to submit from inputs ───────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const target = e.target;
+    if (!target.classList.contains('edit-field-input')) return;
+    // Determine which card this input belongs to
+    const card = target.id.startsWith('input-shipping') ? 'shipping' : 'billing';
+    saveCard(card);
+  });
+
+  // ── Toast ───────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(message, type = 'success') {
+    const el = document.getElementById('save-toast');
+    el.textContent = message;
+    el.className   = 'save-toast ' + type;
+    // Force reflow so transition fires even if toast is already visible
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── Utility ─────────────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+
+</body>
+</html>
