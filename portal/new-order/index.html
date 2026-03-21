@@ -25,14 +25,80 @@
       margin-bottom: 24px;
     }
 
-    /* ── Search bar ── */
+    /* ── Search bar + specialty row ── */
     .search-section {
       margin-bottom: 24px;
     }
 
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .search-wrap {
       position: relative;
+      flex: 1;
+      min-width: 240px;
       max-width: 480px;
+    }
+
+    /* ── Specialty dropdown (Option 3 style) ── */
+    .specialty-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .specialty-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .specialty-icon svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--brand);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .specialty-select {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      height: 44px;
+      padding: 0 36px 0 38px;
+      border: 2px solid var(--brand);
+      border-radius: 9999px;
+      background: #f6fef7;
+      color: var(--text);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232eb135' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      outline: none;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      min-width: 200px;
+    }
+
+    .specialty-select:focus {
+      box-shadow: 0 0 0 4px rgba(46,177,53,0.12);
+    }
+
+    /* Active state when a specialty is selected */
+    .specialty-select.has-value {
+      background-color: var(--accent);
+      border-color: var(--brand);
     }
 
     .search-icon {
@@ -385,23 +451,60 @@
 
         <h1 class="page-title">New Order — Product Search</h1>
 
-        <!-- Search bar -->
+        <!-- Search bar + specialty filter row -->
         <div class="search-section">
-          <div class="search-wrap">
-            <span class="search-icon">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input
-              type="text"
-              id="product-search"
-              class="search-input"
-              placeholder="Search products, manufacturers, insurances, diagnosis codes…"
-              autocomplete="off"
-              oninput="handleSearch(this.value)"
-            />
-            <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear search">
-              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+          <div class="search-row">
+            <div class="search-wrap">
+              <span class="search-icon">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+              <input
+                type="text"
+                id="product-search"
+                class="search-input"
+                placeholder="Search products, manufacturers, insurances, diagnosis codes…"
+                autocomplete="off"
+                oninput="handleSearch(this.value)"
+              />
+              <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear search">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <!-- Specialty dropdown — Option 3 style -->
+            <!--
+              TO CONNECT AWS:
+              Populate the <option> list dynamically from your API:
+                const specialties = await fetch('/api/specialties', {...});
+                specialties.forEach(s => select.add(new Option(s.name, s.id)));
+              The specialty field exists on each product in DynamoDB but
+              is NOT shown as a table column — only used for filtering here.
+            -->
+            <div class="specialty-wrap">
+              <span class="specialty-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </span>
+              <select
+                class="specialty-select"
+                id="specialty-select"
+                onchange="handleSpecialty(this)"
+                aria-label="Filter by specialty"
+              >
+                <option value="">Sort by Specialty</option>
+                <option value="wound-care">Wound Care</option>
+                <option value="orthopedics">Orthopedics</option>
+                <option value="cardiology">Cardiology</option>
+                <option value="dermatology">Dermatology</option>
+                <option value="neurology">Neurology</option>
+                <option value="oncology">Oncology</option>
+                <option value="pulmonology">Pulmonology</option>
+                <option value="urology">Urology</option>
+                <option value="gastroenterology">Gastroenterology</option>
+                <option value="general-surgery">General Surgery</option>
+              </select>
+            </div>
           </div>
           <p class="search-hint">Tip: searches are flexible — "bandaid", "band aid", and "Band-Aid" all match</p>
         </div>
@@ -508,12 +611,13 @@
   ];
 
   const PAGE_SIZE  = 30;
-  let visibleCount = PAGE_SIZE;   // how many rows are currently shown
-  let currentList  = [];          // current filtered+sorted list
+  let visibleCount = PAGE_SIZE;
+  let currentList  = [];
 
-  let sortCol  = null;
-  let sortDir  = 'asc';
+  let sortCol   = null;
+  let sortDir   = 'asc';
   let activeCol = 'all';
+  let activeSpecialty = '';  // empty = show all
 
   // ── Convert product name to URL slug ──────────────
   // "Wound Vac" → "wound-vac"
@@ -568,13 +672,36 @@
 
   // ── Filter ───────────────────────────────────────
   function filterProducts(query) {
-    if (!query) return [...PRODUCTS];
     return PRODUCTS.filter(p => {
-      const fields = activeCol === 'all'
-        ? [p.name, p.manufacturer, p.insurance, p.diagnosis, p.billing]
-        : [p[activeCol]];
-      return fields.some(f => fuzzyMatch(f, query));
+      // Text search filter
+      const matchesQuery = !query || (() => {
+        const fields = activeCol === 'all'
+          ? [p.name, p.manufacturer, p.insurance, p.diagnosis, p.billing]
+          : [p[activeCol]];
+        return fields.some(f => fuzzyMatch(f, query));
+      })();
+
+      // Specialty filter
+      // ── WHEN AWS IS CONNECTED ────────────────────
+      // Each product in DynamoDB should have a
+      // `specialty` field (e.g. "wound-care").
+      // This filter will then work automatically:
+      //   const matchesSpecialty = !activeSpecialty || p.specialty === activeSpecialty;
+      // For now, specialty field is not in placeholder
+      // data so all products pass through when selected.
+      const matchesSpecialty = !activeSpecialty || (p.specialty && p.specialty === activeSpecialty);
+
+      return matchesQuery && matchesSpecialty;
     });
+  }
+
+  // ── Specialty dropdown handler ───────────────────
+  function handleSpecialty(select) {
+    activeSpecialty = select.value;
+    // Toggle green filled style when a specialty is active
+    select.classList.toggle('has-value', activeSpecialty !== '');
+    const query = document.getElementById('product-search').value;
+    renderTable(filterProducts(query), query);
   }
 
   // ── Sort ─────────────────────────────────────────
@@ -660,7 +787,7 @@
     input.value = '';
     input.focus();
     document.getElementById('search-clear').classList.remove('visible');
-    renderTable(PRODUCTS, '');
+    renderTable(filterProducts(''), '');
   }
 
   // ── Column filter chips ──────────────────────────
