@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>In-Process Orders — Wound Guard</title>
+
+  <!-- Auth0 SDK (must load before auth.js) -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../css/template.css" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── In-Process Orders page styles ── */
+
+    :root {
+      --bg:           #FFFEFA;
+      --accent:       #d2fcd8;
+      --accent-dark:  #61ce70;
+      --brand:        #2eb135;
+      --text:         #061728;
+      --text-muted:   #4a6074;
+      --text-light:   #8fa4b4;
+      --white:        #ffffff;
+      --border:       rgba(6,23,40,0.09);
+      --radius-card:  16px;
+      --shadow-card:  0 2px 12px rgba(6,23,40,0.07);
+    }
+
+    .orders-content {
+      padding: 36px 36px 48px;
+      max-width: 1100px;
+    }
+
+    /* ── Back button ── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 4px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      transition: color 0.15s ease, background 0.15s ease, padding 0.15s ease;
+    }
+    .back-btn:hover {
+      color: var(--brand);
+      background: var(--accent);
+      padding: 6px 10px;
+    }
+    .back-btn svg {
+      flex-shrink: 0;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      font-family: 'Krona One', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 24px;
+      line-height: 1.2;
+    }
+
+    /* ── Search bar ── */
+    .search-section {
+      margin-bottom: 24px;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+      max-width: 480px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .search-input {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.9rem;
+      width: 100%;
+      padding: 12px 44px 12px 44px;
+      border: 2px solid #dde8ee;
+      border-radius: 9999px;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(46,177,53,0.1);
+    }
+
+    .search-input::placeholder { color: var(--text-light); }
+
+    .search-clear {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      display: none;
+      align-items: center;
+      padding: 4px;
+      border-radius: 50%;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .search-clear:hover { color: var(--text); background: var(--accent); }
+    .search-clear svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round;
+    }
+    .search-clear.visible { display: flex; }
+
+    .search-hint {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      margin-top: 8px;
+      margin-left: 4px;
+    }
+
+    /* ── Table wrapper ── */
+    .table-section {
+      border: 1px solid rgba(6,23,40,0.08);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .results-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--white);
+      border-bottom: 1px solid rgba(6,23,40,0.06);
+    }
+
+    .results-count {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .results-count span {
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      background: var(--white);
+    }
+
+    thead {
+      background: var(--accent);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      color: var(--brand);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+
+    thead th:hover { background: #c0f5c8; }
+
+    thead th .th-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Sort indicator */
+    thead th .sort-icon {
+      opacity: 0.35;
+      font-size: 0.7rem;
+      transition: opacity 0.15s ease;
+    }
+    thead th.sort-asc  .sort-icon,
+    thead th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+    thead th.sort-asc  .sort-icon::after { content: ' ↑'; }
+    thead th.sort-desc .sort-icon::after { content: ' ↓'; }
+    thead th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ↕'; }
+
+    tbody tr {
+      border-top: 1px solid rgba(6,23,40,0.06);
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:hover { background: #f6fef7; }
+
+    tbody td {
+      padding: 12px 16px;
+      font-family: 'Sora', sans-serif;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    /* Clickable order/patient link */
+    .order-link {
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+    .order-link:hover { color: #249e2a; text-decoration: underline; }
+
+    /* Insurance status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .status-badge.approved  { background: #e6faea; color: #1a8c24; }
+    .status-badge.denied    { background: #fde8e8; color: #c0392b; }
+    .status-badge.pending   { background: #fef9e6; color: #b08000; }
+    .status-badge.partial   { background: #eaf2ff; color: #2563eb; }
+
+    /* highlight matched text */
+    mark {
+      background: #d2fcd8;
+      color: var(--text);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: none;
+      padding: 48px 20px;
+      text-align: center;
+      font-family: 'Sora', sans-serif;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    /* ── Load more ── */
+    .load-more-wrap {
+      display: none;
+      justify-content: center;
+      padding: 16px;
+      background: var(--white);
+      border-top: 1px solid rgba(6,23,40,0.06);
+    }
+
+    .load-more-btn {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--brand);
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      padding: 8px 24px;
+      border-radius: 999px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .load-more-btn:hover { background: var(--accent-dark); color: var(--white); }
+
+    /* ── Toast ── */
+    .save-toast {
+      position: fixed;
+      bottom: 80px;
+      left: calc(50% + (var(--sidebar-width, 190px) / 2));
+      transform: translateX(-50%) translateY(12px);
+      background: var(--text);
+      color: var(--white);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(6,23,40,0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .save-toast.success { background: var(--brand); }
+    .save-toast.error   { background: #d94040; }
+    .save-toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ -->
+<header class="portal-header" role="banner">
+
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <svg viewBox="0 0 24 24">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 21V9h6v12"/>
+        <path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+
+    <div class="header-divider" aria-hidden="true"></div>
+
+    <a href="/guard/portal/settings/" class="header-icon-btn" aria-label="Organization settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     BODY
+     ═══════════════════════════════════════ -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+
+    <div class="sidebar-toggle-row">
+      <button
+        class="sidebar-toggle-btn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle sidebar"
+        title="Collapse / expand"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-nav" role="list">
+
+      <a href="/guard/portal/home/"   class="sidebar-nav-item"        data-page="home"   data-label="Home"   role="listitem" aria-label="Home">
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+
+      <a href="/guard/portal/orders/" class="sidebar-nav-item active" data-page="orders" data-label="Orders" role="listitem" aria-label="Orders">
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+    <div class="page-slot">
+      <div class="orders-content">
+
+        <!-- ── Back button ── -->
+        <button onclick="goBack()" class="back-btn" aria-label="Go back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back
+        </button>
+
+        <!-- ── Page title ── -->
+        <h1 class="page-title">Current / In Process Orders</h1>
+
+        <!-- ── Search ── -->
+        <div class="search-section">
+          <div class="search-row">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+              <input
+                class="search-input"
+                id="order-search"
+                type="search"
+                placeholder="Search by Patient Name"
+                autocomplete="off"
+                aria-label="Search orders by patient name"
+                oninput="handleSearch(this.value)"
+              />
+              <button
+                class="search-clear"
+                id="search-clear"
+                onclick="clearSearch()"
+                aria-label="Clear search"
+                tabindex="-1"
+              >
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="search-hint">Tip: search also matches product and insurance — try "Medicare" or "Wound Vac"</p>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-section">
+          <div class="results-meta">
+            <span class="results-count">Showing <span id="result-count">0</span> orders</span>
+          </div>
+
+          <table role="grid" aria-label="In-process orders">
+            <thead>
+              <tr>
+                <th id="th-product" onclick="sortTable('product')" aria-sort="none" scope="col">
+                  <div class="th-inner">Ordered Product <span class="sort-icon" aria-hidden="true"></span></div>
+                </th>
+                <th id="th-patient" onclick="sortTable('patient')" aria-sort="none" scope="col">
+                  <div class="th-inner">Patient <span class="sort-icon" aria-hidden="true"></span></div>
+                </th>
+                <th id="th-insurance" onclick="sortTable('insurance')" aria-sort="none" scope="col">
+                  <div class="th-inner">Insurance Status <span class="sort-icon" aria-hidden="true"></span></div>
+                </th>
+                <th id="th-delivery" onclick="sortTable('delivery')" aria-sort="none" scope="col">
+                  <div class="th-inner">Est. Delivery <span class="sort-icon" aria-hidden="true"></span></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+
+          <div class="empty-state" id="empty-state" role="status">
+            No orders match your search.
+          </div>
+
+          <div class="load-more-wrap" id="load-more-wrap">
+            <button class="load-more-btn" onclick="loadMore()">Load more</button>
+          </div>
+        </div><!-- end .table-section -->
+
+      </div><!-- end .orders-content -->
+    </div><!-- end .page-slot -->
+  </main>
+
+</div><!-- end .portal-body -->
+
+<!-- Toast -->
+<div class="save-toast" id="save-toast" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="portal-footer" role="contentinfo">
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/contact/"        class="footer-link">Support Contact</a>
+  </nav>
+
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+
+  <div class="footer-social">
+    <a
+      href="https://www.linkedin.com/company/wound-guard"
+      class="footer-social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Wound Guard on LinkedIn"
+    >
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════ -->
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/template.js"></script>
+
+<script>
+  // ── Copyright year ──────────────────────────────────────────────────────────
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── Required portal bootstrap ───────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    initPortalPage();
+    await loadOrders();
+  });
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  ORDER DATA
+  //
+  //  TO CONNECT AWS:
+  //  1. Remove the ORDERS placeholder array below.
+  //  2. Replace the Promise.resolve() with a real fetch:
+  //
+  //       const token = await getAccessToken();       // from auth.js
+  //       const res   = await fetch(
+  //         'https://YOUR_API.execute-api.us-east-1.amazonaws.com/prod/orders',
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //       if (!res.ok) throw new Error('API error ' + res.status);
+  //       ORDERS = await res.json();
+  //
+  //  Expected shape per order object:
+  //    {
+  //      id:        'ord-001',          // used for detail page URL
+  //      product:   'Wound Vac',
+  //      patient:   'John Doe',
+  //      patientId: 'pat-001',          // used for patient page URL
+  //      insurance: 'Medicare - Approved',
+  //      status:    'approved',         // 'approved' | 'denied' | 'pending' | 'partial'
+  //      delivery:  '01/01/2026',
+  //    }
+  //
+  //  3. Call renderTable(ORDERS, '') after the fetch.
+  // ════════════════════════════════════════════════════════════════════════════
+  let ORDERS = [
+    { id: 'ord-001', product: 'Wound Vac',           patient: 'John Doe',  patientId: 'pat-001', insurance: 'Medicare - Approved',        status: 'approved', delivery: '01/01/2026' },
+    { id: 'ord-002', product: 'Placental Skin Graft', patient: 'Jane Doe',  patientId: 'pat-002', insurance: 'Medicare ✓, UHC - Denied',   status: 'partial',  delivery: '02/15/2026' },
+  ];
+
+  async function loadOrders() {
+    try {
+      // ── PLACEHOLDER — replace with real AWS fetch (see comment above) ────
+      const data = await Promise.resolve(ORDERS);
+      // ─────────────────────────────────────────────────────────────────────
+      ORDERS = data;
+      renderTable(ORDERS, '');
+    } catch (err) {
+      console.error('Failed to load orders:', err);
+      showToast('Could not load orders. Please refresh.', 'error');
+    }
+  }
+
+  // ── Pagination ──────────────────────────────────────────────────────────────
+  const PAGE_SIZE  = 30;
+  let visibleCount = PAGE_SIZE;
+  let currentList  = [];
+
+  // ── Sort state ──────────────────────────────────────────────────────────────
+  let sortCol = null;
+  let sortDir = 'asc';
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function normalize(str) {
+    return String(str).toLowerCase().replace(/[\s\-_.,()\\/]/g, '');
+  }
+
+  function fuzzyMatch(value, query) {
+    if (!query) return true;
+    return normalize(value).includes(normalize(query));
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Highlight matched text ───────────────────────────────────────────────────
+  function highlight(text, query) {
+    if (!query) return escHtml(text);
+    const normQuery = normalize(query);
+    const normText  = normalize(text);
+    const idx = normText.indexOf(normQuery);
+    if (idx === -1) return escHtml(text);
+    let ni = 0, oi = 0, start = -1, end = -1;
+    while (oi < text.length) {
+      const normCh = normalize(text[oi]);
+      if (normCh) {
+        if (ni === idx) start = oi;
+        if (ni === idx + normQuery.length - 1) end = oi + 1;
+        ni++;
+      }
+      oi++;
+    }
+    if (start === -1) return escHtml(text);
+    return escHtml(text.slice(0, start))
+      + '<mark>' + escHtml(text.slice(start, end)) + '</mark>'
+      + escHtml(text.slice(end));
+  }
+
+  // ── Status badge helper ──────────────────────────────────────────────────────
+  function statusBadge(insuranceText, statusKey) {
+    const cls = {
+      approved: 'approved',
+      denied:   'denied',
+      pending:  'pending',
+      partial:  'partial',
+    }[statusKey] || 'pending';
+    return `<span class="status-badge ${cls}">${escHtml(insuranceText)}</span>`;
+  }
+
+  // ── Filter ───────────────────────────────────────────────────────────────────
+  function filterOrders(query) {
+    return ORDERS.filter(o =>
+      !query || [o.product, o.patient, o.insurance, o.delivery].some(f => fuzzyMatch(f, query))
+    );
+  }
+
+  // ── Sort ─────────────────────────────────────────────────────────────────────
+  function sortOrders(orders) {
+    if (!sortCol) return orders;
+    return [...orders].sort((a, b) => {
+      const av = normalize(a[sortCol]);
+      const bv = normalize(b[sortCol]);
+      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+  }
+
+  // ── Render table ─────────────────────────────────────────────────────────────
+  function renderTable(orders, query) {
+    currentList  = sortOrders(orders);
+    visibleCount = PAGE_SIZE;
+    renderRows(query);
+  }
+
+  // ── Render rows ──────────────────────────────────────────────────────────────
+  function renderRows(query) {
+    const tbody      = document.getElementById('orders-tbody');
+    const empty      = document.getElementById('empty-state');
+    const countEl    = document.getElementById('result-count');
+    const loadMoreEl = document.getElementById('load-more-wrap');
+
+    const visible = currentList.slice(0, visibleCount);
+    const total   = currentList.length;
+
+    countEl.textContent = total <= visibleCount
+      ? total
+      : `${visibleCount} of ${total}`;
+
+    if (total === 0) {
+      tbody.innerHTML = '';
+      empty.style.display      = 'block';
+      loadMoreEl.style.display = 'none';
+      return;
+    }
+
+    empty.style.display      = 'none';
+    loadMoreEl.style.display = visibleCount < total ? 'flex' : 'none';
+
+    tbody.innerHTML = visible.map(o => {
+      const orderUrl   = `/guard/portal/orders/${escHtml(o.id)}/`;
+      const patientUrl = `/guard/portal/patients/${escHtml(o.patientId)}/`;
+      return `
+        <tr>
+          <td><a href="${orderUrl}"   class="order-link" title="View order">${highlight(o.product,  query)}</a></td>
+          <td><a href="${patientUrl}" class="order-link" title="View patient">${highlight(o.patient, query)}</a></td>
+          <td>${statusBadge(o.insurance, o.status)}</td>
+          <td>${highlight(o.delivery, query)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── Load more ────────────────────────────────────────────────────────────────
+  function loadMore() {
+    visibleCount += PAGE_SIZE;
+    const query = document.getElementById('order-search').value;
+    renderRows(query);
+    document.getElementById('load-more-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── Search handler ───────────────────────────────────────────────────────────
+  function handleSearch(value) {
+    document.getElementById('search-clear').classList.toggle('visible', value.length > 0);
+    renderTable(filterOrders(value), value);
+  }
+
+  // ── Clear search ─────────────────────────────────────────────────────────────
+  function clearSearch() {
+    const input = document.getElementById('order-search');
+    input.value = '';
+    input.focus();
+    document.getElementById('search-clear').classList.remove('visible');
+    renderTable(filterOrders(''), '');
+  }
+
+  // ── Column sort ──────────────────────────────────────────────────────────────
+  function sortTable(col) {
+    sortDir = sortCol === col ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+    sortCol = col;
+    document.querySelectorAll('thead th').forEach(th => {
+      th.classList.remove('sort-asc', 'sort-desc');
+      th.setAttribute('aria-sort', 'none');
+    });
+    const th = document.getElementById('th-' + col);
+    if (th) {
+      th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+      th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+    }
+    const query = document.getElementById('order-search').value;
+    renderTable(filterOrders(query), query);
+  }
+
+  // ── Back button ──────────────────────────────────────────────────────────────
+  function goBack() {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/guard/portal/home/';
+    }
+  }
+
+  // ── Toast ────────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(message, type = 'success') {
+    const el = document.getElementById('save-toast');
+    el.textContent = message;
+    el.className   = 'save-toast ' + type;
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+</script>
+
+</body>
+</html>
