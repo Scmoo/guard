@@ -326,11 +326,6 @@
       color: var(--text-light); padding: 10px 13px; text-align: center;
     }
 
-    /* Taxonomy loading state */
-    .taxonomy-loading {
-      font-family: 'Sora', sans-serif; font-size: 0.78rem;
-      color: var(--text-light); padding: 4px 2px; display: none;
-    }
     .taxonomy-loading.visible { display: block; }
 
     /* ── DEA toggle ── */
@@ -745,7 +740,6 @@
                     <div class="insurance-combo-list" id="taxonomy-list" role="listbox"></div>
                     <input type="hidden" id="taxonomy-value" />
                   </div>
-                  <div class="taxonomy-loading" id="taxonomy-loading">Loading taxonomy codes…</div>
                   <span class="field-error" id="err-taxonomy">Taxonomy code is required.</span>
                 </div>
 
@@ -853,86 +847,326 @@
   //    2. Store in S3 and serve from your own CloudFront URL.
   //    3. Replace the fetch URL below with your S3/CloudFront URL.
   // ════════════════════════════════════════════════════════════════════════════
-  let TAXONOMY_LIST = [];   // populated at load
+const TAXONOMY_LIST = [
+  {code:'207K00000X',label:'207K00000X — Allergy & Immunology',classification:'Allergy & Immunology',specialization:''},
+  {code:'207KA0200X',label:'207KA0200X — Allergy & Immunology: Clinical & Laboratory Immunology',classification:'Allergy & Immunology',specialization:'Clinical & Laboratory Immunology'},
+  {code:'207L00000X',label:'207L00000X — Anesthesiology',classification:'Anesthesiology',specialization:''},
+  {code:'207LA0401X',label:'207LA0401X — Anesthesiology: Addiction Medicine',classification:'Anesthesiology',specialization:'Addiction Medicine'},
+  {code:'207LC0200X',label:'207LC0200X — Anesthesiology: Critical Care Medicine',classification:'Anesthesiology',specialization:'Critical Care Medicine'},
+  {code:'207LH0002X',label:'207LH0002X — Anesthesiology: Hospice and Palliative Medicine',classification:'Anesthesiology',specialization:'Hospice and Palliative Medicine'},
+  {code:'207LP2900X',label:'207LP2900X — Anesthesiology: Pain Medicine',classification:'Anesthesiology',specialization:'Pain Medicine'},
+  {code:'207LP3000X',label:'207LP3000X — Anesthesiology: Pediatric Anesthesiology',classification:'Anesthesiology',specialization:'Pediatric Anesthesiology'},
+  {code:'207N00000X',label:'207N00000X — Dermatology',classification:'Dermatology',specialization:''},
+  {code:'207ND0101X',label:'207ND0101X — Dermatology: MOHS-Micrographic Surgery',classification:'Dermatology',specialization:'MOHS-Micrographic Surgery'},
+  {code:'207ND0900X',label:'207ND0900X — Dermatology: Dermatopathology',classification:'Dermatology',specialization:'Dermatopathology'},
+  {code:'207NI0002X',label:'207NI0002X — Dermatology: Clinical & Laboratory Dermatological Immunology',classification:'Dermatology',specialization:'Clinical & Laboratory Dermatological Immunology'},
+  {code:'207NP0225X',label:'207NP0225X — Dermatology: Pediatric Dermatology',classification:'Dermatology',specialization:'Pediatric Dermatology'},
+  {code:'207NS0135X',label:'207NS0135X — Dermatology: Procedural Dermatology',classification:'Dermatology',specialization:'Procedural Dermatology'},
+  {code:'207P00000X',label:'207P00000X — Emergency Medicine',classification:'Emergency Medicine',specialization:''},
+  {code:'207PE0004X',label:'207PE0004X — Emergency Medicine: Emergency Medical Services',classification:'Emergency Medicine',specialization:'Emergency Medical Services'},
+  {code:'207PH0002X',label:'207PH0002X — Emergency Medicine: Hospice and Palliative Medicine',classification:'Emergency Medicine',specialization:'Hospice and Palliative Medicine'},
+  {code:'207PP0204X',label:'207PP0204X — Emergency Medicine: Pediatric Emergency Medicine',classification:'Emergency Medicine',specialization:'Pediatric Emergency Medicine'},
+  {code:'207PS0010X',label:'207PS0010X — Emergency Medicine: Sports Medicine',classification:'Emergency Medicine',specialization:'Sports Medicine'},
+  {code:'207PT0002X',label:'207PT0002X — Emergency Medicine: Medical Toxicology',classification:'Emergency Medicine',specialization:'Medical Toxicology'},
+  {code:'207Q00000X',label:'207Q00000X — Family Medicine',classification:'Family Medicine',specialization:''},
+  {code:'207QA0000X',label:'207QA0000X — Family Medicine: Adolescent Medicine',classification:'Family Medicine',specialization:'Adolescent Medicine'},
+  {code:'207QA0401X',label:'207QA0401X — Family Medicine: Addiction Medicine',classification:'Family Medicine',specialization:'Addiction Medicine'},
+  {code:'207QA0505X',label:'207QA0505X — Family Medicine: Adult Medicine',classification:'Family Medicine',specialization:'Adult Medicine'},
+  {code:'207QG0300X',label:'207QG0300X — Family Medicine: Geriatric Medicine',classification:'Family Medicine',specialization:'Geriatric Medicine'},
+  {code:'207QH0002X',label:'207QH0002X — Family Medicine: Hospice and Palliative Medicine',classification:'Family Medicine',specialization:'Hospice and Palliative Medicine'},
+  {code:'207QS0010X',label:'207QS0010X — Family Medicine: Sports Medicine',classification:'Family Medicine',specialization:'Sports Medicine'},
+  {code:'207QS1201X',label:'207QS1201X — Family Medicine: Sleep Medicine',classification:'Family Medicine',specialization:'Sleep Medicine'},
+  {code:'207R00000X',label:'207R00000X — Internal Medicine',classification:'Internal Medicine',specialization:''},
+  {code:'207RA0000X',label:'207RA0000X — Internal Medicine: Adolescent Medicine',classification:'Internal Medicine',specialization:'Adolescent Medicine'},
+  {code:'207RA0001X',label:'207RA0001X — Internal Medicine: Advanced Heart Failure and Transplant Cardiology',classification:'Internal Medicine',specialization:'Advanced Heart Failure and Transplant Cardiology'},
+  {code:'207RA0201X',label:'207RA0201X — Internal Medicine: Allergy & Immunology',classification:'Internal Medicine',specialization:'Allergy & Immunology'},
+  {code:'207RA0401X',label:'207RA0401X — Internal Medicine: Addiction Medicine',classification:'Internal Medicine',specialization:'Addiction Medicine'},
+  {code:'207RB0002X',label:'207RB0002X — Internal Medicine: Obesity Medicine',classification:'Internal Medicine',specialization:'Obesity Medicine'},
+  {code:'207RC0000X',label:'207RC0000X — Internal Medicine: Cardiovascular Disease',classification:'Internal Medicine',specialization:'Cardiovascular Disease'},
+  {code:'207RC0001X',label:'207RC0001X — Internal Medicine: Clinical Cardiac Electrophysiology',classification:'Internal Medicine',specialization:'Clinical Cardiac Electrophysiology'},
+  {code:'207RC0200X',label:'207RC0200X — Internal Medicine: Critical Care Medicine',classification:'Internal Medicine',specialization:'Critical Care Medicine'},
+  {code:'207RE0101X',label:'207RE0101X — Internal Medicine: Endocrinology, Diabetes & Metabolism',classification:'Internal Medicine',specialization:'Endocrinology, Diabetes & Metabolism'},
+  {code:'207RG0100X',label:'207RG0100X — Internal Medicine: Gastroenterology',classification:'Internal Medicine',specialization:'Gastroenterology'},
+  {code:'207RG0300X',label:'207RG0300X — Internal Medicine: Geriatric Medicine',classification:'Internal Medicine',specialization:'Geriatric Medicine'},
+  {code:'207RH0000X',label:'207RH0000X — Internal Medicine: Hematology',classification:'Internal Medicine',specialization:'Hematology'},
+  {code:'207RH0002X',label:'207RH0002X — Internal Medicine: Hospice and Palliative Medicine',classification:'Internal Medicine',specialization:'Hospice and Palliative Medicine'},
+  {code:'207RH0003X',label:'207RH0003X — Internal Medicine: Hematology & Oncology',classification:'Internal Medicine',specialization:'Hematology & Oncology'},
+  {code:'207RI0001X',label:'207RI0001X — Internal Medicine: Clinical & Laboratory Immunology',classification:'Internal Medicine',specialization:'Clinical & Laboratory Immunology'},
+  {code:'207RI0008X',label:'207RI0008X — Internal Medicine: Hepatology',classification:'Internal Medicine',specialization:'Hepatology'},
+  {code:'207RI0011X',label:'207RI0011X — Internal Medicine: Hypertension Specialist',classification:'Internal Medicine',specialization:'Hypertension Specialist'},
+  {code:'207RI0200X',label:'207RI0200X — Internal Medicine: Infectious Disease',classification:'Internal Medicine',specialization:'Infectious Disease'},
+  {code:'207RN0300X',label:'207RN0300X — Internal Medicine: Nephrology',classification:'Internal Medicine',specialization:'Nephrology'},
+  {code:'207RP1001X',label:'207RP1001X — Internal Medicine: Pulmonary Disease',classification:'Internal Medicine',specialization:'Pulmonary Disease'},
+  {code:'207RR0500X',label:'207RR0500X — Internal Medicine: Rheumatology',classification:'Internal Medicine',specialization:'Rheumatology'},
+  {code:'207RS0010X',label:'207RS0010X — Internal Medicine: Sports Medicine',classification:'Internal Medicine',specialization:'Sports Medicine'},
+  {code:'207RS0012X',label:'207RS0012X — Internal Medicine: Sleep Medicine',classification:'Internal Medicine',specialization:'Sleep Medicine'},
+  {code:'207RT0003X',label:'207RT0003X — Internal Medicine: Transplant Hepatology',classification:'Internal Medicine',specialization:'Transplant Hepatology'},
+  {code:'207RX0202X',label:'207RX0202X — Internal Medicine: Medical Oncology',classification:'Internal Medicine',specialization:'Medical Oncology'},
+  {code:'207T00000X',label:'207T00000X — Neurological Surgery',classification:'Neurological Surgery',specialization:''},
+  {code:'207U00000X',label:'207U00000X — Nuclear Medicine',classification:'Nuclear Medicine',specialization:''},
+  {code:'207UN0901X',label:'207UN0901X — Nuclear Medicine: Nuclear Radiology',classification:'Nuclear Medicine',specialization:'Nuclear Radiology'},
+  {code:'207UN0902X',label:'207UN0902X — Nuclear Medicine: In Vivo & In Vitro Nuclear Medicine',classification:'Nuclear Medicine',specialization:'In Vivo & In Vitro Nuclear Medicine'},
+  {code:'207UN0903X',label:'207UN0903X — Nuclear Medicine: Nuclear Imaging & Therapy',classification:'Nuclear Medicine',specialization:'Nuclear Imaging & Therapy'},
+  {code:'207V00000X',label:'207V00000X — Obstetrics & Gynecology',classification:'Obstetrics & Gynecology',specialization:''},
+  {code:'207VB0002X',label:'207VB0002X — Obstetrics & Gynecology: Obesity Medicine',classification:'Obstetrics & Gynecology',specialization:'Obesity Medicine'},
+  {code:'207VE0102X',label:'207VE0102X — Obstetrics & Gynecology: Endocrinology',classification:'Obstetrics & Gynecology',specialization:'Endocrinology'},
+  {code:'207VF0040X',label:'207VF0040X — Obstetrics & Gynecology: Female Pelvic Medicine and Reconstructive Surgery',classification:'Obstetrics & Gynecology',specialization:'Female Pelvic Medicine and Reconstructive Surgery'},
+  {code:'207VG0400X',label:'207VG0400X — Obstetrics & Gynecology: Gynecology',classification:'Obstetrics & Gynecology',specialization:'Gynecology'},
+  {code:'207VH0002X',label:'207VH0002X — Obstetrics & Gynecology: Hospice and Palliative Medicine',classification:'Obstetrics & Gynecology',specialization:'Hospice and Palliative Medicine'},
+  {code:'207VX0201X',label:'207VX0201X — Obstetrics & Gynecology: Gynecologic Oncology',classification:'Obstetrics & Gynecology',specialization:'Gynecologic Oncology'},
+  {code:'207W00000X',label:'207W00000X — Ophthalmology',classification:'Ophthalmology',specialization:''},
+  {code:'207WX0107X',label:'207WX0107X — Ophthalmology: Retina Specialist',classification:'Ophthalmology',specialization:'Retina Specialist'},
+  {code:'207WX0109X',label:'207WX0109X — Ophthalmology: Neuro-ophthalmology',classification:'Ophthalmology',specialization:'Neuro-ophthalmology'},
+  {code:'207WX0110X',label:'207WX0110X — Ophthalmology: Pediatric Ophthalmology and Strabismus Specialist',classification:'Ophthalmology',specialization:'Pediatric Ophthalmology and Strabismus Specialist'},
+  {code:'207WX0120X',label:'207WX0120X — Ophthalmology: Cornea and External Diseases Specialist',classification:'Ophthalmology',specialization:'Cornea and External Diseases Specialist'},
+  {code:'207WX0200X',label:'207WX0200X — Ophthalmology: Ophthalmic Plastic and Reconstructive Surgery',classification:'Ophthalmology',specialization:'Ophthalmic Plastic and Reconstructive Surgery'},
+  {code:'207X00000X',label:'207X00000X — Orthopaedic Surgery',classification:'Orthopaedic Surgery',specialization:''},
+  {code:'207XP3100X',label:'207XP3100X — Orthopaedic Surgery: Pediatric Orthopaedic Surgery',classification:'Orthopaedic Surgery',specialization:'Pediatric Orthopaedic Surgery'},
+  {code:'207XS0106X',label:'207XS0106X — Orthopaedic Surgery: Hand Surgery',classification:'Orthopaedic Surgery',specialization:'Hand Surgery'},
+  {code:'207XS0114X',label:'207XS0114X — Orthopaedic Surgery: Adult Reconstructive Orthopaedic Surgery',classification:'Orthopaedic Surgery',specialization:'Adult Reconstructive Orthopaedic Surgery'},
+  {code:'207XS0117X',label:'207XS0117X — Orthopaedic Surgery: Orthopaedic Surgery of the Spine',classification:'Orthopaedic Surgery',specialization:'Orthopaedic Surgery of the Spine'},
+  {code:'207XX0004X',label:'207XX0004X — Orthopaedic Surgery: Foot and Ankle Surgery',classification:'Orthopaedic Surgery',specialization:'Foot and Ankle Surgery'},
+  {code:'207XX0005X',label:'207XX0005X — Orthopaedic Surgery: Sports Medicine',classification:'Orthopaedic Surgery',specialization:'Sports Medicine'},
+  {code:'207XX0801X',label:'207XX0801X — Orthopaedic Surgery: Orthopaedic Trauma',classification:'Orthopaedic Surgery',specialization:'Orthopaedic Trauma'},
+  {code:'207Y00000X',label:'207Y00000X — Otolaryngology',classification:'Otolaryngology',specialization:''},
+  {code:'207YP0228X',label:'207YP0228X — Otolaryngology: Pediatric Otolaryngology',classification:'Otolaryngology',specialization:'Pediatric Otolaryngology'},
+  {code:'207YS0012X',label:'207YS0012X — Otolaryngology: Sleep Medicine',classification:'Otolaryngology',specialization:'Sleep Medicine'},
+  {code:'207YX0007X',label:'207YX0007X — Otolaryngology: Plastic Surgery within the Head & Neck',classification:'Otolaryngology',specialization:'Plastic Surgery within the Head & Neck'},
+  {code:'207YX0602X',label:'207YX0602X — Otolaryngology: Otology & Neurotology',classification:'Otolaryngology',specialization:'Otology & Neurotology'},
+  {code:'207YX0901X',label:'207YX0901X — Otolaryngology: Otolaryngic Allergy',classification:'Otolaryngology',specialization:'Otolaryngic Allergy'},
+  {code:'207YX0905X',label:'207YX0905X — Otolaryngology: Facial Plastic Surgery',classification:'Otolaryngology',specialization:'Facial Plastic Surgery'},
+  {code:'207ZB0001X',label:'207ZB0001X — Pathology: Blood Banking & Transfusion Medicine',classification:'Pathology',specialization:'Blood Banking & Transfusion Medicine'},
+  {code:'207ZC0006X',label:'207ZC0006X — Pathology: Clinical Pathology',classification:'Pathology',specialization:'Clinical Pathology'},
+  {code:'207ZC0500X',label:'207ZC0500X — Pathology: Cytopathology',classification:'Pathology',specialization:'Cytopathology'},
+  {code:'207ZD0900X',label:'207ZD0900X — Pathology: Dermatopathology',classification:'Pathology',specialization:'Dermatopathology'},
+  {code:'207ZF0201X',label:'207ZF0201X — Pathology: Forensic Pathology',classification:'Pathology',specialization:'Forensic Pathology'},
+  {code:'207ZH0000X',label:'207ZH0000X — Pathology: Hematology',classification:'Pathology',specialization:'Hematology'},
+  {code:'207ZI0100X',label:'207ZI0100X — Pathology: Immunopathology',classification:'Pathology',specialization:'Immunopathology'},
+  {code:'207ZM0300X',label:'207ZM0300X — Pathology: Medical Microbiology',classification:'Pathology',specialization:'Medical Microbiology'},
+  {code:'207ZN0500X',label:'207ZN0500X — Pathology: Neuropathology',classification:'Pathology',specialization:'Neuropathology'},
+  {code:'207ZP0007X',label:'207ZP0007X — Pathology: Molecular Genetic Pathology',classification:'Pathology',specialization:'Molecular Genetic Pathology'},
+  {code:'207ZP0101X',label:'207ZP0101X — Pathology: Anatomic Pathology',classification:'Pathology',specialization:'Anatomic Pathology'},
+  {code:'207ZP0102X',label:'207ZP0102X — Pathology: Anatomic Pathology & Clinical Pathology',classification:'Pathology',specialization:'Anatomic Pathology & Clinical Pathology'},
+  {code:'207ZP0104X',label:'207ZP0104X — Pathology: Chemical Pathology',classification:'Pathology',specialization:'Chemical Pathology'},
+  {code:'207ZP0105X',label:'207ZP0105X — Pathology: Clinical Pathology/Laboratory Medicine',classification:'Pathology',specialization:'Clinical Pathology/Laboratory Medicine'},
+  {code:'208000000X',label:'208000000X — Pediatrics',classification:'Pediatrics',specialization:''},
+  {code:'208C00000X',label:'208C00000X — Colon & Rectal Surgery',classification:'Colon & Rectal Surgery',specialization:''},
+  {code:'208D00000X',label:'208D00000X — General Practice',classification:'General Practice',specialization:''},
+  {code:'208G00000X',label:'208G00000X — Thoracic Surgery (Cardiothoracic Vascular Surgery)',classification:'Thoracic Surgery (Cardiothoracic Vascular Surgery)',specialization:''},
+  {code:'208M00000X',label:'208M00000X — Hospitalist',classification:'Hospitalist',specialization:''},
+  {code:'208U00000X',label:'208U00000X — Clinical Pharmacology',classification:'Clinical Pharmacology',specialization:''},
+  {code:'208VP0014X',label:'208VP0014X — Vascular Medicine',classification:'Vascular Medicine',specialization:''},
+  {code:'208VP0000X',label:'208VP0000X — Physical Medicine & Rehabilitation: Pain Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Pain Medicine'},
+  {code:'2080A0000X',label:'2080A0000X — Pediatrics: Adolescent Medicine',classification:'Pediatrics',specialization:'Adolescent Medicine'},
+  {code:'2080B0002X',label:'2080B0002X — Pediatrics: Obesity Medicine',classification:'Pediatrics',specialization:'Obesity Medicine'},
+  {code:'2080H0002X',label:'2080H0002X — Pediatrics: Hospice and Palliative Medicine',classification:'Pediatrics',specialization:'Hospice and Palliative Medicine'},
+  {code:'2080N0001X',label:'2080N0001X — Pediatrics: Neonatal-Perinatal Medicine',classification:'Pediatrics',specialization:'Neonatal-Perinatal Medicine'},
+  {code:'2080P0006X',label:'2080P0006X — Pediatrics: Developmental - Behavioral Pediatrics',classification:'Pediatrics',specialization:'Developmental - Behavioral Pediatrics'},
+  {code:'2080P0008X',label:'2080P0008X — Pediatrics: Neurodevelopmental Disabilities',classification:'Pediatrics',specialization:'Neurodevelopmental Disabilities'},
+  {code:'2080P0201X',label:'2080P0201X — Pediatrics: Pediatric Allergy/Immunology',classification:'Pediatrics',specialization:'Pediatric Allergy/Immunology'},
+  {code:'2080P0202X',label:'2080P0202X — Pediatrics: Pediatric Cardiology',classification:'Pediatrics',specialization:'Pediatric Cardiology'},
+  {code:'2080P0203X',label:'2080P0203X — Pediatrics: Pediatric Critical Care Medicine',classification:'Pediatrics',specialization:'Pediatric Critical Care Medicine'},
+  {code:'2080P0204X',label:'2080P0204X — Pediatrics: Pediatric Emergency Medicine',classification:'Pediatrics',specialization:'Pediatric Emergency Medicine'},
+  {code:'2080P0205X',label:'2080P0205X — Pediatrics: Pediatric Endocrinology',classification:'Pediatrics',specialization:'Pediatric Endocrinology'},
+  {code:'2080P0206X',label:'2080P0206X — Pediatrics: Pediatric Gastroenterology',classification:'Pediatrics',specialization:'Pediatric Gastroenterology'},
+  {code:'2080P0207X',label:'2080P0207X — Pediatrics: Pediatric Hematology-Oncology',classification:'Pediatrics',specialization:'Pediatric Hematology-Oncology'},
+  {code:'2080P0208X',label:'2080P0208X — Pediatrics: Pediatric Infectious Diseases',classification:'Pediatrics',specialization:'Pediatric Infectious Diseases'},
+  {code:'2080P0210X',label:'2080P0210X — Pediatrics: Pediatric Nephrology',classification:'Pediatrics',specialization:'Pediatric Nephrology'},
+  {code:'2080P0214X',label:'2080P0214X — Pediatrics: Pediatric Pulmonology',classification:'Pediatrics',specialization:'Pediatric Pulmonology'},
+  {code:'2080P0216X',label:'2080P0216X — Pediatrics: Pediatric Rheumatology',classification:'Pediatrics',specialization:'Pediatric Rheumatology'},
+  {code:'2080S0012X',label:'2080S0012X — Pediatrics: Sleep Medicine',classification:'Pediatrics',specialization:'Sleep Medicine'},
+  {code:'2080T0002X',label:'2080T0002X — Pediatrics: Medical Toxicology',classification:'Pediatrics',specialization:'Medical Toxicology'},
+  {code:'2083A0100X',label:'2083A0100X — Preventive Medicine: Aerospace Medicine',classification:'Preventive Medicine',specialization:'Aerospace Medicine'},
+  {code:'2083A0300X',label:'2083A0300X — Preventive Medicine: Addiction Medicine',classification:'Preventive Medicine',specialization:'Addiction Medicine'},
+  {code:'2083B0002X',label:'2083B0002X — Preventive Medicine: Obesity Medicine',classification:'Preventive Medicine',specialization:'Obesity Medicine'},
+  {code:'2083C0008X',label:'2083C0008X — Preventive Medicine: Clinical Informatics',classification:'Preventive Medicine',specialization:'Clinical Informatics'},
+  {code:'2083P0011X',label:'2083P0011X — Preventive Medicine: Undersea and Hyperbaric Medicine',classification:'Preventive Medicine',specialization:'Undersea and Hyperbaric Medicine'},
+  {code:'2083P0500X',label:'2083P0500X — Preventive Medicine: Preventive Medicine/Occupational Environmental Medicine',classification:'Preventive Medicine',specialization:'Preventive Medicine/Occupational Environmental Medicine'},
+  {code:'2083P0901X',label:'2083P0901X — Preventive Medicine: Public Health & General Preventive Medicine',classification:'Preventive Medicine',specialization:'Public Health & General Preventive Medicine'},
+  {code:'2083S0010X',label:'2083S0010X — Preventive Medicine: Sports Medicine',classification:'Preventive Medicine',specialization:'Sports Medicine'},
+  {code:'2083T0002X',label:'2083T0002X — Preventive Medicine: Medical Toxicology',classification:'Preventive Medicine',specialization:'Medical Toxicology'},
+  {code:'2083X0100X',label:'2083X0100X — Preventive Medicine: Occupational Medicine',classification:'Preventive Medicine',specialization:'Occupational Medicine'},
+  {code:'2084A0401X',label:'2084A0401X — Psychiatry & Neurology: Addiction Medicine',classification:'Psychiatry & Neurology',specialization:'Addiction Medicine'},
+  {code:'2084A0402X',label:'2084A0402X — Psychiatry & Neurology: Addiction Psychiatry',classification:'Psychiatry & Neurology',specialization:'Addiction Psychiatry'},
+  {code:'2084B0002X',label:'2084B0002X — Psychiatry & Neurology: Obesity Medicine',classification:'Psychiatry & Neurology',specialization:'Obesity Medicine'},
+  {code:'2084B0040X',label:'2084B0040X — Psychiatry & Neurology: Behavioral Neurology & Neuropsychiatry',classification:'Psychiatry & Neurology',specialization:'Behavioral Neurology & Neuropsychiatry'},
+  {code:'2084D0003X',label:'2084D0003X — Psychiatry & Neurology: Diagnostic Neuroimaging',classification:'Psychiatry & Neurology',specialization:'Diagnostic Neuroimaging'},
+  {code:'2084F0202X',label:'2084F0202X — Psychiatry & Neurology: Forensic Psychiatry',classification:'Psychiatry & Neurology',specialization:'Forensic Psychiatry'},
+  {code:'2084H0002X',label:'2084H0002X — Psychiatry & Neurology: Hospice and Palliative Medicine',classification:'Psychiatry & Neurology',specialization:'Hospice and Palliative Medicine'},
+  {code:'2084N0008X',label:'2084N0008X — Psychiatry & Neurology: Neuromuscular Medicine',classification:'Psychiatry & Neurology',specialization:'Neuromuscular Medicine'},
+  {code:'2084N0400X',label:'2084N0400X — Psychiatry & Neurology: Neurology',classification:'Psychiatry & Neurology',specialization:'Neurology'},
+  {code:'2084N0402X',label:'2084N0402X — Psychiatry & Neurology: Neurology with Special Qualifications in Child Neurology',classification:'Psychiatry & Neurology',specialization:'Neurology with Special Qualifications in Child Neurology'},
+  {code:'2084N0600X',label:'2084N0600X — Psychiatry & Neurology: Clinical Neurophysiology',classification:'Psychiatry & Neurology',specialization:'Clinical Neurophysiology'},
+  {code:'2084P0005X',label:'2084P0005X — Psychiatry & Neurology: Neurodevelopmental Disabilities',classification:'Psychiatry & Neurology',specialization:'Neurodevelopmental Disabilities'},
+  {code:'2084P0015X',label:'2084P0015X — Psychiatry & Neurology: Psychosomatic Medicine',classification:'Psychiatry & Neurology',specialization:'Psychosomatic Medicine'},
+  {code:'2084P0301X',label:'2084P0301X — Psychiatry & Neurology: Brain Injury Medicine',classification:'Psychiatry & Neurology',specialization:'Brain Injury Medicine'},
+  {code:'2084P0800X',label:'2084P0800X — Psychiatry & Neurology: Psychiatry',classification:'Psychiatry & Neurology',specialization:'Psychiatry'},
+  {code:'2084P0802X',label:'2084P0802X — Psychiatry & Neurology: Addiction Psychiatry',classification:'Psychiatry & Neurology',specialization:'Addiction Psychiatry'},
+  {code:'2084P0804X',label:'2084P0804X — Psychiatry & Neurology: Child & Adolescent Psychiatry',classification:'Psychiatry & Neurology',specialization:'Child & Adolescent Psychiatry'},
+  {code:'2084P0805X',label:'2084P0805X — Psychiatry & Neurology: Geriatric Psychiatry',classification:'Psychiatry & Neurology',specialization:'Geriatric Psychiatry'},
+  {code:'2084S0012X',label:'2084S0012X — Psychiatry & Neurology: Sleep Medicine',classification:'Psychiatry & Neurology',specialization:'Sleep Medicine'},
+  {code:'2084S0010X',label:'2084S0010X — Psychiatry & Neurology: Sports Medicine',classification:'Psychiatry & Neurology',specialization:'Sports Medicine'},
+  {code:'2084V0102X',label:'2084V0102X — Psychiatry & Neurology: Vascular Neurology',classification:'Psychiatry & Neurology',specialization:'Vascular Neurology'},
+  {code:'2085B0100X',label:'2085B0100X — Radiology: Body Imaging',classification:'Radiology',specialization:'Body Imaging'},
+  {code:'2085D0003X',label:'2085D0003X — Radiology: Diagnostic Neuroimaging',classification:'Radiology',specialization:'Diagnostic Neuroimaging'},
+  {code:'2085H0002X',label:'2085H0002X — Radiology: Hospice and Palliative Medicine',classification:'Radiology',specialization:'Hospice and Palliative Medicine'},
+  {code:'2085N0700X',label:'2085N0700X — Radiology: Neuroradiology',classification:'Radiology',specialization:'Neuroradiology'},
+  {code:'2085N0904X',label:'2085N0904X — Radiology: Nuclear Radiology',classification:'Radiology',specialization:'Nuclear Radiology'},
+  {code:'2085P0229X',label:'2085P0229X — Radiology: Pediatric Radiology',classification:'Radiology',specialization:'Pediatric Radiology'},
+  {code:'2085R0001X',label:'2085R0001X — Radiology: Radiation Oncology',classification:'Radiology',specialization:'Radiation Oncology'},
+  {code:'2085R0202X',label:'2085R0202X — Radiology: Diagnostic Radiology',classification:'Radiology',specialization:'Diagnostic Radiology'},
+  {code:'2085R0203X',label:'2085R0203X — Radiology: Therapeutic Radiology',classification:'Radiology',specialization:'Therapeutic Radiology'},
+  {code:'2085R0204X',label:'2085R0204X — Radiology: Vascular & Interventional Radiology',classification:'Radiology',specialization:'Vascular & Interventional Radiology'},
+  {code:'2085R0205X',label:'2085R0205X — Radiology: Radiological Physics',classification:'Radiology',specialization:'Radiological Physics'},
+  {code:'2085U0001X',label:'2085U0001X — Radiology: Diagnostic Ultrasound',classification:'Radiology',specialization:'Diagnostic Ultrasound'},
+  {code:'2086H0002X',label:'2086H0002X — Surgery: Hospice and Palliative Medicine',classification:'Surgery',specialization:'Hospice and Palliative Medicine'},
+  {code:'2086S0102X',label:'2086S0102X — Surgery: Orthopedic Surgery of the Spine',classification:'Surgery',specialization:'Orthopedic Surgery of the Spine'},
+  {code:'2086S0105X',label:'2086S0105X — Surgery: Surgery of the Hand',classification:'Surgery',specialization:'Surgery of the Hand'},
+  {code:'2086S0120X',label:'2086S0120X — Surgery: Pediatric Surgery',classification:'Surgery',specialization:'Pediatric Surgery'},
+  {code:'2086S0122X',label:'2086S0122X — Surgery: Plastic and Reconstructive Surgery',classification:'Surgery',specialization:'Plastic and Reconstructive Surgery'},
+  {code:'2086S0127X',label:'2086S0127X — Surgery: Trauma Surgery',classification:'Surgery',specialization:'Trauma Surgery'},
+  {code:'2086S0129X',label:'2086S0129X — Surgery: Vascular Surgery',classification:'Surgery',specialization:'Vascular Surgery'},
+  {code:'2086X0206X',label:'2086X0206X — Surgery: Surgical Oncology',classification:'Surgery',specialization:'Surgical Oncology'},
+  {code:'208600000X',label:'208600000X — Surgery: General',classification:'Surgery',specialization:'General'},
+  {code:'208800000X',label:'208800000X — Urology',classification:'Urology',specialization:''},
+  {code:'2088F0040X',label:'2088F0040X — Urology: Female Pelvic Medicine and Reconstructive Surgery',classification:'Urology',specialization:'Female Pelvic Medicine and Reconstructive Surgery'},
+  {code:'2088P0231X',label:'2088P0231X — Urology: Pediatric Urology',classification:'Urology',specialization:'Pediatric Urology'},
+  {code:'208100000X',label:'208100000X — Physical Medicine & Rehabilitation',classification:'Physical Medicine & Rehabilitation',specialization:''},
+  {code:'2081H0002X',label:'2081H0002X — Physical Medicine & Rehabilitation: Hospice and Palliative Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Hospice and Palliative Medicine'},
+  {code:'2081N0008X',label:'2081N0008X — Physical Medicine & Rehabilitation: Neuromuscular Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Neuromuscular Medicine'},
+  {code:'2081P0004X',label:'2081P0004X — Physical Medicine & Rehabilitation: Spinal Cord Injury Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Spinal Cord Injury Medicine'},
+  {code:'2081P0010X',label:'2081P0010X — Physical Medicine & Rehabilitation: Pediatric Rehabilitation Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Pediatric Rehabilitation Medicine'},
+  {code:'2081P0301X',label:'2081P0301X — Physical Medicine & Rehabilitation: Brain Injury Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Brain Injury Medicine'},
+  {code:'2081S0010X',label:'2081S0010X — Physical Medicine & Rehabilitation: Sports Medicine',classification:'Physical Medicine & Rehabilitation',specialization:'Sports Medicine'},
+  {code:'363L00000X',label:'363L00000X — Nurse Practitioner',classification:'Nurse Practitioner',specialization:''},
+  {code:'363LA2100X',label:'363LA2100X — Nurse Practitioner: Acute Care',classification:'Nurse Practitioner',specialization:'Acute Care'},
+  {code:'363LA2200X',label:'363LA2200X — Nurse Practitioner: Adult Health',classification:'Nurse Practitioner',specialization:'Adult Health'},
+  {code:'363LC0200X',label:'363LC0200X — Nurse Practitioner: Critical Care Medicine',classification:'Nurse Practitioner',specialization:'Critical Care Medicine'},
+  {code:'363LC1500X',label:'363LC1500X — Nurse Practitioner: Community Health',classification:'Nurse Practitioner',specialization:'Community Health'},
+  {code:'363LE0002X',label:'363LE0002X — Nurse Practitioner: Gerontology',classification:'Nurse Practitioner',specialization:'Gerontology'},
+  {code:'363LF0000X',label:'363LF0000X — Nurse Practitioner: Family',classification:'Nurse Practitioner',specialization:'Family'},
+  {code:'363LN0000X',label:'363LN0000X — Nurse Practitioner: Neonatal',classification:'Nurse Practitioner',specialization:'Neonatal'},
+  {code:'363LN0005X',label:'363LN0005X — Nurse Practitioner: Neonatal Critical Care',classification:'Nurse Practitioner',specialization:'Neonatal Critical Care'},
+  {code:'363LP0200X',label:'363LP0200X — Nurse Practitioner: Pediatrics',classification:'Nurse Practitioner',specialization:'Pediatrics'},
+  {code:'363LP0222X',label:'363LP0222X — Nurse Practitioner: Pediatric Critical Care',classification:'Nurse Practitioner',specialization:'Pediatric Critical Care'},
+  {code:'363LP1700X',label:'363LP1700X — Nurse Practitioner: Psychiatric/Mental Health',classification:'Nurse Practitioner',specialization:'Psychiatric/Mental Health'},
+  {code:'363LP2300X',label:'363LP2300X — Nurse Practitioner: Primary Care',classification:'Nurse Practitioner',specialization:'Primary Care'},
+  {code:'363LS0200X',label:'363LS0200X — Nurse Practitioner: School',classification:'Nurse Practitioner',specialization:'School'},
+  {code:'363LW0102X',label:'363LW0102X — Nurse Practitioner: Women\'s Health',classification:'Nurse Practitioner',specialization:'Women\'s Health'},
+  {code:'363LX0001X',label:'363LX0001X — Nurse Practitioner: Obstetrics & Gynecology',classification:'Nurse Practitioner',specialization:'Obstetrics & Gynecology'},
+  {code:'363LX0106X',label:'363LX0106X — Nurse Practitioner: Occupational Health',classification:'Nurse Practitioner',specialization:'Occupational Health'},
+  {code:'363A00000X',label:'363A00000X — Physician Assistant',classification:'Physician Assistant',specialization:''},
+  {code:'363AM0700X',label:'363AM0700X — Physician Assistant: Medical',classification:'Physician Assistant',specialization:'Medical'},
+  {code:'363AS0400X',label:'363AS0400X — Physician Assistant: Surgical',classification:'Physician Assistant',specialization:'Surgical'},
+  {code:'367500000X',label:'367500000X — Certified Registered Nurse Anesthetist (CRNA)',classification:'Certified Registered Nurse Anesthetist (CRNA)',specialization:''},
+  {code:'367A00000X',label:'367A00000X — Advanced Practice Midwife',classification:'Advanced Practice Midwife',specialization:''},
+  {code:'367H00000X',label:'367H00000X — Anesthesiologist Assistant',classification:'Anesthesiologist Assistant',specialization:''},
+  {code:'163W00000X',label:'163W00000X — Registered Nurse',classification:'Registered Nurse',specialization:''},
+  {code:'163WA0400X',label:'163WA0400X — Registered Nurse: Addiction (Substance Use Disorder)',classification:'Registered Nurse',specialization:'Addiction (Substance Use Disorder)'},
+  {code:'163WC0400X',label:'163WC0400X — Registered Nurse: Case Management',classification:'Registered Nurse',specialization:'Case Management'},
+  {code:'163WC1500X',label:'163WC1500X — Registered Nurse: Community Health',classification:'Registered Nurse',specialization:'Community Health'},
+  {code:'163WC2100X',label:'163WC2100X — Registered Nurse: Critical Care Medicine',classification:'Registered Nurse',specialization:'Critical Care Medicine'},
+  {code:'163WC3500X',label:'163WC3500X — Registered Nurse: Continence Care',classification:'Registered Nurse',specialization:'Continence Care'},
+  {code:'163WD0400X',label:'163WD0400X — Registered Nurse: Diabetes Educator',classification:'Registered Nurse',specialization:'Diabetes Educator'},
+  {code:'163WE0003X',label:'163WE0003X — Registered Nurse: Emergency',classification:'Registered Nurse',specialization:'Emergency'},
+  {code:'163WE0900X',label:'163WE0900X — Registered Nurse: Enterostomal Therapy',classification:'Registered Nurse',specialization:'Enterostomal Therapy'},
+  {code:'163WF0300X',label:'163WF0300X — Registered Nurse: Flight',classification:'Registered Nurse',specialization:'Flight'},
+  {code:'163WG0000X',label:'163WG0000X — Registered Nurse: General Practice',classification:'Registered Nurse',specialization:'General Practice'},
+  {code:'163WG0100X',label:'163WG0100X — Registered Nurse: Gastroenterology',classification:'Registered Nurse',specialization:'Gastroenterology'},
+  {code:'163WG0600X',label:'163WG0600X — Registered Nurse: Gerontology',classification:'Registered Nurse',specialization:'Gerontology'},
+  {code:'163WH0200X',label:'163WH0200X — Registered Nurse: Home Health',classification:'Registered Nurse',specialization:'Home Health'},
+  {code:'163WH0500X',label:'163WH0500X — Registered Nurse: Hemodialysis',classification:'Registered Nurse',specialization:'Hemodialysis'},
+  {code:'163WH1000X',label:'163WH1000X — Registered Nurse: Hospice',classification:'Registered Nurse',specialization:'Hospice'},
+  {code:'163WI0500X',label:'163WI0500X — Registered Nurse: Infusion Therapy',classification:'Registered Nurse',specialization:'Infusion Therapy'},
+  {code:'163WI0600X',label:'163WI0600X — Registered Nurse: Infection Control',classification:'Registered Nurse',specialization:'Infection Control'},
+  {code:'163WL0100X',label:'163WL0100X — Registered Nurse: Lactation Consultant',classification:'Registered Nurse',specialization:'Lactation Consultant'},
+  {code:'163WM0102X',label:'163WM0102X — Registered Nurse: Maternal Newborn',classification:'Registered Nurse',specialization:'Maternal Newborn'},
+  {code:'163WM0705X',label:'163WM0705X — Registered Nurse: Medical-Surgical',classification:'Registered Nurse',specialization:'Medical-Surgical'},
+  {code:'163WN0002X',label:'163WN0002X — Registered Nurse: Neonatal Intensive Care',classification:'Registered Nurse',specialization:'Neonatal Intensive Care'},
+  {code:'163WN0300X',label:'163WN0300X — Registered Nurse: Nephrology',classification:'Registered Nurse',specialization:'Nephrology'},
+  {code:'163WN0800X',label:'163WN0800X — Registered Nurse: Neuroscience',classification:'Registered Nurse',specialization:'Neuroscience'},
+  {code:'163WP0000X',label:'163WP0000X — Registered Nurse: Pain Management',classification:'Registered Nurse',specialization:'Pain Management'},
+  {code:'163WP0200X',label:'163WP0200X — Registered Nurse: Pediatrics',classification:'Registered Nurse',specialization:'Pediatrics'},
+  {code:'163WP0218X',label:'163WP0218X — Registered Nurse: Pediatric Oncology',classification:'Registered Nurse',specialization:'Pediatric Oncology'},
+  {code:'163WP0808X',label:'163WP0808X — Registered Nurse: Psychiatric/Mental Health',classification:'Registered Nurse',specialization:'Psychiatric/Mental Health'},
+  {code:'163WP1700X',label:'163WP1700X — Registered Nurse: Perinatal',classification:'Registered Nurse',specialization:'Perinatal'},
+  {code:'163WP2201X',label:'163WP2201X — Registered Nurse: Ambulatory Care',classification:'Registered Nurse',specialization:'Ambulatory Care'},
+  {code:'163WR0006X',label:'163WR0006X — Registered Nurse: Registered Nurse First Assistant',classification:'Registered Nurse',specialization:'Registered Nurse First Assistant'},
+  {code:'163WR1000X',label:'163WR1000X — Registered Nurse: Rehabilitation',classification:'Registered Nurse',specialization:'Rehabilitation'},
+  {code:'163WS0121X',label:'163WS0121X — Registered Nurse: Plastic Surgery',classification:'Registered Nurse',specialization:'Plastic Surgery'},
+  {code:'163WS0200X',label:'163WS0200X — Registered Nurse: School',classification:'Registered Nurse',specialization:'School'},
+  {code:'163WU0100X',label:'163WU0100X — Registered Nurse: Urology',classification:'Registered Nurse',specialization:'Urology'},
+  {code:'163WW0000X',label:'163WW0000X — Registered Nurse: Wound Care',classification:'Registered Nurse',specialization:'Wound Care'},
+  {code:'163WW0101X',label:'163WW0101X — Registered Nurse: Women\'s Health Care, Ambulatory',classification:'Registered Nurse',specialization:'Women\'s Health Care, Ambulatory'},
+  {code:'163WX0002X',label:'163WX0002X — Registered Nurse: Obstetric, High-Risk',classification:'Registered Nurse',specialization:'Obstetric, High-Risk'},
+  {code:'163WX0106X',label:'163WX0106X — Registered Nurse: Occupational Health',classification:'Registered Nurse',specialization:'Occupational Health'},
+  {code:'163WX0200X',label:'163WX0200X — Registered Nurse: Oncology',classification:'Registered Nurse',specialization:'Oncology'},
+  {code:'163WX0800X',label:'163WX0800X — Registered Nurse: Orthopedic',classification:'Registered Nurse',specialization:'Orthopedic'},
+  {code:'163WX1500X',label:'163WX1500X — Registered Nurse: Ostomy Care',classification:'Registered Nurse',specialization:'Ostomy Care'},
+  {code:'225100000X',label:'225100000X — Physical Therapist',classification:'Physical Therapist',specialization:''},
+  {code:'2251C2600X',label:'2251C2600X — Physical Therapist: Cardiopulmonary',classification:'Physical Therapist',specialization:'Cardiopulmonary'},
+  {code:'2251E1300X',label:'2251E1300X — Physical Therapist: Clinical Electrophysiology',classification:'Physical Therapist',specialization:'Clinical Electrophysiology'},
+  {code:'2251G0304X',label:'2251G0304X — Physical Therapist: Geriatrics',classification:'Physical Therapist',specialization:'Geriatrics'},
+  {code:'2251H1200X',label:'2251H1200X — Physical Therapist: Hand',classification:'Physical Therapist',specialization:'Hand'},
+  {code:'2251N0400X',label:'2251N0400X — Physical Therapist: Neurology',classification:'Physical Therapist',specialization:'Neurology'},
+  {code:'2251P0200X',label:'2251P0200X — Physical Therapist: Pediatrics',classification:'Physical Therapist',specialization:'Pediatrics'},
+  {code:'2251S0007X',label:'2251S0007X — Physical Therapist: Sports',classification:'Physical Therapist',specialization:'Sports'},
+  {code:'2251X0800X',label:'2251X0800X — Physical Therapist: Orthopedic',classification:'Physical Therapist',specialization:'Orthopedic'},
+  {code:'225X00000X',label:'225X00000X — Occupational Therapist',classification:'Occupational Therapist',specialization:''},
+  {code:'225XE0001X',label:'225XE0001X — Occupational Therapist: Environmental Modification',classification:'Occupational Therapist',specialization:'Environmental Modification'},
+  {code:'225XF0002X',label:'225XF0002X — Occupational Therapist: Feeding, Eating & Swallowing',classification:'Occupational Therapist',specialization:'Feeding, Eating & Swallowing'},
+  {code:'225XG0600X',label:'225XG0600X — Occupational Therapist: Gerontology',classification:'Occupational Therapist',specialization:'Gerontology'},
+  {code:'225XH1200X',label:'225XH1200X — Occupational Therapist: Hand',classification:'Occupational Therapist',specialization:'Hand'},
+  {code:'225XL0004X',label:'225XL0004X — Occupational Therapist: Low Vision',classification:'Occupational Therapist',specialization:'Low Vision'},
+  {code:'225XM0800X',label:'225XM0800X — Occupational Therapist: Mental Health',classification:'Occupational Therapist',specialization:'Mental Health'},
+  {code:'225XN1300X',label:'225XN1300X — Occupational Therapist: Neurorehabilitation',classification:'Occupational Therapist',specialization:'Neurorehabilitation'},
+  {code:'225XP0200X',label:'225XP0200X — Occupational Therapist: Pediatrics',classification:'Occupational Therapist',specialization:'Pediatrics'},
+  {code:'213E00000X',label:'213E00000X — Podiatrist',classification:'Podiatrist',specialization:''},
+  {code:'213EG0000X',label:'213EG0000X — Podiatrist: General Practice',classification:'Podiatrist',specialization:'General Practice'},
+  {code:'213EP1101X',label:'213EP1101X — Podiatrist: Primary Podiatric Medicine',classification:'Podiatrist',specialization:'Primary Podiatric Medicine'},
+  {code:'213ES0000X',label:'213ES0000X — Podiatrist: Sports Medicine',classification:'Podiatrist',specialization:'Sports Medicine'},
+  {code:'213ES0131X',label:'213ES0131X — Podiatrist: Foot & Ankle Surgery',classification:'Podiatrist',specialization:'Foot & Ankle Surgery'},
+  {code:'213ES0103X',label:'213ES0103X — Podiatrist: Foot Surgery',classification:'Podiatrist',specialization:'Foot Surgery'},
+  {code:'261QW0850X',label:'261QW0850X — Clinic/Center: Wound Care',classification:'Clinic/Center',specialization:'Wound Care'},
+  {code:'261QH0700X',label:'261QH0700X — Clinic/Center: Hyperbaric',classification:'Clinic/Center',specialization:'Hyperbaric'},
+  {code:'176B00000X',label:'176B00000X — Certified Nurse Midwife',classification:'Certified Nurse Midwife',specialization:''},
+  {code:'1041C0700X',label:'1041C0700X — Clinical Social Worker',classification:'Clinical Social Worker',specialization:''},
+  {code:'183500000X',label:'183500000X — Pharmacist',classification:'Pharmacist',specialization:''},
+  {code:'1835G0000X',label:'1835G0000X — Pharmacist: General Practice',classification:'Pharmacist',specialization:'General Practice'},
+  {code:'1835P1200X',label:'1835P1200X — Pharmacist: Pharmacotherapy',classification:'Pharmacist',specialization:'Pharmacotherapy'},
+  {code:'111N00000X',label:'111N00000X — Chiropractor',classification:'Chiropractor',specialization:''},
+  {code:'111NI0900X',label:'111NI0900X — Chiropractor: Internist',classification:'Chiropractor',specialization:'Internist'},
+  {code:'111NN0400X',label:'111NN0400X — Chiropractor: Neurology',classification:'Chiropractor',specialization:'Neurology'},
+  {code:'111NP0017X',label:'111NP0017X — Chiropractor: Pediatric Chiropractor',classification:'Chiropractor',specialization:'Pediatric Chiropractor'},
+  {code:'111NR0200X',label:'111NR0200X — Chiropractor: Radiology',classification:'Chiropractor',specialization:'Radiology'},
+  {code:'111NR0400X',label:'111NR0400X — Chiropractor: Rehabilitation',classification:'Chiropractor',specialization:'Rehabilitation'},
+  {code:'111NS0005X',label:'111NS0005X — Chiropractor: Sports Physician',classification:'Chiropractor',specialization:'Sports Physician'},
+  {code:'111NX0800X',label:'111NX0800X — Chiropractor: Orthopedic',classification:'Chiropractor',specialization:'Orthopedic'},
+  {code:'152W00000X',label:'152W00000X — Optometrist',classification:'Optometrist',specialization:''},
+  {code:'152WC0802X',label:'152WC0802X — Optometrist: Corneal and Contact Management',classification:'Optometrist',specialization:'Corneal and Contact Management'},
+  {code:'152WL0500X',label:'152WL0500X — Optometrist: Low Vision Rehabilitation',classification:'Optometrist',specialization:'Low Vision Rehabilitation'},
+  {code:'152WP0200X',label:'152WP0200X — Optometrist: Pediatrics',classification:'Optometrist',specialization:'Pediatrics'},
+  {code:'152WS0006X',label:'152WS0006X — Optometrist: Sports Vision',classification:'Optometrist',specialization:'Sports Vision'},
+  {code:'152WV0400X',label:'152WV0400X — Optometrist: Vision Therapy',classification:'Optometrist',specialization:'Vision Therapy'},
+  {code:'122300000X',label:'122300000X — Dentist',classification:'Dentist',specialization:''},
+  {code:'1223D0001X',label:'1223D0001X — Dentist: Dental Public Health',classification:'Dentist',specialization:'Dental Public Health'},
+  {code:'1223E0200X',label:'1223E0200X — Dentist: Endodontics',classification:'Dentist',specialization:'Endodontics'},
+  {code:'1223G0001X',label:'1223G0001X — Dentist: General Practice',classification:'Dentist',specialization:'General Practice'},
+  {code:'1223P0300X',label:'1223P0300X — Dentist: Periodontics',classification:'Dentist',specialization:'Periodontics'},
+  {code:'1223P0700X',label:'1223P0700X — Dentist: Prosthodontics',classification:'Dentist',specialization:'Prosthodontics'},
+  {code:'1223S0112X',label:'1223S0112X — Dentist: Oral and Maxillofacial Surgery',classification:'Dentist',specialization:'Oral and Maxillofacial Surgery'},
+  {code:'1223X0400X',label:'1223X0400X — Dentist: Orthodontics and Dentofacial Orthopedics',classification:'Dentist',specialization:'Orthodontics and Dentofacial Orthopedics'},
+  {code:'251E00000X',label:'251E00000X — Home Health Agency',classification:'Home Health Agency',specialization:''},
+  {code:'251G00000X',label:'251G00000X — Community Based Hospice Care Agency',classification:'Community Based Hospice Care Agency',specialization:''},
+  {code:'251J00000X',label:'251J00000X — Hospice Care Community Based',classification:'Hospice Care Community Based',specialization:''}
+];
+
   let taxonomyFocusIndex = -1;
   let taxonomyFiltered   = [];
 
-  async function loadTaxonomyCodes() {
-    const loadingEl = document.getElementById('taxonomy-loading');
-    loadingEl.classList.add('visible');
 
-    // We try two sources in order:
-    // 1. A public GitHub mirror of the NUCC CSV (updated with each NUCC release)
-    // 2. Fallback to a small hardcoded set if both fail (e.g. offline)
-    const SOURCES = [
-      'https://raw.githubusercontent.com/datasets/health-provider-taxonomy/main/data/nucc_taxonomy.csv',
-    ];
 
-    for (const url of SOURCES) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) continue;
-        const text = await res.text();
-        TAXONOMY_LIST = parseTaxonomyCsv(text);
-        if (TAXONOMY_LIST.length > 0) break;
-      } catch (_) { /* try next */ }
-    }
 
-    // Fallback if fetch fails entirely
-    if (TAXONOMY_LIST.length === 0) {
-      TAXONOMY_LIST = TAXONOMY_FALLBACK;
-    }
-
-    loadingEl.classList.remove('visible');
-  }
-
-  function parseTaxonomyCsv(csv) {
-    const lines = csv.trim().split('\n');
-    if (lines.length < 2) return [];
-    // Header: Code, Grouping, Classification, Specialization, Definition, Notes
-    const results = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cols = splitCsvLine(lines[i]);
-      if (!cols[0]) continue;
-      const code           = cols[0].trim().replace(/^"|"$/g, '');
-      const classification = (cols[2] || '').trim().replace(/^"|"$/g, '');
-      const specialization = (cols[3] || '').trim().replace(/^"|"$/g, '');
-      const label = specialization
-        ? `${code} — ${classification}: ${specialization}`
-        : `${code} — ${classification}`;
-      results.push({ code, label, classification, specialization });
-    }
-    return results;
-  }
-
-  function splitCsvLine(line) {
-    const result = [];
-    let cur = ''; let inQuote = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') { inQuote = !inQuote; }
-      else if (ch === ',' && !inQuote) { result.push(cur); cur = ''; }
-      else { cur += ch; }
-    }
-    result.push(cur);
-    return result;
-  }
-
-  // Small fallback set covering the most common wound care taxonomies
-  const TAXONOMY_FALLBACK = [
-    { code: '207Q00000X', label: '207Q00000X — Family Medicine',                    classification: 'Family Medicine',          specialization: '' },
-    { code: '207R00000X', label: '207R00000X — Internal Medicine',                  classification: 'Internal Medicine',        specialization: '' },
-    { code: '208000000X', label: '208000000X — Pediatrics',                         classification: 'Pediatrics',              specialization: '' },
-    { code: '2086S0122X', label: '2086S0122X — Surgery: Plastic and Reconstructive',classification: 'Surgery',                 specialization: 'Plastic and Reconstructive' },
-    { code: '207ND0900X', label: '207ND0900X — Dermatology',                        classification: 'Dermatology',             specialization: '' },
-    { code: '261QW0850X', label: '261QW0850X — Clinic/Center: Wound Care',          classification: 'Clinic/Center',           specialization: 'Wound Care' },
-    { code: '363L00000X', label: '363L00000X — Nurse Practitioner',                 classification: 'Nurse Practitioner',      specialization: '' },
-    { code: '363LA2100X', label: '363LA2100X — Nurse Practitioner: Acute Care',     classification: 'Nurse Practitioner',      specialization: 'Acute Care' },
-    { code: '363LF0000X', label: '363LF0000X — Nurse Practitioner: Family',         classification: 'Nurse Practitioner',      specialization: 'Family' },
-    { code: '363A00000X', label: '363A00000X — Physician Assistant',                classification: 'Physician Assistant',     specialization: '' },
-    { code: '208VP0014X', label: '208VP0014X — Vascular Medicine',                  classification: 'Vascular Medicine',       specialization: '' },
-    { code: '207VE0102X', label: '207VE0102X — Obstetrics & Gynecology: Endocrinology', classification: 'Obstetrics & Gynecology', specialization: 'Endocrinology' },
-  ];
 
   // ── Taxonomy combobox ────────────────────────────────────────────────────────
   function taxonomyOpen() {
@@ -1445,10 +1679,9 @@
   // ════════════════════════════════════════════════════════════════════════════
   //  INIT
   // ════════════════════════════════════════════════════════════════════════════
-  document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener('DOMContentLoaded', () => {
     initPortalPage();
     renderProviderTable(MOCK_PROVIDERS);
-    await loadTaxonomyCodes();
   });
 </script>
 
