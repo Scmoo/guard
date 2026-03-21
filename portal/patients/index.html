@@ -563,7 +563,7 @@
     .field-select.invalid { border-color: #d94040; box-shadow: 0 0 0 3px rgba(217,64,64,0.1); }
 
     /* ── Insurance combobox ── */
-    .insurance-combo { position: relative; }
+    .insurance-combo { position: relative; z-index: 400; }
 
     .insurance-combo-input {
       font-family: 'Sora', sans-serif; font-size: 0.85rem;
@@ -599,7 +599,7 @@
       top: calc(100% + 4px); left: 0; right: 0;
       background: var(--white); border: 1.5px solid var(--border);
       border-radius: 10px; box-shadow: 0 8px 24px rgba(6,23,40,0.12);
-      max-height: 200px; overflow-y: auto; z-index: 300; padding: 4px 0;
+      max-height: 200px; overflow-y: auto; z-index: 400; padding: 4px 0;
     }
     .insurance-combo.open .insurance-combo-list { display: block; }
 
