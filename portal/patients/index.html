@@ -413,6 +413,103 @@
       .field-group.span-2 { grid-column: 1; }
       .patient-content    { padding: 24px 20px 48px; }
     }
+
+    /* ── Searchable insurance combobox ── */
+    .insurance-combo { position: relative; }
+
+    .insurance-combo-input {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1.5px solid rgba(6,23,40,0.14);
+      border-radius: 8px;
+      padding: 9px 36px 9px 12px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      cursor: text;
+    }
+    .insurance-combo-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(46,177,53,0.1);
+    }
+    .insurance-combo-input.invalid {
+      border-color: #d94040;
+      box-shadow: 0 0 0 3px rgba(217,64,64,0.1);
+    }
+    .insurance-combo-input::placeholder { color: var(--text-light); }
+
+    .insurance-combo-chevron {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-light);
+      transition: transform 0.2s ease;
+    }
+    .insurance-combo.open .insurance-combo-chevron {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    .insurance-combo-chevron svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2.5; stroke-linecap: round;
+    }
+
+    .insurance-combo-list {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(6,23,40,0.12);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 200;
+      padding: 4px 0;
+    }
+    .insurance-combo.open .insurance-combo-list { display: block; }
+
+    .insurance-combo-option {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.86rem;
+      color: var(--text);
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .insurance-combo-option:hover,
+    .insurance-combo-option.focused { background: var(--accent); }
+
+    .insurance-combo-option mark {
+      background: #b8f5c0;
+      color: var(--text);
+      border-radius: 2px;
+      padding: 0 1px;
+      font-style: normal;
+    }
+
+    .insurance-combo-option .combo-nick {
+      font-size: 0.72rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    .insurance-combo-empty {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      color: var(--text-light);
+      padding: 10px 14px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -590,22 +687,29 @@
 
           <div class="form-grid">
 
-            <!-- Insurance Company Name dropdown -->
+            <!-- Insurance Company combobox -->
             <div class="field-group">
-              <label class="field-label" for="pri-company">Insurance Company</label>
-              <select class="field-select" id="pri-company" onchange="handleCompanyChange('pri')">
-                <option value="">— Select —</option>
-                <option value="Aetna">Aetna</option>
-                <option value="Anthem">Anthem / Blue Cross Blue Shield</option>
-                <option value="Cigna">Cigna</option>
-                <option value="Humana">Humana</option>
-                <option value="Medicare">Medicare</option>
-                <option value="Medicaid">Medicaid</option>
-                <option value="Tricare">Tricare</option>
-                <option value="UHC">United Healthcare (UHC)</option>
-                <option value="WC">Workers' Comp Carrier</option>
-                <option value="Other">Other…</option>
-              </select>
+              <label class="field-label" for="pri-company-input">Insurance Company</label>
+              <div class="insurance-combo" id="pri-company-combo">
+                <input
+                  class="insurance-combo-input"
+                  id="pri-company-input"
+                  type="text"
+                  placeholder="Search or type company…"
+                  autocomplete="off"
+                  oninput="comboSearch('pri-company')"
+                  onfocus="comboOpen('pri-company')"
+                  onkeydown="comboKeydown(event,'pri-company')"
+                  aria-label="Insurance company"
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                />
+                <span class="insurance-combo-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+                <div class="insurance-combo-list" id="pri-company-list" role="listbox"></div>
+                <input type="hidden" id="pri-company-value" />
+              </div>
               <input class="field-input other-field" id="pri-company-other" type="text" placeholder="Enter insurance company name" />
               <span class="field-error" id="err-pri-company">Please select an insurance company.</span>
             </div>
@@ -697,21 +801,29 @@
 
           <div class="form-grid">
 
+            <!-- Insurance Company combobox -->
             <div class="field-group">
-              <label class="field-label" for="sec-company">Insurance Company</label>
-              <select class="field-select" id="sec-company" onchange="handleCompanyChange('sec')">
-                <option value="">— Select —</option>
-                <option value="Aetna">Aetna</option>
-                <option value="Anthem">Anthem / Blue Cross Blue Shield</option>
-                <option value="Cigna">Cigna</option>
-                <option value="Humana">Humana</option>
-                <option value="Medicare">Medicare</option>
-                <option value="Medicaid">Medicaid</option>
-                <option value="Tricare">Tricare</option>
-                <option value="UHC">United Healthcare (UHC)</option>
-                <option value="WC">Workers' Comp Carrier</option>
-                <option value="Other">Other…</option>
-              </select>
+              <label class="field-label" for="sec-company-input">Insurance Company</label>
+              <div class="insurance-combo" id="sec-company-combo">
+                <input
+                  class="insurance-combo-input"
+                  id="sec-company-input"
+                  type="text"
+                  placeholder="Search or type company…"
+                  autocomplete="off"
+                  oninput="comboSearch('sec-company')"
+                  onfocus="comboOpen('sec-company')"
+                  onkeydown="comboKeydown(event,'sec-company')"
+                  aria-label="Insurance company"
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                />
+                <span class="insurance-combo-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+                <div class="insurance-combo-list" id="sec-company-list" role="listbox"></div>
+                <input type="hidden" id="sec-company-value" />
+              </div>
               <input class="field-input other-field" id="sec-company-other" type="text" placeholder="Enter insurance company name" />
             </div>
 
@@ -809,10 +921,210 @@
 
 
   // ════════════════════════════════════════════════════════════════════════════
+  //  INSURANCE COMPANY LIST
+  //  To add entries: push another { label, value, nicknames[] } object.
+  //  label     = displayed name in dropdown and input after selection
+  //  value     = what gets stored / sent to AWS
+  //  nicknames = extra aliases that trigger a match (all fuzzy / lenient)
+  // ════════════════════════════════════════════════════════════════════════════
+  const INSURANCE_LIST = [
+    { label: 'Aetna',                           value: 'Aetna',    nicknames: ['aetna'] },
+    { label: 'Anthem / Blue Cross Blue Shield',  value: 'Anthem',   nicknames: ['anthem','bcbs','bluecross','blueshield','blue cross','blue shield'] },
+    { label: 'Cigna',                           value: 'Cigna',    nicknames: ['cigna','evernorth'] },
+    { label: 'Humana',                          value: 'Humana',   nicknames: ['humana'] },
+    { label: 'Medicare',                        value: 'Medicare', nicknames: ['medicare','cms','centers for medicare'] },
+    { label: 'Medicaid',                        value: 'Medicaid', nicknames: ['medicaid','state insurance','government insurance'] },
+    { label: 'Tricare',                         value: 'Tricare',  nicknames: ['tricare','military','va','veterans','defense health'] },
+    { label: 'United Healthcare',               value: 'UHC',      nicknames: ['uhc','united','unitedhealthcare','united health','optum'] },
+    { label: "Worker's Comp Carrier",           value: 'WC',       nicknames: ['wc','workercomp','workerscomp','workers comp','workers compensation','work comp'] },
+    { label: 'Other…',                          value: 'Other',    nicknames: [] },
+  ];
+
+  // ── Fuzzy normalize ─────────────────────────────────────────────────────────
+  // Strips spaces, dashes, dots, slashes, apostrophes for lenient comparison
+  function comboNorm(str) {
+    return String(str).toLowerCase().replace(/[\s\-_.,'()\/]/g, '');
+  }
+
+  function comboMatches(item, query) {
+    if (!query) return true;
+    const q = comboNorm(query);
+    if (comboNorm(item.label).includes(q)) return true;
+    if (comboNorm(item.value).includes(q)) return true;
+    return item.nicknames.some(n => comboNorm(n).includes(q));
+  }
+
+  // ── Highlight matching chars in label ───────────────────────────────────────
+  function comboHighlight(text, query) {
+    if (!query) return escHtml(text);
+    const normQ = comboNorm(query);
+    const normT = comboNorm(text);
+    const idx   = normT.indexOf(normQ);
+    if (idx === -1) return escHtml(text);
+    let ni = 0, oi = 0, start = -1, end = -1;
+    while (oi < text.length) {
+      const nc = comboNorm(text[oi]);
+      if (nc) {
+        if (ni === idx) start = oi;
+        if (ni === idx + normQ.length - 1) end = oi + 1;
+        ni++;
+      }
+      oi++;
+    }
+    if (start === -1) return escHtml(text);
+    return escHtml(text.slice(0, start))
+      + '<mark>' + escHtml(text.slice(start, end)) + '</mark>'
+      + escHtml(text.slice(end));
+  }
+
+  // ── Per-instance state ───────────────────────────────────────────────────────
+  const comboState = {};
+  function getComboState(id) {
+    if (!comboState[id]) comboState[id] = { focusIndex: -1, filtered: [] };
+    return comboState[id];
+  }
+
+  function comboOpen(id) {
+    const combo = document.getElementById(id + '-combo');
+    const input = document.getElementById(id + '-input');
+    if (!combo) return;
+    combo.classList.add('open');
+    input.setAttribute('aria-expanded', 'true');
+    comboRender(id, input.value);
+  }
+
+  function comboClose(id) {
+    const combo = document.getElementById(id + '-combo');
+    const input = document.getElementById(id + '-input');
+    if (!combo) return;
+    combo.classList.remove('open');
+    input.setAttribute('aria-expanded', 'false');
+    getComboState(id).focusIndex = -1;
+  }
+
+  function comboRender(id, query) {
+    const list  = document.getElementById(id + '-list');
+    const state = getComboState(id);
+    state.filtered   = INSURANCE_LIST.filter(item => comboMatches(item, query));
+    state.focusIndex = -1;
+
+    if (state.filtered.length === 0) {
+      list.innerHTML =
+        `<div class="insurance-combo-empty">No matches found</div>
+         <div class="insurance-combo-option" role="option"
+              onclick="comboSelect('${id}','Other','Other')">Other…</div>`;
+      return;
+    }
+
+    list.innerHTML = state.filtered.map((item, i) => {
+      const nickMatch = query && !comboNorm(item.label).includes(comboNorm(query))
+        ? item.nicknames.find(n => comboNorm(n).includes(comboNorm(query)))
+        : null;
+      const nickHtml = nickMatch
+        ? `<span class="combo-nick">also known as: ${escHtml(nickMatch)}</span>`
+        : '';
+      return `<div class="insurance-combo-option" role="option" data-index="${i}"
+                   onclick="comboSelect('${id}','${escHtml(item.value)}','${escHtml(item.label)}')">
+                ${comboHighlight(item.label, query)}${nickHtml}
+              </div>`;
+    }).join('');
+  }
+
+  function comboSearch(id) {
+    const input = document.getElementById(id + '-input');
+    const hidden = document.getElementById(id + '-value');
+    hidden.value = '';
+    comboOpen(id);
+    comboRender(id, input.value);
+    const other = document.getElementById(id + '-other');
+    if (other) other.classList.remove('visible');
+    refreshHero();
+  }
+
+  function comboSelect(id, value, label) {
+    const input  = document.getElementById(id + '-input');
+    const hidden = document.getElementById(id + '-value');
+    const other  = document.getElementById(id + '-other');
+
+    input.value  = label.replace('…', '').trim();
+    hidden.value = value;
+
+    if (other) {
+      other.classList.toggle('visible', value === 'Other');
+      if (value === 'Other') {
+        input.value = '';
+        setTimeout(() => other.focus(), 50);
+      }
+    }
+
+    comboClose(id);
+    refreshHero();
+
+    // Clear validation error
+    input.classList.remove('invalid');
+    const err = document.getElementById('err-' + id);
+    if (err) err.classList.remove('visible');
+  }
+
+  function comboKeydown(e, id) {
+    const state = getComboState(id);
+    const list  = document.getElementById(id + '-list');
+    const opts  = list.querySelectorAll('.insurance-combo-option');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      state.focusIndex = Math.min(state.focusIndex + 1, opts.length - 1);
+      updateComboFocus(opts, state.focusIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      state.focusIndex = Math.max(state.focusIndex - 1, 0);
+      updateComboFocus(opts, state.focusIndex);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (state.focusIndex >= 0 && opts[state.focusIndex]) opts[state.focusIndex].click();
+    } else if (e.key === 'Escape') {
+      comboClose(id);
+    }
+  }
+
+  function updateComboFocus(opts, idx) {
+    opts.forEach((o, i) => o.classList.toggle('focused', i === idx));
+    if (opts[idx]) opts[idx].scrollIntoView({ block: 'nearest' });
+  }
+
+  // Close when clicking outside
+  document.addEventListener('click', e => {
+    ['pri-company', 'sec-company'].forEach(id => {
+      const combo = document.getElementById(id + '-combo');
+      if (combo && !combo.contains(e.target)) comboClose(id);
+    });
+  });
+
+  // Helper to programmatically set a combo value (used by populateForm)
+  function comboSetValue(id, value) {
+    if (!value) return;
+    const input  = document.getElementById(id + '-input');
+    const hidden = document.getElementById(id + '-value');
+    const other  = document.getElementById(id + '-other');
+    const match  = INSURANCE_LIST.find(item => item.value === value || item.label === value);
+    if (match) {
+      input.value  = match.label.replace('…','').trim();
+      hidden.value = match.value;
+      if (other) other.classList.toggle('visible', match.value === 'Other');
+    } else {
+      // Unknown value — treat as Other
+      hidden.value = 'Other';
+      input.value  = '';
+      if (other) { other.value = value; other.classList.add('visible'); }
+    }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
   //  loadPatientData — fetch patient record from AWS
   //
   //  TO CONNECT AWS (READ):
-  //  1. Get the patient ID from the URL, e.g.:
+  //  1. Get the patient ID from the URL:
   //       const patientId = window.location.pathname.split('/').filter(Boolean).pop();
   //  2. Replace the placeholder Promise.resolve() with a real fetch:
   //       const token = await getAccessToken();
@@ -833,7 +1145,6 @@
         address:         '123 Florida Ave, Palm Coast, FL 32137',
         phone:           '321-555-0100',
         email:           'jdoe@example.com',
-        // Primary insurance
         priCompany:      'Medicare',
         priType:         'Medicare',
         priPolicy:       '1EG4-TE5-MK72',
@@ -841,7 +1152,6 @@
         priHolder:       '',
         priRelationship: '',
         priPhotoUrl:     '',
-        // Secondary insurance
         secCompany:      'UHC',
         secType:         'Commercial',
         secPolicy:       '2XY5-AB3-LK99',
@@ -851,16 +1161,14 @@
         secPhotoUrl:     '',
       });
       // ─────────────────────────────────────────────────────────────────────
-
       populateForm(data);
-
     } catch (err) {
       console.error('Failed to load patient:', err);
       updateHeroTitle('', '', '');
     }
   }
 
-  // ── Populate all form fields from loaded data ────────────────────────────────
+  // ── Populate all form fields ─────────────────────────────────────────────────
   function populateForm(d) {
     setVal('inp-first',   d.firstName);
     setVal('inp-last',    d.lastName);
@@ -869,30 +1177,27 @@
     setVal('inp-phone',   d.phone);
     setVal('inp-email',   d.email);
 
-    // Primary
-    setSelectOrOther('pri-company', 'pri-company-other', d.priCompany);
-    setSelectOrOther('pri-type',    'pri-type-other',    d.priType);
-    setVal('pri-policy',  d.priPolicy);
-    setVal('pri-group',   d.priGroup);
-    setVal('pri-holder',  d.priHolder);
+    // Primary — use combo for company, regular select for type
+    comboSetValue('pri-company', d.priCompany);
+    setSelectOrOther('pri-type', 'pri-type-other', d.priType);
+    setVal('pri-policy',       d.priPolicy);
+    setVal('pri-group',        d.priGroup);
+    setVal('pri-holder',       d.priHolder);
     setVal('pri-relationship', d.priRelationship);
-    if (d.priHolder) showRelationship('pri');
+    if (d.priHolder)   showRelationship('pri');
     if (d.priPhotoUrl) showExistingPhoto('pri', d.priPhotoUrl);
 
     // Secondary
-    setSelectOrOther('sec-company', 'sec-company-other', d.secCompany);
-    setSelectOrOther('sec-type',    'sec-type-other',    d.secType);
-    setVal('sec-policy',  d.secPolicy);
-    setVal('sec-group',   d.secGroup);
-    setVal('sec-holder',  d.secHolder);
+    comboSetValue('sec-company', d.secCompany);
+    setSelectOrOther('sec-type', 'sec-type-other', d.secType);
+    setVal('sec-policy',       d.secPolicy);
+    setVal('sec-group',        d.secGroup);
+    setVal('sec-holder',       d.secHolder);
     setVal('sec-relationship', d.secRelationship);
-    if (d.secHolder) showRelationship('sec');
+    if (d.secHolder)   showRelationship('sec');
     if (d.secPhotoUrl) showExistingPhoto('sec', d.secPhotoUrl);
 
-    // Trigger DOB age calc
     handleDob(document.getElementById('inp-dob'));
-
-    // Update hero title
     updateHeroTitle(d.firstName, d.lastName, resolveInsuranceLabel('pri'), resolveInsuranceLabel('sec'));
   }
 
@@ -903,16 +1208,14 @@
 
   function setSelectOrOther(selectId, otherId, value) {
     if (!value) return;
-    const sel = document.getElementById(selectId);
+    const sel   = document.getElementById(selectId);
     const other = document.getElementById(otherId);
-    // Check if value matches an option
     const match = Array.from(sel.options).find(o => o.value === value);
     if (match) {
       sel.value = value;
     } else {
       sel.value = 'Other';
-      other.value = value;
-      other.classList.add('visible');
+      if (other) { other.value = value; other.classList.add('visible'); }
     }
   }
 
@@ -929,32 +1232,30 @@
   function updateHeroTitle(first, last, priLabel, secLabel) {
     const el   = document.getElementById('patient-hero-title');
     const name = [first, last].filter(Boolean).join(' ') || 'New Patient';
-    const insuranceParts = [priLabel, secLabel].filter(Boolean);
-    const insuranceStr   = insuranceParts.length ? insuranceParts.join(', ') : '';
-
+    const parts = [priLabel, secLabel].filter(Boolean);
     el.innerHTML =
       `<span class="patient-name">${escHtml(name)}</span>` +
-      (insuranceStr
-        ? `<span class="separator">—</span><span class="insurance-tag">${escHtml(insuranceStr)}</span>`
+      (parts.length
+        ? `<span class="separator">—</span><span class="insurance-tag">${escHtml(parts.join(', '))}</span>`
         : '');
   }
 
   function resolveInsuranceLabel(prefix) {
-    const sel = document.getElementById(prefix + '-company');
-    if (!sel || !sel.value) return '';
-    if (sel.value === 'Other') {
-      return document.getElementById(prefix + '-company-other').value.trim() || 'Other';
-    }
-    return sel.value;
+    const hidden = document.getElementById(prefix + '-company-value');
+    const other  = document.getElementById(prefix + '-company-other');
+    if (!hidden || !hidden.value) return '';
+    if (hidden.value === 'Other') return other?.value.trim() || 'Other';
+    const match = INSURANCE_LIST.find(i => i.value === hidden.value);
+    return match ? match.label.replace('…','').trim() : hidden.value;
   }
 
   // Live-update hero as names / insurance change
   ['inp-first','inp-last'].forEach(id => {
     document.getElementById(id).addEventListener('input', refreshHero);
   });
-  ['pri-company','sec-company','pri-company-other','sec-company-other'].forEach(id => {
-    document.getElementById(id).addEventListener('input',  refreshHero);
-    document.getElementById(id).addEventListener('change', refreshHero);
+  ['pri-company-other','sec-company-other'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.addEventListener('input', refreshHero); el.addEventListener('change', refreshHero); }
   });
 
   function refreshHero() {
@@ -971,21 +1272,19 @@
   //  DOB — auto-format and age calculation
   // ════════════════════════════════════════════════════════════════════════════
   function handleDob(input) {
-    // Auto-insert slashes while typing
     let v = input.value.replace(/\D/g, '').slice(0, 8);
     if (v.length > 4) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
     else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
     input.value = v;
 
-    // Calculate age if full date
-    const badge   = document.getElementById('age-badge');
-    const ageVal  = document.getElementById('age-value');
-    const full    = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
+    const badge  = document.getElementById('age-badge');
+    const ageVal = document.getElementById('age-value');
+    const full   = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
     if (full) {
-      const dob  = new Date(+full[3], +full[1] - 1, +full[2]);
+      const dob   = new Date(+full[3], +full[1] - 1, +full[2]);
       const today = new Date();
-      let age    = today.getFullYear() - dob.getFullYear();
-      const m    = today.getMonth() - dob.getMonth();
+      let age     = today.getFullYear() - dob.getFullYear();
+      const m     = today.getMonth() - dob.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
       if (age >= 0 && age <= 130) {
         ageVal.textContent = age;
@@ -998,7 +1297,7 @@
 
 
   // ════════════════════════════════════════════════════════════════════════════
-  //  Phone — auto-format to ###-###-####
+  //  Phone — auto-format
   // ════════════════════════════════════════════════════════════════════════════
   function formatPhoneInput(input) {
     let d = input.value.replace(/\D/g, '').slice(0, 10);
@@ -1009,15 +1308,8 @@
 
 
   // ════════════════════════════════════════════════════════════════════════════
-  //  "Other" dropdowns — show / hide free-text field
+  //  Insurance Type "Other" handler
   // ════════════════════════════════════════════════════════════════════════════
-  function handleCompanyChange(prefix) {
-    const sel   = document.getElementById(prefix + '-company');
-    const other = document.getElementById(prefix + '-company-other');
-    other.classList.toggle('visible', sel.value === 'Other');
-    refreshHero();
-  }
-
   function handleTypeChange(prefix) {
     const sel   = document.getElementById(prefix + '-type');
     const other = document.getElementById(prefix + '-type-other');
@@ -1067,17 +1359,12 @@
   }
 
   function processPhotoFile(file, prefix) {
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('File is too large. Max 10 MB.', 'error');
-      return;
-    }
+    if (file.size > 10 * 1024 * 1024) { showToast('File is too large. Max 10 MB.', 'error'); return; }
     if (file.type === 'application/pdf') {
-      // For PDF, just show filename, no image preview
       const preview = document.getElementById(prefix + '-preview');
       const img     = document.getElementById(prefix + '-preview-img');
       const zone    = document.getElementById(prefix + '-upload-zone');
-      img.src = ''; img.alt = file.name;
-      img.style.display = 'none';
+      img.src = ''; img.alt = file.name; img.style.display = 'none';
       preview.classList.add('visible');
       preview.querySelector('button').insertAdjacentHTML('beforebegin',
         `<div style="padding:12px;font-family:'Sora',sans-serif;font-size:0.82rem;color:var(--text-muted);">📄 ${escHtml(file.name)}</div>`);
@@ -1089,8 +1376,7 @@
       const preview = document.getElementById(prefix + '-preview');
       const img     = document.getElementById(prefix + '-preview-img');
       const zone    = document.getElementById(prefix + '-upload-zone');
-      img.src = ev.target.result;
-      img.style.display = '';
+      img.src = ev.target.result; img.style.display = '';
       preview.classList.add('visible');
       zone.style.display = 'none';
     };
@@ -1104,7 +1390,6 @@
     const input   = document.getElementById(prefix + '-file-input');
     img.src = ''; img.style.display = '';
     preview.classList.remove('visible');
-    // Remove any PDF label div
     const pdfLabel = preview.querySelector('div');
     if (pdfLabel) pdfLabel.remove();
     zone.style.display = '';
@@ -1130,87 +1415,99 @@
     require('inp-first',   'err-first');
     require('inp-last',    'err-last');
     require('inp-address', 'err-address');
+    require('inp-dob',     'err-dob', v => /^\d{2}\/\d{2}\/\d{4}$/.test(v));
 
-    // DOB — must match mm/dd/yyyy
-    require('inp-dob', 'err-dob', v => /^\d{2}\/\d{2}\/\d{4}$/.test(v));
-
-    // Phone — optional but if filled must be 10 digits
-    const phone = document.getElementById('inp-phone').value.replace(/\D/g,'');
-    const phoneErr = document.getElementById('err-phone');
+    // Phone — optional, must be 10 digits if filled
+    const phone    = document.getElementById('inp-phone').value.replace(/\D/g,'');
     const phoneEl  = document.getElementById('inp-phone');
+    const phoneErr = document.getElementById('err-phone');
     if (phone.length > 0 && phone.length !== 10) {
-      phoneEl.classList.add('invalid');
-      phoneErr.classList.add('visible');
-      valid = false;
+      phoneEl.classList.add('invalid'); phoneErr.classList.add('visible'); valid = false;
     } else {
-      phoneEl.classList.remove('invalid');
-      phoneErr.classList.remove('visible');
+      phoneEl.classList.remove('invalid'); phoneErr.classList.remove('visible');
     }
 
-    // Email — optional but if filled must be valid
-    const email = document.getElementById('inp-email').value.trim();
-    const emailErr = document.getElementById('err-email');
+    // Email — optional, must be valid if filled
+    const email    = document.getElementById('inp-email').value.trim();
     const emailEl  = document.getElementById('inp-email');
+    const emailErr = document.getElementById('err-email');
     if (email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      emailEl.classList.add('invalid');
-      emailErr.classList.add('visible');
-      valid = false;
+      emailEl.classList.add('invalid'); emailErr.classList.add('visible'); valid = false;
     } else {
-      emailEl.classList.remove('invalid');
-      emailErr.classList.remove('visible');
+      emailEl.classList.remove('invalid'); emailErr.classList.remove('visible');
     }
 
-    // Primary insurance — company + type + policy required
-    require('pri-company', 'err-pri-company', v => v.length > 0);
-    require('pri-type',    'err-pri-type',    v => v.length > 0);
-    require('pri-policy',  'err-pri-policy');
+    // Primary insurance company — check hidden value from combo
+    const priCompanyVal   = document.getElementById('pri-company-value').value;
+    const priCompanyInput = document.getElementById('pri-company-input');
+    const priCompanyErr   = document.getElementById('err-pri-company');
+    if (!priCompanyVal) {
+      priCompanyInput.classList.add('invalid');
+      priCompanyErr.classList.add('visible');
+      valid = false;
+    } else {
+      priCompanyInput.classList.remove('invalid');
+      priCompanyErr.classList.remove('visible');
+    }
+
+    require('pri-type',   'err-pri-type',   v => v.length > 0);
+    require('pri-policy', 'err-pri-policy');
 
     return valid;
   }
 
 
   // ════════════════════════════════════════════════════════════════════════════
-  //  savePatient — collect form and send to AWS
+  //  collectInsurance — reads combo value for company
+  // ════════════════════════════════════════════════════════════════════════════
+  function collectInsurance(prefix) {
+    const companyValue = document.getElementById(prefix + '-company-value')?.value || '';
+    const companyFinal = companyValue === 'Other'
+      ? (document.getElementById(prefix + '-company-other')?.value.trim() || 'Other')
+      : companyValue;
+    const type = document.getElementById(prefix + '-type')?.value || '';
+    return {
+      company:      companyFinal,
+      type:         type === 'Other' ? getVal(prefix + '-type-other') : type,
+      policy:       getVal(prefix + '-policy'),
+      group:        getVal(prefix + '-group')        || null,
+      holder:       getVal(prefix + '-holder')       || null,
+      relationship: getVal(prefix + '-relationship') || null,
+    };
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  savePatient
   //
   //  TO CONNECT AWS (SAVE):
-  //  Replace the placeholder setTimeout with a real PUT/POST:
-  //
   //    const patientId = window.location.pathname.split('/').filter(Boolean).pop();
   //    const token     = await getAccessToken();
   //    const res       = await fetch(
   //      `https://YOUR_API.execute-api.us-east-1.amazonaws.com/prod/patients/${patientId}`,
-  //      {
-  //        method:  'PUT',
-  //        headers: { 'Content-Type': 'application/json',
-  //                   Authorization: `Bearer ${token}` },
-  //        body:    JSON.stringify(payload),
-  //      }
+  //      { method: 'PUT',
+  //        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  //        body: JSON.stringify(payload) }
   //    );
   //    if (!res.ok) throw new Error('Save failed: ' + res.status);
-  //
-  //  For photo uploads, upload the file to S3 separately using a pre-signed URL
-  //  and store the S3 key/URL in the patient record.
+  //  For photos: upload to S3 via pre-signed URL, store the S3 URL in the record.
   // ════════════════════════════════════════════════════════════════════════════
   async function savePatient() {
-    if (!validateForm()) {
-      showToast('Please fix the highlighted fields.', 'error');
-      return;
-    }
+    if (!validateForm()) { showToast('Please fix the highlighted fields.', 'error'); return; }
 
     const saveBtn = document.getElementById('save-btn');
     const status  = document.getElementById('save-status');
     saveBtn.disabled = true;
     status.classList.add('visible');
 
-    // Collect payload
     const payload = {
-      firstName:        getVal('inp-first'),
-      lastName:         getVal('inp-last'),
-      dob:              getVal('inp-dob'),
-      address:          getVal('inp-address'),
-      phone:            document.getElementById('inp-phone').value.replace(/\D/g,'') || null,
-      email:            getVal('inp-email') || null,
-      primaryInsurance: collectInsurance('pri'),
+      firstName:          getVal('inp-first'),
+      lastName:           getVal('inp-last'),
+      dob:                getVal('inp-dob'),
+      address:            getVal('inp-address'),
+      phone:              document.getElementById('inp-phone').value.replace(/\D/g,'') || null,
+      email:              getVal('inp-email') || null,
+      primaryInsurance:   collectInsurance('pri'),
       secondaryInsurance: collectInsurance('sec'),
     };
 
@@ -1219,10 +1516,8 @@
       await new Promise(r => setTimeout(r, 1000));
       console.log('[Patient] Would save to AWS:', payload);
       // ─────────────────────────────────────────────────────────────────────
-
       refreshHero();
       showToast('Patient saved successfully!', 'success');
-
     } catch (err) {
       console.error('Save failed:', err);
       showToast('Save failed. Please try again.', 'error');
@@ -1232,31 +1527,14 @@
     }
   }
 
-  function collectInsurance(prefix) {
-    const company = document.getElementById(prefix + '-company').value;
-    const type    = document.getElementById(prefix + '-type').value;
-    return {
-      company:      company === 'Other' ? getVal(prefix + '-company-other') : company,
-      type:         type    === 'Other' ? getVal(prefix + '-type-other')    : type,
-      policy:       getVal(prefix + '-policy'),
-      group:        getVal(prefix + '-group')   || null,
-      holder:       getVal(prefix + '-holder')  || null,
-      relationship: getVal(prefix + '-relationship') || null,
-    };
-  }
-
   function getVal(id) {
     return document.getElementById(id)?.value.trim() || '';
   }
 
-
   // ── Back button ──────────────────────────────────────────────────────────────
   function goBack() {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = '/guard/portal/patients/';
-    }
+    if (window.history.length > 1) { window.history.back(); }
+    else { window.location.href = '/guard/portal/patients/'; }
   }
 
   // ── Toast ────────────────────────────────────────────────────────────────────
