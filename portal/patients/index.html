@@ -956,25 +956,12 @@
 
   // ── Highlight matching chars in label ───────────────────────────────────────
   function comboHighlight(text, query) {
-    if (!query) return escHtml(text);
-    const normQ = comboNorm(query);
-    const normT = comboNorm(text);
-    const idx   = normT.indexOf(normQ);
-    if (idx === -1) return escHtml(text);
-    let ni = 0, oi = 0, start = -1, end = -1;
-    while (oi < text.length) {
-      const nc = comboNorm(text[oi]);
-      if (nc) {
-        if (ni === idx) start = oi;
-        if (ni === idx + normQ.length - 1) end = oi + 1;
-        ni++;
-      }
-      oi++;
-    }
-    if (start === -1) return escHtml(text);
-    return escHtml(text.slice(0, start))
-      + '<mark>' + escHtml(text.slice(start, end)) + '</mark>'
-      + escHtml(text.slice(end));
+  if (!query) return escHtml(text);
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return escHtml(text);
+  return escHtml(text.slice(0, idx))
+    + '<mark>' + escHtml(text.slice(idx, idx + query.length)) + '</mark>'
+    + escHtml(text.slice(idx + query.length));
   }
 
   // ── Per-instance state ───────────────────────────────────────────────────────
