@@ -619,71 +619,6 @@
       color: var(--text-light); padding: 10px 13px; text-align: center;
     }
 
-
-    /* ── Insurance plan toggle ── */
-    .insurance-toggle-card {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-card);
-      padding: 22px 24px;
-      box-shadow: var(--shadow-card);
-      margin-bottom: 16px;
-    }
-
-    .insurance-toggle-label {
-      font-family: 'Sora', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 14px;
-    }
-
-    .toggle-options {
-      display: flex;
-      gap: 10px;
-    }
-
-    .toggle-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 18px;
-      border-radius: 999px;
-      border: 1.5px solid rgba(6,23,40,0.14);
-      background: var(--bg);
-      font-family: 'Sora', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      user-select: none;
-    }
-    .toggle-option:hover {
-      border-color: var(--brand);
-      color: var(--brand);
-      background: var(--accent);
-    }
-    .toggle-option.selected {
-      border-color: var(--brand);
-      background: var(--accent);
-      color: var(--brand);
-      font-weight: 700;
-    }
-    .toggle-option .toggle-dot {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      border: 2px solid currentColor;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s ease;
-    }
-    .toggle-option.selected .toggle-dot::after {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--brand);
-    }
     /* ══════════════════════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════════════════════ */
@@ -893,23 +828,6 @@
               </div>
             </div>
 
-
-            <!-- ── Insurance Plan Toggle ── -->
-            <div class="insurance-toggle-card" id="insurance-toggle-card">
-              <div class="insurance-toggle-label">Does the patient have an insurance plan?</div>
-              <div class="toggle-options">
-                <div class="toggle-option" id="toggle-yes" onclick="setInsurancePlan('yes')">
-                  <span class="toggle-dot"></span>
-                  Yes
-                </div>
-                <div class="toggle-option" id="toggle-selfpay" onclick="setInsurancePlan('selfpay')">
-                  <span class="toggle-dot"></span>
-                  No, Self Pay
-                </div>
-              </div>
-            </div>
-
-            <div id="insurance-sections" style="display:none;">
             <!-- ── SECTION 2: Primary Insurance ── -->
             <div class="section-card">
               <div class="section-card-title">Primary Insurance</div>
@@ -1096,8 +1014,6 @@
 
               </div>
             </div>
-
-            </div><!-- end #insurance-sections -->
 
             <!-- ── Save row ── -->
             <div class="save-row">
@@ -1349,11 +1265,6 @@
       removePhoto(prefix);
     });
 
-    // Reset insurance toggle
-    setInsurancePlan(null);
-    document.getElementById('toggle-yes').classList.remove('selected');
-    document.getElementById('toggle-selfpay').classList.remove('selected');
-
     // Clear errors
     document.querySelectorAll('.field-error').forEach(e => e.classList.remove('visible'));
     document.querySelectorAll('.field-input, .field-select').forEach(e => e.classList.remove('invalid'));
@@ -1535,13 +1446,6 @@
   //  POPULATE FORM
   // ════════════════════════════════════════════════════════════════════════════
   function populateForm(d) {
-    // Set insurance toggle based on whether patient has insurance
-    if (d.priCompany) {
-      setInsurancePlan('yes');
-    } else {
-      setInsurancePlan('selfpay');
-    }
-
     setVal('inp-first',   d.firstName);
     setVal('inp-last',    d.lastName);
     setVal('inp-dob',     d.dob);
@@ -1633,24 +1537,6 @@
     const el = document.getElementById(id);
     if (el) { el.addEventListener('input', refreshHero); el.addEventListener('change', refreshHero); }
   });
-
-  // ════════════════════════════════════════════════════════════════════════════
-  //  INSURANCE PLAN TOGGLE
-  // ════════════════════════════════════════════════════════════════════════════
-  function setInsurancePlan(choice) {
-    const sections = document.getElementById('insurance-sections');
-    const yes      = document.getElementById('toggle-yes');
-    const selfpay  = document.getElementById('toggle-selfpay');
-    if (choice === 'yes') {
-      sections.style.display = '';
-      yes.classList.add('selected');
-      selfpay.classList.remove('selected');
-    } else {
-      sections.style.display = 'none';
-      selfpay.classList.add('selected');
-      yes.classList.remove('selected');
-    }
-  }
 
   function refreshHero() {
     updateHeroTitle(
@@ -1813,17 +1699,29 @@
       emailEl.classList.remove('invalid'); emailErr.classList.remove('visible');
     }
 
-    const priCompanyVal   = document.getElementById('pri-company-value').value;
-    const priCompanyInput = document.getElementById('pri-company-input');
-    const priCompanyErr   = document.getElementById('err-pri-company');
-    if (!priCompanyVal) {
-      priCompanyInput.classList.add('invalid'); priCompanyErr.classList.add('visible'); valid = false;
-    } else {
-      priCompanyInput.classList.remove('invalid'); priCompanyErr.classList.remove('visible');
-    }
+    const hasInsurance = document.getElementById('toggle-yes')?.classList.contains('selected');
 
-    require('pri-type',   'err-pri-type',   v => v.length > 0);
-    require('pri-policy', 'err-pri-policy');
+    if (hasInsurance) {
+      const priCompanyVal   = document.getElementById('pri-company-value').value;
+      const priCompanyInput = document.getElementById('pri-company-input');
+      const priCompanyErr   = document.getElementById('err-pri-company');
+      if (!priCompanyVal) {
+        priCompanyInput.classList.add('invalid'); priCompanyErr.classList.add('visible'); valid = false;
+      } else {
+        priCompanyInput.classList.remove('invalid'); priCompanyErr.classList.remove('visible');
+      }
+
+      require('pri-type',   'err-pri-type',   v => v.length > 0);
+      require('pri-policy', 'err-pri-policy');
+    } else {
+      // Clear any stale insurance validation errors
+      ['pri-company-input','pri-type','pri-policy'].forEach(id => {
+        document.getElementById(id)?.classList.remove('invalid');
+      });
+      ['err-pri-company','err-pri-type','err-pri-policy'].forEach(id => {
+        document.getElementById(id)?.classList.remove('visible');
+      });
+    }
 
     return valid;
   }
