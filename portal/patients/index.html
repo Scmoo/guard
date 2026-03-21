@@ -1343,7 +1343,7 @@
       list.innerHTML =
         `<div class="insurance-combo-empty">No matches found</div>
          <div class="insurance-combo-option" role="option"
-              onmousedown="event.preventDefault();comboSelect('${id}','Other','Other')">Other…</div>`;
+              onclick="comboSelect('${id}','Other','Other')">Other…</div>`;
       return;
     }
 
@@ -1355,7 +1355,7 @@
         ? `<span class="combo-nick">also known as: ${escHtml(nickMatch)}</span>`
         : '';
       return `<div class="insurance-combo-option" role="option" data-index="${i}"
-                   onmousedown="event.preventDefault();comboSelect('${id}','${escHtml(item.value)}','${escHtml(item.label)}')">
+                   onclick="comboSelect('${id}','${escHtml(item.value)}','${escHtml(item.label)}')">
                 ${comboHighlight(item.label, query)}${nickHtml}
               </div>`;
     }).join('');
@@ -1382,7 +1382,7 @@
 
     if (other) {
       other.classList.toggle('visible', value === 'Other');
-      if (value === 'Other') { input.value = ''; setTimeout(() => other.focus(), 50); }
+      if (value === 'Other') { input.value = 'Other'; setTimeout(() => other.focus(), 50); }
     }
 
     comboClose(id);
