@@ -883,7 +883,7 @@
                     <option value="Medicaid">Medicaid</option>
                     <option value="Medicare Advantage">Medicare Advantage</option>
                     <option value="Commercial">Commercial</option>
-                    <option value="Workers Comp">Worker's Comp</option>
+                    <option value="Workers Comp">Workers Comp</option>
                     <option value="Tricare">Tricare</option>
                     <option value="Other">Other…</option>
                   </select>
@@ -977,7 +977,7 @@
                     <option value="Medicaid">Medicaid</option>
                     <option value="Medicare Advantage">Medicare Advantage</option>
                     <option value="Commercial">Commercial</option>
-                    <option value="Workers Comp">Worker's Comp</option>
+                    <option value="Workers Comp">Workers Comp</option>
                     <option value="Tricare">Tricare</option>
                     <option value="Other">Other…</option>
                   </select>
@@ -1120,7 +1120,7 @@
       firstName: 'Robert',    lastName: 'Castillo',
       dob: '06/14/1968',      address: '331 Magnolia Trail, St. Augustine, FL 32086',
       phone: '904-555-0512',  email: 'rcastillo@example.com',
-      priCompany: "Workers' Comp", priType: 'Workers Comp', priPolicy: 'WC-2024-007',
+      priCompany: "Workers Comp", priType: 'Workers Comp', priPolicy: 'WC-2024-007',
       priGroup: '',           priHolder: '',                 priRelationship: '',
       priPhotoUrl: '',
       secCompany: '',         secType: '',                   secPolicy: '',
@@ -1282,7 +1282,7 @@
     { label: 'Medicaid',                        value: 'Medicaid',       nicknames: ['Medicaid','State Insurance','Government Insurance'] },
     { label: 'Tricare',                         value: 'Tricare',        nicknames: ['Tricare','Military Insurance','VA','Veterans','Defense health'] },
     { label: 'United Healthcare',               value: 'UHC',            nicknames: ['UHC','United','UnitedHealthcare','United Health'] },
-    { label: "Workers' Comp Carrier",           value: "Workers' Comp",  nicknames: ['WC','Workerscomp','Workers Comp','Workers Compensation','Work Comp'] },
+    { label: "Workers Comp Carrier",           value: "Workers Comp",  nicknames: ['WC','Workerscomp','Workers Comp','Workers Compensation','Work Comp'] },
     { label: 'Other…',                          value: 'Other',          nicknames: [] },
   ];
 
@@ -1382,7 +1382,7 @@
 
     if (other) {
       other.classList.toggle('visible', value === 'Other');
-      if (value === 'Other') { input.value = 'Other'; setTimeout(() => other.focus(), 50); }
+      if (value === 'Other') { input.value = ''; setTimeout(() => other.focus(), 50); }
     }
 
     comboClose(id);
