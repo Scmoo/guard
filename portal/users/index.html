@@ -430,6 +430,45 @@
       white-space: nowrap; flex-shrink: 0;
     }
 
+    /* Admin location lock — inline notice banner */
+    .admin-lock-notice {
+      display: none;
+      align-items: flex-start; gap: 10px;
+      background: #fff7e6; border: 1.5px solid #fde68a; border-radius: 10px;
+      padding: 11px 14px; margin-top: 10px;
+      animation: noticeSlideIn 0.2s ease both;
+    }
+    .admin-lock-notice.visible { display: flex; }
+    @keyframes noticeSlideIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .admin-lock-notice svg.notice-icon {
+      flex-shrink: 0; margin-top: 1px; width: 16px; height: 16px;
+      stroke: #d97706; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .admin-lock-notice-text {
+      flex: 1; font-family: 'Sora', sans-serif; font-size: 0.78rem;
+      color: #92400e; line-height: 1.5;
+    }
+    .admin-lock-notice-text strong { font-weight: 700; }
+    .admin-lock-switch {
+      font-family: 'Sora', sans-serif; font-size: 0.75rem; font-weight: 700;
+      color: #d97706; background: none; border: none; cursor: pointer;
+      padding: 0; white-space: nowrap; align-self: center; flex-shrink: 0;
+      text-decoration: underline; transition: opacity 0.15s ease;
+    }
+    .admin-lock-switch:hover { opacity: 0.7; }
+
+    /* Locked checkboxes when admin is active */
+    .location-check-item.admin-locked {
+      cursor: not-allowed;
+    }
+    .location-check-item.admin-locked:hover {
+      border-color: var(--brand); background: var(--accent);
+    }
+
     /* ══════════════════════════════════════════════════
        ACCOUNT ACTIONS SECTION
     ══════════════════════════════════════════════════ */
@@ -865,6 +904,13 @@
               </div>
               <div class="location-checkboxes" id="location-checkboxes">
                 <!-- Populated by JS -->
+              </div>
+
+              <!-- Admin lock notice — shown when admin tries to uncheck a location -->
+              <div class="admin-lock-notice" id="admin-lock-notice" role="alert">
+                <svg class="notice-icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="admin-lock-notice-text"><strong>Admins have access to all locations.</strong> To limit location access, switch this user to <strong>Contributor</strong> level.</span>
+                <button class="admin-lock-switch" onclick="switchToContributor()">Switch to Contributor</button>
               </div>
             </div>
 
@@ -1356,24 +1402,35 @@
     );
   }
 
-  document.getElementById('inp-first').addEventListener('input', refreshHero);
-  document.getElementById('inp-last').addEventListener('input', refreshHero);
+  document.getElementById('inp-first').addEventListener('input', () => { refreshHero(); dismissAdminNotice(); });
+  document.getElementById('inp-last').addEventListener('input',  () => { refreshHero(); dismissAdminNotice(); });
+  document.getElementById('inp-email').addEventListener('input', dismissAdminNotice);
+  document.getElementById('inp-phone').addEventListener('input', dismissAdminNotice);
 
   // ════════════════════════════════════════════════════════════════════════════
   //  ACCESS LEVEL TOGGLE
   // ════════════════════════════════════════════════════════════════════════════
   function setAccessLevel(level) {
     _currentAccessLevel = level;
-    const adminEl = document.getElementById('access-admin');
+    const adminEl   = document.getElementById('access-admin');
     const contribEl = document.getElementById('access-contributor');
 
     if (level === 'Admin') {
-      adminEl.classList.add('selected');   adminEl.setAttribute('aria-checked','true');
+      adminEl.classList.add('selected');      adminEl.setAttribute('aria-checked','true');
       contribEl.classList.remove('selected'); contribEl.setAttribute('aria-checked','false');
+      // Auto-select all locations and lock the checkboxes
+      _currentLocationIds = MOCK_LOCATIONS.map(l => l.id);
+      renderLocationCheckboxes();
+      // Hide the Select All button — irrelevant for admins
+      document.getElementById('btn-select-all').style.display = 'none';
     } else {
-      contribEl.classList.add('selected');   contribEl.setAttribute('aria-checked','true');
-      adminEl.classList.remove('selected');  adminEl.setAttribute('aria-checked','false');
+      contribEl.classList.add('selected');    contribEl.setAttribute('aria-checked','true');
+      adminEl.classList.remove('selected');   adminEl.setAttribute('aria-checked','false');
+      // Unlock checkboxes and restore Select All button
+      document.getElementById('btn-select-all').style.display = '';
+      renderLocationCheckboxes();
     }
+    dismissAdminNotice();
     refreshHero();
   }
 
@@ -1390,14 +1447,17 @@
   // ════════════════════════════════════════════════════════════════════════════
   function renderLocationCheckboxes() {
     const container = document.getElementById('location-checkboxes');
+    const isAdmin   = _currentAccessLevel === 'Admin';
     container.innerHTML = MOCK_LOCATIONS.map(loc => {
       const checked = _currentLocationIds.includes(loc.id);
+      const lockClass = isAdmin ? 'admin-locked' : '';
+      // Admins: clicking does nothing (handled in toggleLocation), no keyboard action
       return `
-        <div class="location-check-item ${checked ? 'checked' : ''}"
+        <div class="location-check-item ${checked ? 'checked' : ''} ${lockClass}"
              onclick="toggleLocation('${loc.id}')"
              data-loc-id="${loc.id}"
-             role="checkbox" aria-checked="${checked}" tabindex="0"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleLocation('${loc.id}')}"
+             role="checkbox" aria-checked="${checked}"
+             ${isAdmin ? '' : 'tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleLocation(\''+loc.id+'\')}"'}
         >
           <div class="loc-checkbox">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1413,6 +1473,12 @@
   }
 
   function toggleLocation(locId) {
+    // Admins must have all locations — block any uncheck attempt
+    if (_currentAccessLevel === 'Admin') {
+      showAdminNotice();
+      return;
+    }
+    dismissAdminNotice();
     if (_currentLocationIds.includes(locId)) {
       _currentLocationIds = _currentLocationIds.filter(id => id !== locId);
     } else {
@@ -1429,10 +1495,27 @@
   }
 
   function toggleAllLocations() {
+    if (_currentAccessLevel === 'Admin') { showAdminNotice(); return; }
+    dismissAdminNotice();
     const allIds = MOCK_LOCATIONS.map(l => l.id);
     const allChecked = allIds.every(id => _currentLocationIds.includes(id));
     _currentLocationIds = allChecked ? [] : [...allIds];
     renderLocationCheckboxes();
+  }
+
+  // ── Admin lock notice helpers ─────────────────────────────────────────────
+  function showAdminNotice() {
+    document.getElementById('admin-lock-notice').classList.add('visible');
+  }
+
+  function dismissAdminNotice() {
+    document.getElementById('admin-lock-notice').classList.remove('visible');
+  }
+
+  /** Called by the "Switch to Contributor" button inside the notice */
+  function switchToContributor() {
+    setAccessLevel('Contributor');
+    // Keep all locations checked (user can manually uncheck from there)
   }
 
   function updateSelectAllBtn() {
