@@ -659,91 +659,6 @@
       border-radius: 50%; background: var(--brand);
     }
 
-
-    /* ══════════════════════════════════════════════════
-       UNSAVED CHANGES MODAL
-    ══════════════════════════════════════════════════ */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(6,23,40,0.45);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-      z-index: 2000;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    .modal-backdrop.visible {
-      opacity: 1; pointer-events: all;
-    }
-    .modal-box {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 32px 32px 28px;
-      max-width: 420px;
-      width: calc(100% - 40px);
-      box-shadow: 0 24px 60px rgba(6,23,40,0.22);
-      transform: translateY(10px) scale(0.98);
-      transition: transform 0.22s ease, opacity 0.22s ease;
-      opacity: 0;
-    }
-    .modal-backdrop.visible .modal-box {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-    }
-    .modal-icon {
-      width: 48px; height: 48px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 18px;
-    }
-    .modal-icon.warning { background: #fff5e6; }
-    .modal-icon.warning svg { width: 24px; height: 24px; stroke: #e07b00; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .modal-icon.error { background: #fff0f0; }
-    .modal-icon.error svg { width: 24px; height: 24px; stroke: #d94040; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .modal-title {
-      font-family: 'Krona One', sans-serif;
-      font-size: 1.05rem; font-weight: 400;
-      color: var(--text); margin-bottom: 10px; line-height: 1.3;
-    }
-    .modal-body {
-      font-family: 'Sora', sans-serif;
-      font-size: 0.88rem; color: var(--text-muted);
-      line-height: 1.65; margin-bottom: 24px;
-    }
-    .modal-body strong { color: var(--text); font-weight: 600; }
-    .modal-actions {
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .modal-btn {
-      font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700;
-      padding: 11px 20px; border-radius: 999px; border: none;
-      cursor: pointer; transition: all 0.15s ease; text-align: center;
-    }
-    .modal-btn-primary {
-      background: var(--brand); color: var(--white);
-    }
-    .modal-btn-primary:hover { background: #249e2a; transform: translateY(-1px); }
-    .modal-btn-secondary {
-      background: transparent; color: #d94040;
-      border: 1.5px solid rgba(217,64,64,0.3);
-    }
-    .modal-btn-secondary:hover { background: #fff0f0; border-color: #d94040; }
-    .modal-btn-ghost {
-      background: transparent; color: var(--text-muted);
-      border: 1.5px solid var(--border);
-    }
-    .modal-btn-ghost:hover { background: var(--accent); color: var(--brand); border-color: var(--brand); }
-
-    /* Cancel button in save row */
-    .cancel-btn {
-      font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 600;
-      color: var(--text-muted); background: none;
-      border: 1.5px solid var(--border); border-radius: 999px;
-      padding: 10px 22px; cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .cancel-btn:hover { background: #fff0f0; color: #d94040; border-color: rgba(217,64,64,0.4); }
-
     /* ══════════════════════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════════════════════ */
@@ -1159,7 +1074,6 @@
             <!-- ── Save row ── -->
             <div class="save-row">
               <button class="save-btn" id="save-btn" onclick="savePatient()">Save Patient</button>
-              <button class="cancel-btn" id="cancel-btn" onclick="cancelPatient()">Cancel</button>
               <span class="save-status" id="save-status">
                 <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Saving…
@@ -1328,11 +1242,6 @@
   //  SELECT PATIENT — load into right pane
   // ════════════════════════════════════════════════════════════════════════════
   function selectPatient(id) {
-    if (id === selectedPatientId) return; // already open
-    guardUnsavedChanges(() => _doSelectPatient(id));
-  }
-
-  function _doSelectPatient(id) {
     const pt = MOCK_PATIENTS.find(p => p.id === id);
     if (!pt) return;
 
@@ -1347,12 +1256,11 @@
     document.getElementById('detail-empty').style.display   = 'none';
     const detail = document.getElementById('patient-detail');
     detail.classList.remove('visible');
-    void detail.offsetWidth;
+    void detail.offsetWidth; // force reflow to re-trigger animation
     detail.classList.add('visible');
 
-    // Populate form and take a fresh snapshot
+    // Populate form
     populateForm(pt);
-    takeSnapshot();
 
     // On mobile, scroll to detail pane
     if (window.innerWidth <= 900) {
@@ -1364,10 +1272,6 @@
   //  NEW PATIENT — clear form and open blank
   // ════════════════════════════════════════════════════════════════════════════
   function openNewPatient() {
-    guardUnsavedChanges(() => _doOpenNewPatient());
-  }
-
-  function _doOpenNewPatient() {
     selectedPatientId = null;
 
     // Deselect all rows
@@ -1384,7 +1288,6 @@
     detail.classList.add('visible');
 
     updateHeroTitle('New', 'Patient', '', '');
-    takeSnapshot(); // blank snapshot so first keystroke marks dirty
     document.getElementById('inp-first').focus();
 
     if (window.innerWidth <= 900) {
@@ -1980,7 +1883,6 @@
       // ─────────────────────────────────────────────────────────────────────
 
       refreshHero();
-      takeSnapshot(); // reset dirty state after successful save
       showToast('Patient saved successfully!', 'success');
     } catch (err) {
       console.error('Save failed:', err);
@@ -2014,227 +1916,14 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-
-
-  // ════════════════════════════════════════════════════════════════════════════
-  //  UNSAVED CHANGES — dirty tracking & modal
-  // ════════════════════════════════════════════════════════════════════════════
-
-  // Snapshot of the form at the time it was last loaded/saved.
-  // Used to compare against current values to detect changes.
-  let formSnapshot = null;
-
-  // Callback to execute once the user resolves the modal
-  // (either save, discard, or cancel — set before opening modal)
-  let pendingNavAction = null;
-
-  // ── Take a snapshot of every tracked field ──────────────────────────────────
-  function takeSnapshot() {
-    formSnapshot = getFormState();
-  }
-
-  // ── Collect the entire current form state as a comparable string ────────────
-  function getFormState() {
-    const ids = [
-      'inp-first','inp-last','inp-dob','inp-address','inp-phone','inp-email',
-      'pri-company-value','pri-type','pri-policy','pri-group',
-      'pri-holder','pri-relationship','pri-company-other','pri-type-other',
-      'sec-company-value','sec-type','sec-policy','sec-group',
-      'sec-holder','sec-relationship','sec-company-other','sec-type-other',
-    ];
-    const vals = ids.map(id => (document.getElementById(id)?.value || ''));
-    // Also capture the insurance toggle state
-    const insToggle = document.getElementById('toggle-yes')?.classList.contains('selected')
-      ? 'yes'
-      : document.getElementById('toggle-selfpay')?.classList.contains('selected')
-        ? 'selfpay'
-        : 'none';
-    vals.push(insToggle);
-    return vals.join('|');
-  }
-
-  // ── True if current form differs from snapshot ───────────────────────────────
-  function isDirty() {
-    if (formSnapshot === null) return false;
-    return getFormState() !== formSnapshot;
-  }
-
-  // ── Open the modal with a given configuration ────────────────────────────────
-  function showUnsavedModal(config) {
-    // config: { type: 'warning'|'error', title, body, actions: [{label, style, fn}] }
-    const backdrop = document.getElementById('unsaved-modal');
-    const icon     = document.getElementById('modal-icon');
-    const title    = document.getElementById('modal-title');
-    const body     = document.getElementById('modal-body');
-    const actions  = document.getElementById('modal-actions');
-
-    icon.className = 'modal-icon ' + (config.type || 'warning');
-    if (config.type === 'error') {
-      icon.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-    } else {
-      icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
-    }
-
-    title.textContent  = config.title;
-    body.innerHTML     = config.body;
-    actions.innerHTML  = config.actions.map((a, i) =>
-      `<button class="modal-btn ${a.style}" onclick="handleModalAction(${i})">${escHtml(a.label)}</button>`
-    ).join('');
-
-    // Store action fns so onclick can call them
-    actions._actionFns = config.actions.map(a => a.fn);
-
-    backdrop.classList.add('visible');
-  }
-
-  function handleModalAction(index) {
-    const actions = document.getElementById('modal-actions');
-    closeModal();
-    if (actions._actionFns && actions._actionFns[index]) {
-      actions._actionFns[index]();
-    }
-  }
-
-  function closeModal() {
-    document.getElementById('unsaved-modal').classList.remove('visible');
-    pendingNavAction = null;
-  }
-
-  // Close modal on backdrop click
-  document.getElementById('unsaved-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
-
-  // ── Guard function — call before any navigation away from current record ─────
-  // onProceed: what to do if user says "yes, proceed" (discard or after save)
-  function guardUnsavedChanges(onProceed) {
-    if (!isDirty()) {
-      // No changes — navigate straight away
-      onProceed();
-      return;
-    }
-
-    // There are changes — check if they're saveable
-    const valid = validateForm();
-
-    if (valid) {
-      // Changes are valid — offer Save, Discard, or Cancel
-      showUnsavedModal({
-        type:  'warning',
-        title: 'Unsaved Changes',
-        body:  'You have unsaved changes to this patient record. Would you like to save before continuing?',
-        actions: [
-          {
-            label: 'Save & Continue',
-            style: 'modal-btn-primary',
-            fn: async () => {
-              await savePatient();
-              onProceed();
-            },
-          },
-          {
-            label: 'Discard Changes',
-            style: 'modal-btn-secondary',
-            fn: () => {
-              onProceed();
-            },
-          },
-          {
-            label: 'Keep Editing',
-            style: 'modal-btn-ghost',
-            fn: () => { /* do nothing — modal already closed */ },
-          },
-        ],
-      });
-    } else {
-      // Changes exist but form is invalid — offer Fix or Discard
-      showUnsavedModal({
-        type:  'error',
-        title: 'Required Fields Missing',
-        body:  'Some required fields are incomplete or invalid and <strong>cannot be saved</strong> in their current state. Would you like to go back and correct them, or discard your changes?',
-        actions: [
-          {
-            label: 'Correct Fields',
-            style: 'modal-btn-primary',
-            fn: () => { /* stay on record, errors already highlighted */ },
-          },
-          {
-            label: 'Discard Changes',
-            style: 'modal-btn-secondary',
-            fn: () => {
-              onProceed();
-            },
-          },
-          {
-            label: 'Keep Editing',
-            style: 'modal-btn-ghost',
-            fn: () => {},
-          },
-        ],
-      });
-    }
-  }
-
-  // ── Cancel button — close right pane, discard all edits ─────────────────────
-  function cancelPatient() {
-    if (!isDirty()) {
-      dismissDetail();
-      return;
-    }
-
-    showUnsavedModal({
-      type:  'warning',
-      title: 'Discard Changes?',
-      body:  'You have unsaved changes to this patient record. If you cancel now, all edits will be lost.',
-      actions: [
-        {
-          label: 'Discard & Close',
-          style: 'modal-btn-secondary',
-          fn: () => { dismissDetail(); },
-        },
-        {
-          label: 'Keep Editing',
-          style: 'modal-btn-ghost',
-          fn: () => {},
-        },
-      ],
-    });
-  }
-
-  // ── Close and hide the right pane entirely ───────────────────────────────────
-  function dismissDetail() {
-    selectedPatientId = null;
-    formSnapshot = null;
-    document.querySelectorAll('#patient-tbody tr').forEach(r => r.classList.remove('selected'));
-    document.getElementById('patient-detail').classList.remove('visible');
-    document.getElementById('detail-empty').style.display = '';
-  }
-
   // ════════════════════════════════════════════════════════════════════════════
   //  INIT
   // ════════════════════════════════════════════════════════════════════════════
   document.addEventListener('DOMContentLoaded', () => {
-    initPortalPage();
+    if (typeof initPortalPage === 'function') initPortalPage();
     renderPatientTable(MOCK_PATIENTS);
   });
 </script>
-
-
-<!-- ═══════════════════════════════════════ UNSAVED CHANGES MODAL ═══ -->
-<div class="modal-backdrop" id="unsaved-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-  <div class="modal-box">
-    <div class="modal-icon warning" id="modal-icon">
-      <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    </div>
-    <div class="modal-title" id="modal-title">Unsaved Changes</div>
-    <div class="modal-body" id="modal-body">
-      You have unsaved changes to this patient record. What would you like to do?
-    </div>
-    <div class="modal-actions" id="modal-actions">
-      <!-- Buttons injected by JS based on context -->
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
