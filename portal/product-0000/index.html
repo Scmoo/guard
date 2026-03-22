@@ -207,8 +207,8 @@
         /* ── Page shell ── */
         .product-page {
           max-width: 1100px;
-          margin: 0 auto;
-          padding: 40px 28px 80px;
+          margin: 0;
+          padding: 40px 28px 80px 20px;
           font-family: 'Sora', sans-serif;
           color: #061728;
         }
@@ -283,7 +283,8 @@
         .carousel-main {
           position: relative;
           width: 100%;
-          aspect-ratio: 4/3;
+          aspect-ratio: 16/9;
+          max-height: 340px;
           background: #f4fef5;
           overflow: hidden;
         }
@@ -985,17 +986,26 @@
 
         /* ── Fetch image list from S3 (or use images array from API) ── */
         function resolveImages(productData) {
-          // If the API returns an explicit image list, use it
+          // If the API returns an explicit image list, use it directly
           if (productData.images && productData.images.length > 0) {
-            return productData.images.map(p => p.startsWith('http') ? p : `${IMG_BASE}/${productData.id}/${p}`);
+            return Promise.resolve(
+              productData.images.map(p => p.startsWith('http') ? p : `${IMG_BASE}/${productData.id}/${p}`)
+            );
           }
-          // Otherwise, attempt to discover images by convention:
-          // /guard/images/products/{productId}/1.jpg through 20.jpg
-          // (Remove entries that 404 — done via Promise.allSettled + HEAD requests)
+          // Otherwise probe up to 20 candidate filenames via HEAD requests.
+          // Only URLs that return 200 are included — no ghost thumbnails.
           const candidates = Array.from({length: 20}, (_, i) =>
             `${IMG_BASE}/${productData.id}/${i + 1}.jpg`
           );
-          return candidates; // Return all; broken ones simply won't render
+          return Promise.allSettled(
+            candidates.map(url =>
+              fetch(url, { method: 'HEAD' }).then(r => r.ok ? url : Promise.reject())
+            )
+          ).then(results =>
+            results
+              .filter(r => r.status === 'fulfilled')
+              .map(r => r.value)
+          );
         }
 
         /* ── Apply all data to the DOM ── */
@@ -1024,9 +1034,22 @@
             document.getElementById('begin-btn').href = data.applicationUrl;
           }
 
-          // Carousel
-          const imageUrls = resolveImages(data);
-          buildCarousel(imageUrls);
+          // Carousel — resolveImages is now async
+          resolveImages(data).then(function(imageUrls) {
+            if (!imageUrls || imageUrls.length === 0) {
+              // Show single "image coming soon" placeholder thumbnail
+              const thumbsEl = document.getElementById('carousel-thumbs');
+              const placeholder = document.getElementById('carousel-placeholder');
+              if (placeholder) placeholder.querySelector('span').textContent = 'Product image will be added soon';
+              // One empty thumbnail slot
+              thumbsEl.innerHTML = `
+                <div class="carousel-thumb active" style="display:flex;align-items:center;justify-content:center;background:#f4fef5;cursor:default">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0c8b4" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>`;
+            } else {
+              buildCarousel(imageUrls);
+            }
+          });
         }
 
         /* ── Keyboard carousel navigation ── */
