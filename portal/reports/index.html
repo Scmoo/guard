@@ -22,9 +22,6 @@
 
   <!-- ↓ Change this for each page ↓ -->
   <title>Reports — Wound Guard</title>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-
   <!-- Auth0 SDK (must load before auth.js) -->
   <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
 
@@ -378,6 +375,11 @@
           position: relative;
           width: 100%;
         }
+        .chart-canvas-wrap canvas {
+          display: block;
+          width: 100% !important;
+          height: 100% !important;
+        }
 
         /* ── Top diagnosis table ── */
         .diag-table {
@@ -621,7 +623,10 @@
       <!-- ══════════════════════════════════
            REPORTS PAGE SCRIPT
            ══════════════════════════════════ -->
+      <!-- Chart.js loaded here so it's ready before our IIFE runs -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
       <script>
+      document.addEventListener('DOMContentLoaded', function () {
       (function () {
 
         /* ══════════════════════════════════════
@@ -653,47 +658,47 @@
            with a fetch() call to your AWS endpoint.
            ══════════════════════════════════════ */
         function getMockData() {
-          // ── MOCK DATA ──
-          // Replace with: fetch(`${AWS_BASE}/reports`, { headers: { Authorization: 'Bearer ' + token } })
-          //   then(r => r.json()).then(data => renderAll(data))
+          // ── PLACEHOLDER DATA — replace with AWS fetch when ready ──
+          // fetch(`${AWS_BASE}/reports`, { headers: { Authorization: 'Bearer ' + token } })
+          //   .then(r => r.json()).then(data => renderAll(data))
           // Expected shape: same as the object returned below.
           return {
             kpis: {
-              totalOrders:      1847,
-              totalPatients:    1124,
-              successfulPts:    916,
-              successRate:      '82%',
+              totalOrders:   0,
+              totalPatients: 0,
+              successfulPts: 0,
+              successRate:   '—',
             },
             diagCodes: [
-              { code:'L97.319', desc:'Non-pressure chronic ulcer, lower leg',    count: 312 },
-              { code:'N18.3',   desc:'Chronic kidney disease, stage 3',          count: 274 },
-              { code:'E11.621', desc:'Type 2 diabetes mellitus with foot ulcer', count: 198 },
-              { code:'I50.9',   desc:'Heart failure, unspecified',                count: 167 },
-              { code:'L89.313', desc:'Pressure ulcer of right buttock',           count: 131 },
-              { code:'I83.012', desc:'Varicose veins with ulcer, left leg',       count: 94  },
+              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'—', desc:'Awaiting data', count: 0 },
             ],
             insurance: [
-              { name:'Medicare',      pct: 48 },
-              { name:'UnitedHealth',  pct: 21 },
-              { name:'Humana',        pct: 14 },
-              { name:'Aetna',         pct: 10 },
-              { name:'Other',         pct:  7 },
+              { name:'Medicare',     pct: 0 },
+              { name:'UnitedHealth', pct: 0 },
+              { name:'Humana',       pct: 0 },
+              { name:'Aetna',        pct: 0 },
+              { name:'Other',        pct: 0 },
             ],
             ageGroups: {
               labels: ['<40','40–54','55–64','65–74','75–84','85+'],
-              data:   [52, 138, 241, 387, 213, 93]
+              data:   [0, 0, 0, 0, 0, 0]
             },
             specialties: {
               labels: ['Wound Care','Nephrology','Cardiology','Pulmonology','Orthopedics','Other'],
-              data:   [641, 398, 312, 187, 143, 166]
+              data:   [0, 0, 0, 0, 0, 0]
             },
             products: [
-              { name:'Wound Care Supplies',   count: 641 },
-              { name:'Renal Therapy',          count: 398 },
-              { name:'Cardiac Devices',        count: 312 },
-              { name:'Pulmonary Aids',         count: 187 },
-              { name:'Orthopedic Supports',    count: 143 },
-              { name:'Other',                  count: 166 },
+              { name:'Wound Care Supplies',  count: 0 },
+              { name:'Renal Therapy',         count: 0 },
+              { name:'Cardiac Devices',       count: 0 },
+              { name:'Pulmonary Aids',        count: 0 },
+              { name:'Orthopedic Supports',   count: 0 },
+              { name:'Other',                 count: 0 },
             ]
           };
         }
@@ -958,6 +963,7 @@
         loadReports();
 
       })();
+      }); // end DOMContentLoaded
       </script>
 
     </div>
