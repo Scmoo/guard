@@ -511,6 +511,22 @@
       display: flex; align-items: center; gap: 12px; margin-top: 20px;
     }
 
+    .save-btn-cancel {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem; font-weight: 700;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      padding: 9px 20px; border-radius: 999px;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    .save-btn-cancel:hover {
+      background: #fef2f2; color: #dc2626; border-color: #fecaca;
+      transform: translateY(-1px);
+    }
+    .save-btn-cancel:active { transform: translateY(0); }
+
     .save-btn {
       font-family: 'Sora', sans-serif;
       font-size: 0.88rem; font-weight: 700;
@@ -535,6 +551,123 @@
       width: 13px; height: 13px;
       stroke: var(--brand); fill: none; stroke-width: 2.5; stroke-linecap: round;
     }
+
+    /* ══════════════════════════════════════════════════
+       UNSAVED CHANGES MODAL
+    ══════════════════════════════════════════════════ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 23, 40, 0.38);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(6,23,40,0.18);
+      padding: 32px 36px 28px;
+      max-width: 440px;
+      width: calc(100% - 48px);
+      transform: translateY(12px) scale(0.97);
+      transition: transform 0.22s ease, opacity 0.22s ease;
+      opacity: 0;
+    }
+    .modal-backdrop.visible .modal-card {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .modal-icon.warn  { background: #fff7e6; }
+    .modal-icon.error { background: #fef2f2; }
+    .modal-icon svg { width: 26px; height: 26px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .modal-icon.warn  svg { stroke: #d97706; }
+    .modal-icon.error svg { stroke: #dc2626; }
+
+    .modal-title {
+      font-family: 'Krona One', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .modal-body {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 26px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 9px 18px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+      white-space: nowrap;
+    }
+    .modal-btn:hover { transform: translateY(-1px); }
+    .modal-btn:active { transform: translateY(0); }
+
+    .modal-btn-primary {
+      background: var(--brand);
+      color: #fff;
+    }
+    .modal-btn-primary:hover { background: #249e2a; box-shadow: 0 4px 12px rgba(46,177,53,0.25); }
+
+    .modal-btn-secondary {
+      background: var(--accent);
+      color: var(--brand);
+    }
+    .modal-btn-secondary:hover { background: #bbf7c8; }
+
+    .modal-btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+    .modal-btn-ghost:hover { background: rgba(6,23,40,0.04); }
+
+    .modal-btn-danger {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+    }
+    .modal-btn-danger:hover { background: #fee2e2; }
 
     /* ── Toast ── */
     .save-toast {
@@ -727,6 +860,23 @@
 
 <!-- ═══════════════════════════════════════ BODY ════ -->
 <div class="portal-body">
+
+  <!-- ═══════ UNSAVED CHANGES MODAL ═══════ -->
+  <div class="modal-backdrop" id="unsaved-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+    <div class="modal-card">
+      <div class="modal-icon warn" id="modal-icon">
+        <!-- warn icon -->
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="modal-title" id="modal-title-text">Unsaved Changes</div>
+      <div class="modal-body" id="modal-body-text">
+        You have unsaved changes to this patient's record. Would you like to save before continuing?
+      </div>
+      <div class="modal-actions" id="modal-actions">
+        <!-- Buttons injected by JS depending on context -->
+      </div>
+    </div>
+  </div>
 
   <!-- SIDEBAR -->
   <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
@@ -1073,6 +1223,7 @@
 
             <!-- ── Save row ── -->
             <div class="save-row">
+              <button class="save-btn-cancel" id="cancel-edits-btn" onclick="handleCancelEdits()" type="button">Cancel Edits</button>
               <button class="save-btn" id="save-btn" onclick="savePatient()">Save Patient</button>
               <span class="save-status" id="save-status">
                 <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
@@ -1239,9 +1390,214 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  //  DIRTY-STATE TRACKING
+  //  Snapshot the form when a patient loads; compare on navigation away.
+  // ════════════════════════════════════════════════════════════════════════════
+  let _formSnapshot = null;   // JSON string of form state when last loaded/saved
+  let _pendingAction = null;  // { type: 'select'|'new', id? } resolved after modal
+
+  /** Capture current form state as a comparable JSON string */
+  function snapshotForm() {
+    const fields = [
+      'inp-first','inp-last','inp-dob','inp-address','inp-phone','inp-email',
+      'pri-company-value','pri-company-input','pri-company-other',
+      'pri-type','pri-type-other','pri-policy','pri-group','pri-holder','pri-relationship',
+      'sec-company-value','sec-company-input','sec-company-other',
+      'sec-type','sec-type-other','sec-policy','sec-group','sec-holder','sec-relationship',
+    ];
+    const state = {};
+    fields.forEach(id => { state[id] = document.getElementById(id)?.value ?? ''; });
+    // Include insurance toggle
+    state.__insuranceToggle = document.getElementById('toggle-yes')?.classList.contains('selected')
+      ? 'yes'
+      : (document.getElementById('toggle-selfpay')?.classList.contains('selected') ? 'selfpay' : '');
+    return JSON.stringify(state);
+  }
+
+  /** Returns true if the form has changed since last snapshot */
+  function isFormDirty() {
+    if (_formSnapshot === null) return false; // no record open
+    const detail = document.getElementById('patient-detail');
+    if (!detail.classList.contains('visible')) return false;
+    return snapshotForm() !== _formSnapshot;
+  }
+
+  /** Call after successfully loading or saving a patient to mark form as clean */
+  function markFormClean() {
+    _formSnapshot = snapshotForm();
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  UNSAVED CHANGES MODAL
+  // ════════════════════════════════════════════════════════════════════════════
+  function showModal(titleText, bodyText, iconType, buttons) {
+    // iconType: 'warn' | 'error'
+    const backdrop = document.getElementById('unsaved-modal');
+    document.getElementById('modal-title-text').textContent = titleText;
+    document.getElementById('modal-body-text').textContent  = bodyText;
+
+    const icon = document.getElementById('modal-icon');
+    icon.className = 'modal-icon ' + iconType;
+    icon.innerHTML = iconType === 'error'
+      ? `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+      : `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+    const actions = document.getElementById('modal-actions');
+    actions.innerHTML = '';
+    buttons.forEach(btn => {
+      const el = document.createElement('button');
+      el.className = 'modal-btn ' + btn.cls;
+      el.textContent = btn.label;
+      el.onclick = () => { closeModal(); btn.action(); };
+      actions.appendChild(el);
+    });
+
+    backdrop.classList.add('visible');
+    // Close on backdrop click
+    backdrop.onclick = e => { if (e.target === backdrop) { closeModal(); } };
+    // Close on Escape
+    document._modalEscHandler = e => { if (e.key === 'Escape') closeModal(); };
+    document.addEventListener('keydown', document._modalEscHandler);
+  }
+
+  function closeModal() {
+    document.getElementById('unsaved-modal').classList.remove('visible');
+    if (document._modalEscHandler) {
+      document.removeEventListener('keydown', document._modalEscHandler);
+      document._modalEscHandler = null;
+    }
+    _pendingAction = null;
+  }
+
+  /**
+   * Guard: called before any navigation away from the current open record.
+   * If the form is dirty, shows the appropriate modal.
+   * If clean (or no record open), immediately executes the action.
+   * @param {Function} action – what to do if the user says "proceed"
+   */
+  function guardedNavigate(action) {
+    if (!isFormDirty()) { action(); return; }
+
+    const isValid = validateFormSilent();
+
+    if (!isValid) {
+      // Some fields are invalid — can't save, offer to fix or discard
+      showModal(
+        'Some fields can\'t be saved',
+        'There are fields with invalid values (such as an incorrectly formatted date of birth) that can\'t be saved. Would you like to go back and correct them, or discard all changes?',
+        'error',
+        [
+          {
+            label: 'Go back & correct',
+            cls: 'modal-btn modal-btn-secondary',
+            action: () => {
+              // Re-run validation visually so the user can see what's wrong
+              validateForm();
+            }
+          },
+          {
+            label: 'Discard edits',
+            cls: 'modal-btn modal-btn-danger',
+            action: () => {
+              discardAndClose();
+              action();
+            }
+          },
+        ]
+      );
+    } else {
+      // Form is valid and dirty — offer save, discard, or cancel
+      showModal(
+        'Unsaved Changes',
+        'You have unsaved changes to this patient\'s record. Would you like to save them before continuing, or discard them?',
+        'warn',
+        [
+          {
+            label: 'Cancel',
+            cls: 'modal-btn modal-btn-ghost',
+            action: () => { /* just close modal, stay on current record */ }
+          },
+          {
+            label: 'Discard edits',
+            cls: 'modal-btn modal-btn-danger',
+            action: () => {
+              discardAndClose();
+              action();
+            }
+          },
+          {
+            label: 'Save & continue',
+            cls: 'modal-btn modal-btn-primary',
+            action: async () => {
+              const savedOk = await savePatientAndReturn();
+              if (savedOk) {
+                markFormClean();
+                action();
+              }
+              // If save failed, stay on the record so the user can fix it
+            }
+          },
+        ]
+      );
+    }
+  }
+
+  /** Discard edits and close the right pane */
+  function discardAndClose() {
+    clearForm();
+    _formSnapshot = null;
+    selectedPatientId = null;
+    document.querySelectorAll('#patient-tbody tr').forEach(r => r.classList.remove('selected'));
+    const detail = document.getElementById('patient-detail');
+    detail.classList.remove('visible');
+    const emptyState = document.getElementById('detail-empty');
+    emptyState.style.display = 'flex'; // matches its CSS display type
+  }
+
+  /**
+   * Silent validation — runs all the same checks as validateForm()
+   * but does NOT toggle any CSS classes or error messages.
+   * Returns true if everything is valid.
+   */
+  function validateFormSilent() {
+    function check(inputId, checkFn) {
+      const el = document.getElementById(inputId);
+      if (!el) return true;
+      return checkFn ? checkFn(el.value.trim()) : el.value.trim().length > 0;
+    }
+
+    let ok = true;
+    ok = check('inp-first')   && ok;
+    ok = check('inp-last')    && ok;
+    ok = check('inp-address') && ok;
+    ok = check('inp-dob', v => /^\d{2}\/\d{2}\/\d{4}$/.test(v)) && ok;
+
+    const phone = document.getElementById('inp-phone')?.value.replace(/\D/g,'') ?? '';
+    if (phone.length > 0 && phone.length !== 10) ok = false;
+
+    const email = document.getElementById('inp-email')?.value.trim() ?? '';
+    if (email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ok = false;
+
+    const hasInsurance = document.getElementById('toggle-yes')?.classList.contains('selected');
+    if (hasInsurance) {
+      if (!document.getElementById('pri-company-value')?.value) ok = false;
+      if (!check('pri-type', v => v.length > 0)) ok = false;
+      if (!check('pri-policy')) ok = false;
+    }
+
+    return ok;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   //  SELECT PATIENT — load into right pane
   // ════════════════════════════════════════════════════════════════════════════
   function selectPatient(id) {
+    if (id === selectedPatientId) return; // already open — no-op
+
+    guardedNavigate(() => _doSelectPatient(id));
+  }
+
+  function _doSelectPatient(id) {
     const pt = MOCK_PATIENTS.find(p => p.id === id);
     if (!pt) return;
 
@@ -1262,6 +1618,13 @@
     // Populate form
     populateForm(pt);
 
+    // Clear any stale validation errors from a prior session
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('visible'));
+    document.querySelectorAll('.field-input, .field-select').forEach(e => e.classList.remove('invalid'));
+
+    // Snapshot so we know the "clean" state
+    markFormClean();
+
     // On mobile, scroll to detail pane
     if (window.innerWidth <= 900) {
       document.getElementById('pane-right').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1272,6 +1635,10 @@
   //  NEW PATIENT — clear form and open blank
   // ════════════════════════════════════════════════════════════════════════════
   function openNewPatient() {
+    guardedNavigate(() => _doOpenNewPatient());
+  }
+
+  function _doOpenNewPatient() {
     selectedPatientId = null;
 
     // Deselect all rows
@@ -1289,6 +1656,9 @@
 
     updateHeroTitle('New', 'Patient', '', '');
     document.getElementById('inp-first').focus();
+
+    // Snapshot empty form as the "clean" baseline for new patient
+    markFormClean();
 
     if (window.innerWidth <= 900) {
       document.getElementById('pane-right').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1882,6 +2252,7 @@
       renderPatientTable(MOCK_PATIENTS);
       // ─────────────────────────────────────────────────────────────────────
 
+      markFormClean();
       refreshHero();
       showToast('Patient saved successfully!', 'success');
     } catch (err) {
@@ -1896,6 +2267,84 @@
   function getVal(id) {
     return document.getElementById(id)?.value.trim() || '';
   }
+
+  /**
+   * Wrapper around savePatient that returns true on success, false on failure.
+   * Used by the modal "Save & continue" path.
+   */
+  async function savePatientAndReturn() {
+    if (!validateForm()) {
+      showToast('Please fix the highlighted fields.', 'error');
+      return false;
+    }
+    const saveBtn = document.getElementById('save-btn');
+    const status  = document.getElementById('save-status');
+    saveBtn.disabled = true;
+    status.classList.add('visible');
+
+    const payload = {
+      id:                 selectedPatientId,
+      firstName:          getVal('inp-first'),
+      lastName:           getVal('inp-last'),
+      dob:                getVal('inp-dob'),
+      address:            getVal('inp-address'),
+      phone:              document.getElementById('inp-phone').value.replace(/\D/g,'') || null,
+      email:              getVal('inp-email') || null,
+      primaryInsurance:   collectInsurance('pri'),
+      secondaryInsurance: collectInsurance('sec'),
+    };
+
+    try {
+      await new Promise(r => setTimeout(r, 1000));
+      console.log('[Patient] Would save to AWS (modal):', payload);
+
+      if (selectedPatientId) {
+        const idx = MOCK_PATIENTS.findIndex(p => p.id === selectedPatientId);
+        if (idx !== -1) {
+          MOCK_PATIENTS[idx].firstName  = payload.firstName;
+          MOCK_PATIENTS[idx].lastName   = payload.lastName;
+          MOCK_PATIENTS[idx].dob        = payload.dob;
+          MOCK_PATIENTS[idx].priCompany = payload.primaryInsurance.company;
+        }
+      }
+      renderPatientTable(MOCK_PATIENTS);
+      showToast('Patient saved successfully!', 'success');
+      return true;
+    } catch (err) {
+      console.error('Save failed:', err);
+      showToast('Save failed. Please try again.', 'error');
+      return false;
+    } finally {
+      saveBtn.disabled = false;
+      status.classList.remove('visible');
+    }
+  }
+
+  function handleCancelEdits() {
+    if (!isFormDirty()) {
+      // Nothing changed — just close
+      discardAndClose();
+      return;
+    }
+    showModal(
+      'Cancel Edits?',
+      'Are you sure you want to cancel? All unsaved changes to this patient\'s record will be lost.',
+      'warn',
+      [
+        {
+          label: 'Keep editing',
+          cls: 'modal-btn modal-btn-secondary',
+          action: () => { /* stay */ }
+        },
+        {
+          label: 'Discard & close',
+          cls: 'modal-btn modal-btn-danger',
+          action: () => discardAndClose()
+        },
+      ]
+    );
+  }
+
 
   // ── Toast ────────────────────────────────────────────────────────────────────
   let toastTimer;
