@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    ╔══════════════════════════════════════════════════╗
+    ║  WOUND GUARD — Portal Page Template              ║
+    ║                                                  ║
+    ║  HOW TO CREATE A NEW PAGE:                       ║
+    ║  1. Copy this entire folder (css + js + this     ║
+    ║     file) into a new subfolder, e.g. portal/orders/ ║
+    ║  2. Rename this file to index.html               ║
+    ║  3. Change the <title> tag below                 ║
+    ║  4. Add class="active" to the correct sidebar    ║
+    ║     nav item (match data-page to your folder)    ║
+    ║  5. Put your page content inside .page-slot      ║
+    ║  That's it!                                      ║
+    ╚══════════════════════════════════════════════════╝
+  -->
+
+  <!-- ↓ Change this for each page ↓ -->
+  <title>Product — Wound Guard</title>
+
+  <!-- Auth0 SDK (must load before auth.js) -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../css/template.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ -->
+<header class="portal-header" role="banner">
+
+  <!-- Logo — links back to home -->
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <!--
+        Replace the SVG below with your real logo:
+        <img src="/guard/images/logo.svg" alt="Wound Guard" width="22" height="22" />
+      -->
+      <svg viewBox="0 0 24 24">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+
+  <!-- Right side: buttons + icons -->
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+
+    <!-- New Order button -->
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+
+    <!-- Organization button — name filled in by template.js -->
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 21V9h6v12"/>
+        <path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+
+    <!-- Divider line -->
+    <div class="header-divider" aria-hidden="true"></div>
+
+    <!-- Settings icon -->
+    <a href="/guard/portal/account/" class="header-icon-btn" aria-label="Account Settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+
+    <!-- Notifications icon -->
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <!-- Green dot — shown when unread notifications exist -->
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     BODY — Sidebar + Content
+     ═══════════════════════════════════════ -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+
+    <!-- Collapse / expand toggle -->
+    <div class="sidebar-toggle-row">
+      <button
+        class="sidebar-toggle-btn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle sidebar"
+        title="Collapse / expand"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Nav links -->
+    <div class="sidebar-nav" role="list">
+
+      <!--
+        data-page  = the folder name for this page (no slashes)
+                     template.js uses this to highlight the active item
+        data-label = tooltip shown when sidebar is collapsed
+        class="active" — add this to whichever item is the CURRENT page
+      -->
+
+      <!-- Home -->
+      <a
+        href="/guard/portal/home/"
+        class="sidebar-nav-item active"
+        data-page="home"
+        data-label="Home"
+        role="listitem"
+        aria-label="Home"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+
+      <!-- Orders -->
+      <a
+        href="/guard/portal/orders/"
+        class="sidebar-nav-item"
+        data-page="orders"
+        data-label="Orders"
+        role="listitem"
+        aria-label="Orders"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="8"  y1="6"  x2="21" y2="6"/>
+            <line x1="8"  y1="12" x2="21" y2="12"/>
+            <line x1="8"  y1="18" x2="21" y2="18"/>
+            <line x1="3"  y1="6"  x2="3.01" y2="6"/>
+            <line x1="3"  y1="12" x2="3.01" y2="12"/>
+            <line x1="3"  y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+
+      <!--
+        ── ADD MORE NAV ITEMS HERE ──────────────────
+        Copy a block above and change:
+          href       → /guard/portal/PAGENAME/
+          data-page  → PAGENAME  (must match folder name)
+          data-label → Display name for collapsed tooltip
+          aria-label → Same as data-label
+          SVG icon   → Pick one from https://lucide.dev
+          label text → What shows in the sidebar
+        ────────────────────────────────────────────
+      -->
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+
+    <!--
+      ╔══════════════════════════════════════════╗
+      ║  YOUR PAGE CONTENT GOES HERE             ║
+      ║                                          ║
+      ║  Everything inside .page-slot is unique  ║
+      ║  to this page. Header, sidebar, and      ║
+      ║  footer are automatic.                   ║
+      ╚══════════════════════════════════════════╝
+    -->
+    <div class="page-slot">
+
+      <!-- ══════════════════════════════════
+           PRODUCT PAGE STYLES
+           ══════════════════════════════════ -->
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@300;400;500;600;700&display=swap');
+
+        /* ── Page shell ── */
+        .product-page {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 40px 28px 80px;
+          font-family: 'Sora', sans-serif;
+          color: #061728;
+        }
+
+        /* ── Breadcrumb ── */
+        .product-breadcrumb {
+          font-size: 0.76rem;
+          color: #7a9080;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .product-breadcrumb a {
+          color: #2eb135;
+          text-decoration: none;
+        }
+        .product-breadcrumb a:hover { text-decoration: underline; }
+        .product-breadcrumb svg { color: #b0c8b4; }
+
+        /* ── Loading skeleton ── */
+        .skeleton {
+          background: linear-gradient(90deg, #e8f5ea 25%, #d2fcd8 50%, #e8f5ea 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.4s infinite;
+          border-radius: 8px;
+        }
+        @keyframes shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        /* ── Main two-column layout ── */
+        .product-layout {
+          display: grid;
+          grid-template-columns: 1fr 340px;
+          gap: 32px;
+          align-items: start;
+        }
+        @media (max-width: 820px) {
+          .product-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── LEFT COLUMN ── */
+        .product-left {}
+
+        /* Product name */
+        .product-name {
+          font-family: 'Krona One', sans-serif;
+          font-size: 1.55rem;
+          color: #2eb135;
+          margin: 0 0 4px;
+          line-height: 1.25;
+          min-height: 2rem;
+        }
+        .product-sku {
+          font-size: 0.76rem;
+          color: #7a9080;
+          margin-bottom: 22px;
+          letter-spacing: 0.05em;
+        }
+
+        /* ── Carousel ── */
+        .carousel-wrap {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 28px;
+          position: relative;
+        }
+        .carousel-main {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 4/3;
+          background: #f4fef5;
+          overflow: hidden;
+        }
+        .carousel-main img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 20px;
+          box-sizing: border-box;
+          opacity: 0;
+          transition: opacity 0.35s ease;
+          pointer-events: none;
+        }
+        .carousel-main img.active {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .carousel-main .no-image {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          color: #b0c8b4;
+          font-size: 0.82rem;
+        }
+        .carousel-main .no-image svg {
+          width: 48px;
+          height: 48px;
+          opacity: 0.4;
+        }
+
+        /* Prev / Next arrows */
+        .carousel-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          width: 36px;
+          height: 36px;
+          background: rgba(255,255,255,0.92);
+          border: 1.5px solid #d2fcd8;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #2eb135;
+          box-shadow: 0 2px 10px rgba(46,177,53,0.12);
+          transition: background 0.15s, box-shadow 0.15s;
+          user-select: none;
+        }
+        .carousel-arrow:hover {
+          background: #d2fcd8;
+          box-shadow: 0 4px 16px rgba(46,177,53,0.2);
+        }
+        .carousel-arrow.prev { left: 12px; }
+        .carousel-arrow.next { right: 12px; }
+        .carousel-arrow svg { width: 16px; height: 16px; }
+
+        /* Counter badge */
+        .carousel-counter {
+          position: absolute;
+          bottom: 12px;
+          right: 14px;
+          background: rgba(6,23,40,0.55);
+          color: #fff;
+          font-size: 0.7rem;
+          font-weight: 600;
+          padding: 3px 10px;
+          border-radius: 20px;
+          letter-spacing: 0.04em;
+          backdrop-filter: blur(4px);
+        }
+
+        /* Thumbnails */
+        .carousel-thumbs {
+          display: flex;
+          gap: 8px;
+          padding: 12px 14px;
+          overflow-x: auto;
+          background: #fafffe;
+          scrollbar-width: thin;
+          scrollbar-color: #d2fcd8 transparent;
+        }
+        .carousel-thumb {
+          flex-shrink: 0;
+          width: 60px;
+          height: 60px;
+          border-radius: 8px;
+          border: 2px solid transparent;
+          overflow: hidden;
+          cursor: pointer;
+          background: #f4fef5;
+          transition: border-color 0.15s;
+        }
+        .carousel-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 4px;
+          box-sizing: border-box;
+        }
+        .carousel-thumb.active {
+          border-color: #2eb135;
+        }
+        .carousel-thumb:hover:not(.active) {
+          border-color: #61ce70;
+        }
+
+        /* ── Info tables ── */
+        .product-tables {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+        @media (max-width: 640px) {
+          .product-tables { grid-template-columns: 1fr; }
+        }
+
+        .info-table-card {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .info-table-card__header {
+          background: #f4fef5;
+          border-bottom: 1.5px solid #d2fcd8;
+          padding: 10px 16px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #2eb135;
+        }
+        .info-table-card__body {
+          padding: 10px 16px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          min-height: 60px;
+        }
+
+        .info-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 0.82rem;
+          line-height: 1.45;
+          color: #061728;
+        }
+        .info-row__icon {
+          flex-shrink: 0;
+          margin-top: 1px;
+          width: 15px;
+          height: 15px;
+        }
+        .info-row__icon.ok   { color: #2eb135; }
+        .info-row__icon.no   { color: #e53e3e; }
+        .info-row__code {
+          font-weight: 600;
+          color: #061728;
+          white-space: nowrap;
+        }
+        .info-row__desc {
+          color: #4a5e6a;
+          font-size: 0.78rem;
+        }
+        .icd-qualifying-label {
+          font-size: 0.68rem;
+          font-weight: 600;
+          color: #e07b00;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+          margin-top: 2px;
+          margin-bottom: 4px;
+        }
+
+        /* ── RIGHT COLUMN — sticky panel ── */
+        .product-right {
+          position: sticky;
+          top: 24px;
+        }
+
+        .order-panel {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 24px rgba(46,177,53,0.08);
+        }
+        .order-panel__header {
+          background: #f4fef5;
+          border-bottom: 1.5px solid #d2fcd8;
+          padding: 16px 22px;
+          font-family: 'Krona One', sans-serif;
+          font-size: 0.9rem;
+          color: #061728;
+        }
+        .order-panel__body {
+          padding: 18px 22px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        /* Requirement rows */
+        .req-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 0.84rem;
+          line-height: 1.5;
+          color: #061728;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #edf7ee;
+        }
+        .req-row:last-of-type { border-bottom: none; padding-bottom: 0; }
+
+        .req-row__icon {
+          flex-shrink: 0;
+          width: 18px;
+          height: 18px;
+          margin-top: 1px;
+        }
+        .req-row__icon.ok  { color: #2eb135; }
+        .req-row__icon.no  { color: #e53e3e; }
+        .req-row__icon.pending { color: #3b82f6; }
+
+        .req-row__text {}
+        .req-row__text strong {
+          display: block;
+          font-weight: 600;
+          margin-bottom: 1px;
+        }
+        .req-row__text .req-due {
+          font-size: 0.76rem;
+          color: #e53e3e;
+          font-weight: 500;
+        }
+        .req-row__text .req-note {
+          font-size: 0.76rem;
+          color: #4a5e6a;
+        }
+        .req-row__status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.74rem;
+          font-weight: 600;
+          margin-top: 4px;
+        }
+        .req-row__status-badge.pending { color: #3b82f6; }
+        .req-row__status-badge.ok      { color: #2eb135; }
+        .req-row__status-badge.missing { color: #e53e3e; }
+
+        /* Begin Application button */
+        .begin-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          background: #2eb135;
+          color: #fff;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.95rem;
+          font-weight: 700;
+          border: none;
+          border-radius: 12px;
+          padding: 16px 20px;
+          cursor: pointer;
+          margin-top: 6px;
+          transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+          box-shadow: 0 4px 18px rgba(46,177,53,0.28);
+          text-decoration: none;
+          box-sizing: border-box;
+        }
+        .begin-btn:hover {
+          background: #27a02e;
+          box-shadow: 0 6px 24px rgba(46,177,53,0.38);
+          transform: translateY(-1px);
+        }
+        .begin-btn:active { transform: translateY(0); }
+
+        /* Product description section */
+        .product-description {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 14px;
+          padding: 22px 24px;
+          margin-top: 18px;
+          font-size: 0.88rem;
+          line-height: 1.65;
+          color: #4a5e6a;
+        }
+        .product-description__title {
+          font-family: 'Sora', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #2eb135;
+          margin-bottom: 10px;
+        }
+        .product-description__text {
+          min-height: 2rem;
+        }
+
+        /* Loading state for dynamic content */
+        .skel-line {
+          height: 14px;
+          border-radius: 6px;
+          margin-bottom: 8px;
+        }
+        .skel-line:last-child { margin-bottom: 0; width: 70%; }
+      </style>
+
+      <!-- ═══════════════════════════
+           PRODUCT PAGE MARKUP
+           ═══════════════════════════ -->
+      <div class="product-page" id="product-page">
+
+        <!-- Breadcrumb -->
+        <div class="product-breadcrumb">
+          <a href="/guard/portal/home/">Home</a>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <a href="/guard/portal/products/">Products</a>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <span id="breadcrumb-name">Loading…</span>
+        </div>
+
+        <div class="product-layout">
+
+          <!-- ─── LEFT COLUMN ─── -->
+          <div class="product-left">
+
+            <!-- Product name + SKU -->
+            <h1 class="product-name" id="product-name">
+              <span class="skeleton skel-line" style="width:60%;height:28px;display:block"></span>
+            </h1>
+            <div class="product-sku" id="product-sku">&nbsp;</div>
+
+            <!-- Image carousel -->
+            <div class="carousel-wrap">
+              <div class="carousel-main" id="carousel-main">
+                <!-- Images injected by JS -->
+                <div class="no-image" id="carousel-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>Loading product images…</span>
+                </div>
+              </div>
+              <button class="carousel-arrow prev" id="carousel-prev" aria-label="Previous image" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="carousel-arrow next" id="carousel-next" aria-label="Next image" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <div class="carousel-counter" id="carousel-counter" style="display:none"></div>
+              <div class="carousel-thumbs" id="carousel-thumbs"></div>
+            </div>
+
+            <!-- Three info tables -->
+            <div class="product-tables">
+
+              <!-- Insurances -->
+              <div class="info-table-card">
+                <div class="info-table-card__header">Insurances</div>
+                <div class="info-table-card__body" id="table-insurances">
+                  <div class="skeleton skel-line"></div>
+                  <div class="skeleton skel-line"></div>
+                  <div class="skeleton skel-line" style="width:80%"></div>
+                </div>
+              </div>
+
+              <!-- Billable CPT Codes -->
+              <div class="info-table-card">
+                <div class="info-table-card__header">Billable CPT Codes</div>
+                <div class="info-table-card__body" id="table-cpt">
+                  <div class="skeleton skel-line"></div>
+                  <div class="skeleton skel-line" style="width:85%"></div>
+                </div>
+              </div>
+
+              <!-- ICD-10 Codes -->
+              <div class="info-table-card">
+                <div class="info-table-card__header">ICD-10 Codes</div>
+                <div class="info-table-card__body" id="table-icd">
+                  <div class="skeleton skel-line"></div>
+                  <div class="skeleton skel-line" style="width:90%"></div>
+                </div>
+              </div>
+
+            </div><!-- /.product-tables -->
+
+            <!-- Description -->
+            <div class="product-description" style="margin-top:20px">
+              <div class="product-description__title">Product Description</div>
+              <div class="product-description__text" id="product-description">
+                <div class="skeleton skel-line"></div>
+                <div class="skeleton skel-line"></div>
+                <div class="skeleton skel-line"></div>
+              </div>
+            </div>
+
+          </div><!-- /.product-left -->
+
+          <!-- ─── RIGHT COLUMN ─── -->
+          <div class="product-right">
+            <div class="order-panel">
+
+              <div class="order-panel__header">Required For Ordering</div>
+
+              <div class="order-panel__body">
+
+                <!-- Requirement rows — populated by JS from AWS -->
+                <div id="requirements-list">
+                  <!-- Skeletons while loading -->
+                  <div class="req-row">
+                    <div class="skeleton" style="width:18px;height:18px;border-radius:50%;flex-shrink:0"></div>
+                    <div style="flex:1"><div class="skeleton skel-line" style="width:80%"></div></div>
+                  </div>
+                  <div class="req-row">
+                    <div class="skeleton" style="width:18px;height:18px;border-radius:50%;flex-shrink:0"></div>
+                    <div style="flex:1">
+                      <div class="skeleton skel-line" style="width:90%"></div>
+                      <div class="skeleton skel-line" style="width:60%"></div>
+                    </div>
+                  </div>
+                  <div class="req-row">
+                    <div class="skeleton" style="width:18px;height:18px;border-radius:50%;flex-shrink:0"></div>
+                    <div style="flex:1"><div class="skeleton skel-line" style="width:70%"></div></div>
+                  </div>
+                </div>
+
+                <!-- Begin Application -->
+                <a href="#" class="begin-btn" id="begin-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  Begin Application
+                </a>
+
+              </div>
+            </div><!-- /.order-panel -->
+          </div><!-- /.product-right -->
+
+        </div><!-- /.product-layout -->
+      </div><!-- /.product-page -->
+
+
+      <!-- ══════════════════════════════════
+           PRODUCT PAGE SCRIPT
+           ══════════════════════════════════ -->
+      <script>
+      (function () {
+
+        /* ══════════════════════════════════════════════════
+           CONFIGURATION
+           ══════════════════════════════════════════════════
+           productId  — read from the URL path, e.g. "product-0000"
+           AWS_BASE   — your API Gateway base URL
+           IMG_BASE   — where product images are stored (S3 / CDN)
+        ══════════════════════════════════════════════════ */
+        const pathParts  = window.location.pathname.split('/').filter(Boolean);
+        const productId  = pathParts[pathParts.length - 1] || 'product-0000';
+        const AWS_BASE   = '/guard/api';          // ← replace with your API Gateway URL
+        const IMG_BASE   = '/guard/images/products'; // ← replace with your S3/CDN base path
+
+        /* ══════════════════════════════════════════════════
+           CAROUSEL
+        ══════════════════════════════════════════════════ */
+        let currentIndex = 0;
+        let images = [];
+
+        function buildCarousel(imageUrls) {
+          const main      = document.getElementById('carousel-main');
+          const thumbsEl  = document.getElementById('carousel-thumbs');
+          const prevBtn   = document.getElementById('carousel-prev');
+          const nextBtn   = document.getElementById('carousel-next');
+          const counter   = document.getElementById('carousel-counter');
+          const placeholder = document.getElementById('carousel-placeholder');
+
+          if (!imageUrls || imageUrls.length === 0) {
+            if (placeholder) placeholder.querySelector('span').textContent = 'No images available';
+            return;
+          }
+
+          images = imageUrls;
+          if (placeholder) placeholder.style.display = 'none';
+
+          // Create <img> elements
+          imageUrls.forEach((src, i) => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'Product image ' + (i + 1);
+            if (i === 0) img.classList.add('active');
+            main.appendChild(img);
+
+            // Thumbnail
+            const thumb = document.createElement('div');
+            thumb.className = 'carousel-thumb' + (i === 0 ? ' active' : '');
+            const tImg = document.createElement('img');
+            tImg.src = src;
+            tImg.alt = 'Thumbnail ' + (i + 1);
+            thumb.appendChild(tImg);
+            thumb.addEventListener('click', () => goTo(i));
+            thumbsEl.appendChild(thumb);
+          });
+
+          if (imageUrls.length > 1) {
+            prevBtn.style.display = 'flex';
+            nextBtn.style.display = 'flex';
+            counter.style.display = 'block';
+          }
+          updateCarouselUI();
+
+          prevBtn.addEventListener('click', () => goTo((currentIndex - 1 + images.length) % images.length));
+          nextBtn.addEventListener('click', () => goTo((currentIndex + 1) % images.length));
+        }
+
+        function goTo(index) {
+          const main   = document.getElementById('carousel-main');
+          const thumbs = document.querySelectorAll('.carousel-thumb');
+          const imgs   = main.querySelectorAll('img');
+
+          imgs.forEach(img => img.classList.remove('active'));
+          thumbs.forEach(t => t.classList.remove('active'));
+
+          currentIndex = index;
+          if (imgs[currentIndex]) imgs[currentIndex].classList.add('active');
+          if (thumbs[currentIndex]) {
+            thumbs[currentIndex].classList.add('active');
+            thumbs[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+          updateCarouselUI();
+        }
+
+        function updateCarouselUI() {
+          const counter = document.getElementById('carousel-counter');
+          if (counter && images.length > 1) {
+            counter.textContent = (currentIndex + 1) + ' / ' + images.length;
+          }
+        }
+
+        /* ══════════════════════════════════════════════════
+           RENDER HELPERS
+        ══════════════════════════════════════════════════ */
+
+        // Checkmark SVG
+        function iconOk() {
+          return `<svg class="info-row__icon ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+        // X SVG
+        function iconNo() {
+          return `<svg class="info-row__icon no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        }
+        // Clock SVG
+        function iconClock() {
+          return `<svg class="req-row__icon pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+        }
+
+        /* Render Insurances table */
+        function renderInsurances(insurances) {
+          const el = document.getElementById('table-insurances');
+          if (!insurances || !insurances.length) { el.innerHTML = '<span style="color:#b0c8b4;font-size:0.8rem">No data</span>'; return; }
+          el.innerHTML = insurances.map(ins => `
+            <div class="info-row">
+              ${ins.covered ? iconOk() : iconNo()}
+              <span style="${!ins.covered ? 'color:#e53e3e' : ''}">${ins.name}</span>
+            </div>`).join('');
+        }
+
+        /* Render CPT Codes table */
+        function renderCPT(codes) {
+          const el = document.getElementById('table-cpt');
+          if (!codes || !codes.length) { el.innerHTML = '<span style="color:#b0c8b4;font-size:0.8rem">No data</span>'; return; }
+          el.innerHTML = codes.map(c => `
+            <div class="info-row" style="flex-direction:column;gap:1px">
+              <span class="info-row__code">${c.code}</span>
+              <span class="info-row__desc">${c.description}</span>
+            </div>`).join('');
+        }
+
+        /* Render ICD-10 Codes table */
+        function renderICD(codes, qualifyingNote) {
+          const el = document.getElementById('table-icd');
+          if (!codes || !codes.length) { el.innerHTML = '<span style="color:#b0c8b4;font-size:0.8rem">No data</span>'; return; }
+          let html = '';
+          if (qualifyingNote) {
+            html += `<div class="icd-qualifying-label">${qualifyingNote}</div>`;
+          }
+          html += codes.map(c => `
+            <div class="info-row" style="flex-direction:column;gap:1px">
+              <span class="info-row__code">${c.code}</span>
+              <span class="info-row__desc">${c.description}</span>
+            </div>`).join('');
+          el.innerHTML = html;
+        }
+
+        /* Render Requirements panel */
+        function renderRequirements(reqs) {
+          const el = document.getElementById('requirements-list');
+          if (!reqs || !reqs.length) { el.innerHTML = '<span style="color:#b0c8b4;font-size:0.8rem">No requirements listed</span>'; return; }
+
+          el.innerHTML = reqs.map(req => {
+            let iconHtml, statusHtml = '';
+
+            if (req.status === 'met') {
+              iconHtml = `<svg class="req-row__icon ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+            } else if (req.status === 'missing') {
+              iconHtml = `<svg class="req-row__icon no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+            } else {
+              iconHtml = iconClock();
+              statusHtml = `<span class="req-row__status-badge pending">${iconClock()} In Process</span>`;
+            }
+
+            return `
+              <div class="req-row">
+                ${iconHtml}
+                <div class="req-row__text">
+                  <strong>${req.label}</strong>
+                  ${req.due     ? `<span class="req-due">Due: ${req.due}</span>` : ''}
+                  ${req.note    ? `<span class="req-note">${req.note}</span>` : ''}
+                  ${statusHtml}
+                </div>
+              </div>`;
+          }).join('');
+        }
+
+        /* ══════════════════════════════════════════════════
+           DATA FETCHING
+           Replace the mock below with real fetch() calls
+           to your AWS API Gateway endpoint, e.g.:
+             fetch(`${AWS_BASE}/products/${productId}`)
+        ══════════════════════════════════════════════════ */
+        function loadProduct() {
+
+          // ── MOCK DATA (remove when wiring to real API) ──
+          // Shape expected from AWS:
+          // {
+          //   id, name, sku, description,
+          //   images: [ "relative/path.jpg", … ],   // relative to IMG_BASE
+          //   insurances: [{ name, covered }],
+          //   cptCodes:   [{ code, description }],
+          //   icdCodes:   [{ code, description }],
+          //   icdQualifyingNote: "string or null",
+          //   requirements: [{ label, status: "met"|"missing"|"pending", due?, note? }],
+          //   applicationUrl: "/guard/portal/new-order/?product=product-0000"
+          // }
+
+          const MOCK = {
+            id: productId,
+            name: 'Advanced Wound Dressing — Hydrocolloid',
+            sku: 'SKU: WG-HCD-001',
+            description: 'A sterile, absorbent hydrocolloid dressing designed for moderate-to-heavily exuding wounds. Maintains a moist wound environment to support autolytic debridement and promotes faster healing for chronic and acute wounds.',
+            images: [
+              // Pulls every image found in /guard/images/products/{productId}/
+              // Populated dynamically below — add real URLs here or fetch from S3 listing
+            ],
+            insurances: [
+              { name: 'Medicare',  covered: true  },
+              { name: 'UHC',       covered: true  },
+              { name: 'Humana',    covered: true  },
+              { name: 'Medicaid',  covered: false },
+            ],
+            cptCodes: [
+              { code: 'Q4115', description: 'Product Use Code' },
+              { code: '97210', description: 'Application / Use Code' },
+            ],
+            icdCodes: [
+              { code: 'L97.319', description: 'Chronic Condition' },
+              { code: 'L97.211', description: 'Acute Condition' },
+            ],
+            icdQualifyingNote: 'Qualifying ICD-10',
+            requirements: [
+              { label: 'Patient Insurance',                    status: 'met' },
+              { label: 'Progress note by 12/01/25 with qualifying diagnosis code', status: 'missing', due: '12/01/25', note: 'Qualifying diagnosis code required' },
+              { label: 'Insurance Verification Review',        status: 'pending' },
+            ],
+            applicationUrl: '/guard/portal/new-order/?product=' + productId,
+          };
+
+          /* ── Swap this block for a real fetch when ready ──
+          fetch(`${AWS_BASE}/products/${productId}`, {
+            headers: { 'Authorization': 'Bearer ' + (window.portalUser?.accessToken || '') }
+          })
+          .then(r => r.json())
+          .then(data => applyProductData(data))
+          .catch(() => applyProductData(MOCK));
+          */
+
+          // Using mock for now:
+          applyProductData(MOCK);
+        }
+
+        /* ── Fetch image list from S3 (or use images array from API) ── */
+        function resolveImages(productData) {
+          // If the API returns an explicit image list, use it
+          if (productData.images && productData.images.length > 0) {
+            return productData.images.map(p => p.startsWith('http') ? p : `${IMG_BASE}/${productData.id}/${p}`);
+          }
+          // Otherwise, attempt to discover images by convention:
+          // /guard/images/products/{productId}/1.jpg through 20.jpg
+          // (Remove entries that 404 — done via Promise.allSettled + HEAD requests)
+          const candidates = Array.from({length: 20}, (_, i) =>
+            `${IMG_BASE}/${productData.id}/${i + 1}.jpg`
+          );
+          return candidates; // Return all; broken ones simply won't render
+        }
+
+        /* ── Apply all data to the DOM ── */
+        function applyProductData(data) {
+          // Title & breadcrumb
+          document.title = (data.name || 'Product') + ' — Wound Guard';
+          const nameEl = document.getElementById('product-name');
+          nameEl.textContent = data.name || 'Product';
+          document.getElementById('product-sku').textContent = data.sku || '';
+          document.getElementById('breadcrumb-name').textContent = data.name || productId;
+
+          // Description
+          const descEl = document.getElementById('product-description');
+          descEl.textContent = data.description || 'No description available.';
+
+          // Tables
+          renderInsurances(data.insurances);
+          renderCPT(data.cptCodes);
+          renderICD(data.icdCodes, data.icdQualifyingNote);
+
+          // Requirements panel
+          renderRequirements(data.requirements);
+
+          // Begin Application button
+          if (data.applicationUrl) {
+            document.getElementById('begin-btn').href = data.applicationUrl;
+          }
+
+          // Carousel
+          const imageUrls = resolveImages(data);
+          buildCarousel(imageUrls);
+        }
+
+        /* ── Keyboard carousel navigation ── */
+        document.addEventListener('keydown', function (e) {
+          if (!images.length) return;
+          if (e.key === 'ArrowLeft')  goTo((currentIndex - 1 + images.length) % images.length);
+          if (e.key === 'ArrowRight') goTo((currentIndex + 1) % images.length);
+        });
+
+        /* ── Boot ── */
+        loadProduct();
+
+      })();
+      </script>
+
+    </div>
+
+  </main>
+
+</div><!-- end .portal-body -->
+
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="portal-footer" role="contentinfo">
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/contact/"        class="footer-link">Support Contact</a>
+  </nav>
+
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+
+  <div class="footer-social">
+    <a
+      href="https://www.linkedin.com/company/wound-guard"
+      class="footer-social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Wound Guard on LinkedIn"
+    >
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS — order matters
+       1. auth.js     — Auth0 login/logout
+       2. ui.js       — toasts, modals, loaders
+       3. template.js — sidebar + auth guard
+     ═══════════════════════════════════════ -->
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/template.js"></script>
+
+<script>
+  // Fill in copyright year automatically
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── REQUIRED on every page ──────────────────────
+  // Checks Auth0, fills in org name, enforces roles.
+  // Redirects to login if not authenticated.
+  document.addEventListener('DOMContentLoaded', () => {
+    initPortalPage();
+  });
+</script>
+
+</body>
+</html>
