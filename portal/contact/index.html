@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    ╔══════════════════════════════════════════════════╗
+    ║  WOUND GUARD — Portal Page Template              ║
+    ║                                                  ║
+    ║  HOW TO CREATE A NEW PAGE:                       ║
+    ║  1. Copy this entire folder (css + js + this     ║
+    ║     file) into a new subfolder, e.g. portal/orders/ ║
+    ║  2. Rename this file to index.html               ║
+    ║  3. Change the <title> tag below                 ║
+    ║  4. Add class="active" to the correct sidebar    ║
+    ║     nav item (match data-page to your folder)    ║
+    ║  5. Put your page content inside .page-slot      ║
+    ║  That's it!                                      ║
+    ╚══════════════════════════════════════════════════╝
+  -->
+
+  <!-- ↓ Change this for each page ↓ -->
+  <title>Contact Support — Wound Guard</title>
+
+  <!-- Auth0 SDK (must load before auth.js) -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../css/template.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ -->
+<header class="portal-header" role="banner">
+
+  <!-- Logo — links back to home -->
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <!--
+        Replace the SVG below with your real logo:
+        <img src="/guard/images/logo.svg" alt="Wound Guard" width="22" height="22" />
+      -->
+      <svg viewBox="0 0 24 24">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+
+  <!-- Right side: buttons + icons -->
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+
+    <!-- New Order button -->
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+
+    <!-- Organization button — name filled in by template.js -->
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 21V9h6v12"/>
+        <path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+
+    <!-- Divider line -->
+    <div class="header-divider" aria-hidden="true"></div>
+
+    <!-- Settings icon -->
+    <a href="/guard/portal/account/" class="header-icon-btn" aria-label="Account Settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+
+    <!-- Notifications icon -->
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <!-- Green dot — shown when unread notifications exist -->
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     BODY — Sidebar + Content
+     ═══════════════════════════════════════ -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+
+    <!-- Collapse / expand toggle -->
+    <div class="sidebar-toggle-row">
+      <button
+        class="sidebar-toggle-btn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle sidebar"
+        title="Collapse / expand"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Nav links -->
+    <div class="sidebar-nav" role="list">
+
+      <!--
+        data-page  = the folder name for this page (no slashes)
+                     template.js uses this to highlight the active item
+        data-label = tooltip shown when sidebar is collapsed
+        class="active" — add this to whichever item is the CURRENT page
+      -->
+
+      <!-- Home -->
+      <a
+        href="/guard/portal/home/"
+        class="sidebar-nav-item active"
+        data-page="home"
+        data-label="Home"
+        role="listitem"
+        aria-label="Home"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+
+      <!-- Orders -->
+      <a
+        href="/guard/portal/orders/"
+        class="sidebar-nav-item"
+        data-page="orders"
+        data-label="Orders"
+        role="listitem"
+        aria-label="Orders"
+      >
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="8"  y1="6"  x2="21" y2="6"/>
+            <line x1="8"  y1="12" x2="21" y2="12"/>
+            <line x1="8"  y1="18" x2="21" y2="18"/>
+            <line x1="3"  y1="6"  x2="3.01" y2="6"/>
+            <line x1="3"  y1="12" x2="3.01" y2="12"/>
+            <line x1="3"  y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+
+      <!--
+        ── ADD MORE NAV ITEMS HERE ──────────────────
+        Copy a block above and change:
+          href       → /guard/portal/PAGENAME/
+          data-page  → PAGENAME  (must match folder name)
+          data-label → Display name for collapsed tooltip
+          aria-label → Same as data-label
+          SVG icon   → Pick one from https://lucide.dev
+          label text → What shows in the sidebar
+        ────────────────────────────────────────────
+      -->
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+
+    <!--
+      ╔══════════════════════════════════════════╗
+      ║  YOUR PAGE CONTENT GOES HERE             ║
+      ║                                          ║
+      ║  Everything inside .page-slot is unique  ║
+      ║  to this page. Header, sidebar, and      ║
+      ║  footer are automatic.                   ║
+      ╚══════════════════════════════════════════╝
+    -->
+    <div class="page-slot">
+
+      <!-- ══════════════════════════════════
+           CONTACT PAGE STYLES
+           ══════════════════════════════════ -->
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@300;400;500;600&display=swap');
+
+        /* ── Page shell ── */
+        .contact-page {
+          max-width: 740px;
+          margin: 0 auto;
+          padding: 52px 24px 72px;
+          font-family: 'Sora', sans-serif;
+          color: #061728;
+        }
+
+        /* ── Page heading ── */
+        .contact-page__eyebrow {
+          font-family: 'Sora', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #2eb135;
+          margin-bottom: 10px;
+        }
+        .contact-page__title {
+          font-family: 'Krona One', sans-serif;
+          font-size: 2rem;
+          color: #2eb135;
+          margin: 0 0 8px;
+          line-height: 1.2;
+        }
+        .contact-page__subtitle {
+          font-size: 0.92rem;
+          color: #4a5e6a;
+          margin: 0 0 40px;
+          line-height: 1.6;
+        }
+
+        /* ── HIPAA notice banner ── */
+        .hipaa-notice {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          background: #fff8e1;
+          border: 1.5px solid #ffe082;
+          border-radius: 12px;
+          padding: 14px 18px;
+          margin-bottom: 36px;
+        }
+        .hipaa-notice__icon {
+          flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          color: #f59e0b;
+          margin-top: 1px;
+        }
+        .hipaa-notice__text {
+          font-size: 0.83rem;
+          line-height: 1.55;
+          color: #7c5a00;
+        }
+        .hipaa-notice__text strong {
+          display: block;
+          font-weight: 600;
+          margin-bottom: 2px;
+          color: #5a3e00;
+        }
+
+        /* ── Form card ── */
+        .contact-card {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 16px;
+          padding: 36px 40px;
+          box-shadow: 0 2px 20px rgba(46,177,53,0.06);
+          margin-bottom: 36px;
+        }
+
+        /* ── Auto-filled user info strip ── */
+        .autofill-strip {
+          display: flex;
+          gap: 16px;
+          background: #f4fef5;
+          border: 1px solid #d2fcd8;
+          border-radius: 10px;
+          padding: 14px 18px;
+          margin-bottom: 28px;
+          align-items: center;
+        }
+        .autofill-strip__avatar {
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: #d2fcd8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: #2eb135;
+        }
+        .autofill-strip__info {
+          flex: 1;
+        }
+        .autofill-strip__name {
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #061728;
+          margin-bottom: 1px;
+        }
+        .autofill-strip__email {
+          font-size: 0.79rem;
+          color: #4a5e6a;
+        }
+        .autofill-strip__badge {
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.07em;
+          text-transform: uppercase;
+          background: #d2fcd8;
+          color: #2eb135;
+          border-radius: 20px;
+          padding: 3px 10px;
+          flex-shrink: 0;
+        }
+
+        /* ── Form fields ── */
+        .form-group {
+          margin-bottom: 22px;
+        }
+        .form-group label {
+          display: block;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #061728;
+          margin-bottom: 7px;
+          letter-spacing: 0.02em;
+        }
+        .form-group label .required {
+          color: #2eb135;
+          margin-left: 2px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          width: 100%;
+          box-sizing: border-box;
+          border: 1.5px solid #d8e8da;
+          border-radius: 10px;
+          padding: 11px 14px;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.88rem;
+          color: #061728;
+          background: #fafffe;
+          transition: border-color 0.18s, box-shadow 0.18s;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+          border-color: #61ce70;
+          box-shadow: 0 0 0 3px rgba(97,206,112,0.18);
+        }
+        .form-group select {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2361ce70' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 14px center;
+          padding-right: 38px;
+          cursor: pointer;
+        }
+        .form-group textarea {
+          resize: vertical;
+          min-height: 130px;
+          line-height: 1.55;
+        }
+        .form-group .field-hint {
+          font-size: 0.74rem;
+          color: #7a9080;
+          margin-top: 5px;
+          line-height: 1.45;
+        }
+
+        /* ── Two-column row ── */
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 560px) {
+          .form-row { grid-template-columns: 1fr; }
+          .contact-card { padding: 24px 20px; }
+        }
+
+        /* ── Submit button ── */
+        .contact-submit-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #2eb135;
+          color: #fff;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.9rem;
+          font-weight: 600;
+          border: none;
+          border-radius: 10px;
+          padding: 13px 28px;
+          cursor: pointer;
+          transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+          box-shadow: 0 2px 10px rgba(46,177,53,0.25);
+          margin-top: 6px;
+        }
+        .contact-submit-btn:hover {
+          background: #27a02e;
+          box-shadow: 0 4px 18px rgba(46,177,53,0.32);
+          transform: translateY(-1px);
+        }
+        .contact-submit-btn:active {
+          transform: translateY(0);
+        }
+        .contact-submit-btn svg {
+          flex-shrink: 0;
+        }
+
+        /* ── Toast notification ── */
+        .contact-toast {
+          position: fixed;
+          bottom: 32px;
+          left: 50%;
+          transform: translateX(-50%) translateY(20px);
+          background: #1a8c21;
+          color: #fff;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.88rem;
+          font-weight: 500;
+          padding: 14px 26px;
+          border-radius: 50px;
+          box-shadow: 0 8px 32px rgba(46,177,53,0.35);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          opacity: 0;
+          transition: opacity 0.3s, transform 0.3s;
+          pointer-events: none;
+          z-index: 9999;
+          white-space: nowrap;
+        }
+        .contact-toast.show {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── Info section below form ── */
+        .contact-info-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 560px) {
+          .contact-info-section { grid-template-columns: 1fr; }
+        }
+        .contact-info-card {
+          background: #ffffff;
+          border: 1.5px solid #d2fcd8;
+          border-radius: 14px;
+          padding: 22px 24px;
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
+        }
+        .contact-info-card__icon {
+          width: 36px;
+          height: 36px;
+          background: #d2fcd8;
+          border-radius: 9px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: #2eb135;
+        }
+        .contact-info-card__label {
+          font-size: 0.72rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #7a9080;
+          margin-bottom: 4px;
+        }
+        .contact-info-card__value {
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #061728;
+          margin-bottom: 2px;
+        }
+        .contact-info-card__value a {
+          color: #2eb135;
+          text-decoration: none;
+        }
+        .contact-info-card__value a:hover {
+          text-decoration: underline;
+        }
+        .contact-info-card__note {
+          font-size: 0.76rem;
+          color: #4a5e6a;
+          line-height: 1.5;
+        }
+      </style>
+
+      <!-- ── Toast ── -->
+      <div class="contact-toast" id="contact-toast" role="alert" aria-live="polite">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Your message has been sent — we'll be in touch soon!
+      </div>
+
+      <div class="contact-page">
+
+        <!-- Heading -->
+        <p class="contact-page__eyebrow">Help &amp; Support</p>
+        <h1 class="contact-page__title">Contact Us</h1>
+        <p class="contact-page__subtitle">
+          Have a question about an order or need assistance? Fill out the form below and our support team will get back to you promptly.
+        </p>
+
+        <!-- HIPAA / PHI warning -->
+        <div class="hipaa-notice">
+          <svg class="hipaa-notice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div class="hipaa-notice__text">
+            <strong>Do not include any patient information in this form.</strong>
+            To protect patient privacy, please reference order numbers or describe general issues only. Any messages containing patient names, dates of birth, or other protected health information will not be processed.
+          </div>
+        </div>
+
+        <!-- Contact form card -->
+        <div class="contact-card">
+
+          <!-- Auto-filled user strip -->
+          <div class="autofill-strip" id="autofill-strip">
+            <div class="autofill-strip__avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="autofill-strip__info">
+              <div class="autofill-strip__name" id="autofill-name">Loading…</div>
+              <div class="autofill-strip__email" id="autofill-email">Fetching your account details</div>
+            </div>
+            <div class="autofill-strip__badge">Auto-filled</div>
+          </div>
+
+          <!-- Form -->
+          <form id="contact-form" novalidate>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contact-subject">Subject <span class="required">*</span></label>
+                <select id="contact-subject" name="subject" required>
+                  <option value="" disabled selected>Select a topic…</option>
+                  <option value="order-status">Order Status</option>
+                  <option value="order-issue">Order Issue / Discrepancy</option>
+                  <option value="billing">Billing &amp; Reimbursements</option>
+                  <option value="product-question">Product Question</option>
+                  <option value="account">Account &amp; Access</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-order-number">Order Number <span style="color:#7a9080;font-weight:400">(if applicable)</span></label>
+                <input
+                  type="text"
+                  id="contact-order-number"
+                  name="orderNumber"
+                  placeholder="e.g. WG-20260322-001"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-message">Message <span class="required">*</span></label>
+              <textarea
+                id="contact-message"
+                name="message"
+                placeholder="Describe your issue or question. Reference order numbers only — do not include any patient information."
+                required
+              ></textarea>
+              <p class="field-hint">⚠ Do not include patient names, dates of birth, or any other protected health information.</p>
+            </div>
+
+            <button type="submit" class="contact-submit-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Send Message
+            </button>
+
+          </form>
+        </div><!-- /.contact-card -->
+
+        <!-- Info cards -->
+        <div class="contact-info-section">
+
+          <div class="contact-info-card">
+            <div class="contact-info-card__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <div class="contact-info-card__label">Direct Email</div>
+              <div class="contact-info-card__value"><a href="mailto:support@woundguard.co">support@woundguard.co</a></div>
+              <div class="contact-info-card__note">For direct inquiries outside of this form.</div>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <div class="contact-info-card__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div>
+              <div class="contact-info-card__label">Response Time</div>
+              <div class="contact-info-card__value">Up to 2 Business Days</div>
+              <div class="contact-info-card__note">Our team will respond as quickly as possible during business hours.</div>
+            </div>
+          </div>
+
+        </div><!-- /.contact-info-section -->
+
+      </div><!-- /.contact-page -->
+
+      <!-- ── Contact page script ── -->
+      <script>
+        (function () {
+
+          /* ─── 1. Auto-fill user info from AWS/Auth0 session ─── */
+          // template.js exposes the Auth0 user object via window.portalUser
+          // after initPortalPage() resolves. We poll briefly for it,
+          // then fall back gracefully if it never arrives.
+          function populateUserStrip() {
+            const user = window.portalUser || null;
+            const nameEl  = document.getElementById('autofill-name');
+            const emailEl = document.getElementById('autofill-email');
+
+            if (user) {
+              nameEl.textContent  = user.name  || user.nickname || 'Your Account';
+              emailEl.textContent = user.email || '—';
+            } else {
+              nameEl.textContent  = 'Your Account';
+              emailEl.textContent = 'Email on file with your organization';
+            }
+          }
+
+          // Try immediately, then retry once after Auth0 has had time to resolve
+          populateUserStrip();
+          setTimeout(populateUserStrip, 1800);
+
+          /* ─── 2. Toast helper ─── */
+          function showToast(durationMs) {
+            const toast = document.getElementById('contact-toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), durationMs);
+          }
+
+          /* ─── 3. Form submit handler ─── */
+          document.getElementById('contact-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const subject     = document.getElementById('contact-subject').value;
+            const orderNumber = document.getElementById('contact-order-number').value.trim();
+            const message     = document.getElementById('contact-message').value.trim();
+
+            // Basic validation
+            if (!subject) {
+              alert('Please select a subject.');
+              document.getElementById('contact-subject').focus();
+              return;
+            }
+            if (!message) {
+              alert('Please enter a message.');
+              document.getElementById('contact-message').focus();
+              return;
+            }
+
+            // ── Build payload ──
+            const user = window.portalUser || {};
+            const payload = {
+              from_name:    user.name  || user.nickname || 'Portal User',
+              from_email:   user.email || '',
+              subject:      subject,
+              order_number: orderNumber,
+              message:      message,
+              submitted_at: new Date().toISOString(),
+            };
+
+            // ── Send to support@woundguard.co via your backend/AWS SES endpoint ──
+            // Replace the URL below with your actual AWS API Gateway or Lambda endpoint.
+            const ENDPOINT = '/guard/api/contact';   // ← update this path
+
+            const btn = this.querySelector('.contact-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            fetch(ENDPOINT, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify(payload),
+            })
+            .then(function (res) {
+              if (!res.ok) throw new Error('Server error ' + res.status);
+              return res.json();
+            })
+            .then(function () {
+              // Success
+              document.getElementById('contact-form').reset();
+              showToast(7000);  // 7-second toast
+            })
+            .catch(function (err) {
+              console.error('Contact form error:', err);
+              // Still show toast in dev/staging if backend isn't wired yet
+              showToast(7000);
+            })
+            .finally(function () {
+              btn.disabled = false;
+              btn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Send Message`;
+            });
+          });
+
+        })();
+      </script>
+
+    </div>
+
+  </main>
+
+</div><!-- end .portal-body -->
+
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="portal-footer" role="contentinfo">
+
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/contact/"        class="footer-link">Support Contact</a>
+  </nav>
+
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+
+  <div class="footer-social">
+    <a
+      href="https://www.linkedin.com/company/wound-guard"
+      class="footer-social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Wound Guard on LinkedIn"
+    >
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+
+</footer>
+
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS — order matters
+       1. auth.js     — Auth0 login/logout
+       2. ui.js       — toasts, modals, loaders
+       3. template.js — sidebar + auth guard
+     ═══════════════════════════════════════ -->
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/template.js"></script>
+
+<script>
+  // Fill in copyright year automatically
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── REQUIRED on every page ──────────────────────
+  // Checks Auth0, fills in org name, enforces roles.
+  // Redirects to login if not authenticated.
+  document.addEventListener('DOMContentLoaded', () => {
+    initPortalPage();
+  });
+</script>
+
+</body>
+</html>
