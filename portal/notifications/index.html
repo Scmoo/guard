@@ -253,6 +253,33 @@
     .btn-restore:hover { background: var(--accent); border-color: var(--accent-dark); color: var(--brand); }
     .btn-restore:active { transform: scale(0.96); }
 
+    /* ── Bell badge — green number count ── */
+    #notif-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      box-shadow: 0 0 0 2px #fff;
+      pointer-events: none;
+    }
+
+    /* Ensure the bell button is position:relative so badge anchors to it */
+    a.header-icon-btn[aria-label="Notifications"] {
+      position: relative;
+    }
+
     /* ── Expanded body ── */
     .alert-body {
       display: none;
@@ -707,6 +734,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     initPortalPage();
+    updateBellBadge();
   });
 
   /* ── Toggle alert body open/close ── */
@@ -893,7 +921,7 @@
     toggle.classList.toggle('open');
   }
 
-  /* ── Update unread badge count ── */
+  /* ── Update unread badge count (per column) ── */
   function updateBadge(type) {
     const list  = document.getElementById(type + '-list');
     const badge = document.getElementById(type + '-badge');
@@ -901,6 +929,20 @@
     const count = list.querySelectorAll('.alert-card:not(.read)').length;
     badge.textContent = count;
     badge.style.display = count === 0 ? 'none' : '';
+    updateBellBadge();
+  }
+
+  /* ── Update the bell icon badge with total unread across both columns ── */
+  function updateBellBadge() {
+    const bellBadge = document.getElementById('notif-badge');
+    if (!bellBadge) return;
+
+    const passiveUnread      = document.querySelectorAll('#passive-list .alert-card:not(.read)').length;
+    const interventionUnread = document.querySelectorAll('#intervention-list .alert-card').length;
+    const total = passiveUnread + interventionUnread;
+
+    bellBadge.textContent = total > 99 ? '99+' : total;
+    bellBadge.style.display = total === 0 ? 'none' : 'flex';
   }
 
   /* ── Update archive count chip ── */
