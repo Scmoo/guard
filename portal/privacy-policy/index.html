@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Wound Guard</title>
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+  <link rel="stylesheet" href="../css/template.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Privacy Policy Page ── */
+
+    :root {
+      --bg: #FFFEFA;
+      --accent: #d2fcd8;
+      --accent-dark: #61ce70;
+      --brand: #2eb135;
+      --text: #061728;
+      --text-muted: #5a7a8a;
+      --white: #ffffff;
+      --border: #dde8ee;
+    }
+
+    .policy-page {
+      padding: 48px 32px 80px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Header block ── */
+    .policy-hero {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .policy-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--brand);
+      background: var(--accent);
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .policy-eyebrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--brand);
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .policy-title {
+      font-family: 'Krona One', sans-serif;
+      font-size: 2rem;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+
+    .policy-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 18px;
+    }
+
+    .policy-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .policy-meta-item svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .policy-disclaimer {
+      margin-top: 20px;
+      padding: 14px 18px;
+      background: #fef9c3;
+      border: 1.5px solid #f5c842;
+      border-radius: 12px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      color: #7a5c00;
+      line-height: 1.6;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .policy-disclaimer svg {
+      width: 15px;
+      height: 15px;
+      stroke: #d49a00;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── TOC ── */
+    .policy-toc {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+
+    .policy-toc-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .policy-toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 24px;
+    }
+
+    .policy-toc-list li a {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 0;
+      transition: color 0.15s;
+    }
+
+    .policy-toc-list li a:hover { color: #1e7a24; }
+
+    .policy-toc-list li a::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-dark);
+      flex-shrink: 0;
+    }
+
+    /* ── Sections ── */
+    .policy-section {
+      margin-bottom: 44px;
+      scroll-margin-top: 24px;
+    }
+
+    .policy-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .policy-section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--brand);
+      flex-shrink: 0;
+    }
+
+    .policy-section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .policy-section-divider {
+      height: 2px;
+      background: var(--border);
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .policy-body {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.875rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .policy-body p {
+      margin-bottom: 14px;
+    }
+
+    .policy-body p:last-child { margin-bottom: 0; }
+
+    .policy-body strong {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .policy-body ul {
+      margin: 10px 0 14px 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .policy-body ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.858rem;
+      line-height: 1.7;
+    }
+
+    .policy-body ul li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-dark);
+      flex-shrink: 0;
+      margin-top: 8px;
+    }
+
+    /* ── Info callout boxes ── */
+    .policy-callout {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin: 16px 0;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
+
+    .policy-callout.green {
+      background: var(--accent);
+      border: 1.5px solid var(--accent-dark);
+      color: #1a5c1e;
+    }
+
+    .policy-callout.red {
+      background: #fee2e2;
+      border: 1.5px solid #f87171;
+      color: #7f1d1d;
+    }
+
+    .policy-callout.blue {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1e3a5f;
+    }
+
+    .policy-callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.82rem;
+    }
+
+    /* ── Contact card ── */
+    .policy-contact-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .policy-contact-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.84rem;
+      color: var(--text);
+    }
+
+    .policy-contact-row svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--brand);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .policy-contact-row a {
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .policy-contact-row a:hover { text-decoration: underline; }
+
+    /* ── Back to top ── */
+    .policy-back-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 6px 14px;
+      margin-top: 8px;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      text-decoration: none;
+    }
+
+    .policy-back-top:hover {
+      color: var(--brand);
+      background: var(--accent);
+      border-color: var(--accent-dark);
+    }
+
+    .policy-back-top svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @media (max-width: 600px) {
+      .policy-toc-list { grid-template-columns: 1fr; }
+      .policy-page { padding: 32px 16px 60px; }
+      .policy-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="portal-header" role="banner">
+  <a href="/guard/portal/home/" class="header-logo" aria-label="Wound Guard Home">
+    <div class="header-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <div class="header-logo-text">Wound<br>Guard</div>
+  </a>
+  <div class="header-actions" role="navigation" aria-label="Header actions">
+    <a href="/guard/portal/new-order/" class="header-btn header-btn-primary" aria-label="Place a new order">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Order
+    </a>
+    <a href="/guard/portal/organization/" class="header-btn header-btn-secondary" aria-label="View organization">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 21V9h6v12"/><path d="M9 12h6"/>
+      </svg>
+      <span id="header-org-name">Organization</span>
+    </a>
+    <div class="header-divider" aria-hidden="true"></div>
+    <a href="/guard/portal/account/" class="header-icon-btn" aria-label="Account Settings">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+    <a href="/guard/portal/notifications/" class="header-icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-badge" id="notif-badge" aria-label="Unread notifications" style="display:none"></span>
+    </a>
+  </div>
+</header>
+
+<!-- BODY -->
+<div class="portal-body">
+
+  <!-- SIDEBAR -->
+  <nav class="portal-sidebar" id="portal-sidebar" aria-label="Main navigation">
+    <div class="sidebar-toggle-row">
+      <button class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar" title="Collapse / expand">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <div class="sidebar-nav" role="list">
+      <a href="/guard/portal/home/" class="sidebar-nav-item" data-page="home" data-label="Home" role="listitem" aria-label="Home">
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="sidebar-nav-label">Home</span>
+      </a>
+      <a href="/guard/portal/orders/" class="sidebar-nav-item" data-page="orders" data-label="Orders" role="listitem" aria-label="Orders">
+        <span class="sidebar-nav-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </span>
+        <span class="sidebar-nav-label">Orders</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="portal-content" id="portal-content">
+    <div class="page-slot">
+      <div class="policy-page" id="policy-top">
+
+        <!-- Hero -->
+        <div class="policy-hero">
+          <div class="policy-eyebrow">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Legal &amp; Compliance
+          </div>
+          <h1 class="policy-title">Privacy Policy</h1>
+          <div class="policy-meta">
+            <span class="policy-meta-item">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Effective Date: <strong id="effective-date"></strong>
+            </span>
+            <span class="policy-meta-item">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Last Revised: <strong id="revised-date"></strong>
+            </span>
+            <span class="policy-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Applies to: Licensed Healthcare Providers &amp; Clinics
+            </span>
+          </div>
+          <div class="policy-disclaimer">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Not legal advice.</strong> This policy was drafted as a starting framework and should be reviewed by a qualified healthcare attorney before going live with real patient data. HIPAA regulations carry significant legal obligations — consult counsel before launch.</span>
+          </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="policy-toc">
+          <div class="policy-toc-title">Contents</div>
+          <ul class="policy-toc-list">
+            <li><a href="#section-1">When This Policy Applies</a></li>
+            <li><a href="#section-2">Information We Collect</a></li>
+            <li><a href="#section-3">How We Use Your Information</a></li>
+            <li><a href="#section-4">How We Share Your Information</a></li>
+            <li><a href="#section-5">HIPAA &amp; Business Associates</a></li>
+            <li><a href="#section-6">Role-Based Access &amp; Audit Logging</a></li>
+            <li><a href="#section-7">Data Retention</a></li>
+            <li><a href="#section-8">Cookies &amp; Tracking</a></li>
+            <li><a href="#section-9">Protecting Your Information</a></li>
+            <li><a href="#section-10">Breach Notification</a></li>
+            <li><a href="#section-11">Your Rights</a></li>
+            <li><a href="#section-12">Children Under 13</a></li>
+            <li><a href="#section-13">California Residents</a></li>
+            <li><a href="#section-14">Changes to This Policy</a></li>
+            <li><a href="#section-15">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="policy-section" id="section-1">
+          <div class="policy-section-header">
+            <span class="policy-section-num">1</span>
+            <span class="policy-section-title">When This Policy Applies</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>This Privacy Policy applies to the Wound Guard portal and all associated online services owned or operated by Wound Guard that link to this policy (collectively, "Online Services"). It governs how we collect, use, store, and share information in connection with your use of the portal.</p>
+            <p>This policy applies to licensed healthcare providers, clinic administrators, and authorized staff members who access the Wound Guard portal on behalf of their organization. By accessing or using the Online Services, you acknowledge that you have read and understood this policy.</p>
+            <p>This policy does not apply to information collected through other means, such as in-person interactions or telephone communications not directly tied to the Online Services. It also does not govern the privacy practices of any third-party websites or services that may be linked from the portal — their use is governed by their own privacy policies.</p>
+            <div class="policy-callout green">
+              <div class="policy-callout-title">Provider &amp; Clinic Accounts</div>
+              All organizations accessing the Wound Guard portal execute a Business Associate Agreement (BAA) prior to gaining access. By using the platform, your organization confirms that a valid BAA is in place between your organization and Wound Guard.
+            </div>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="policy-section" id="section-2">
+          <div class="policy-section-header">
+            <span class="policy-section-num">2</span>
+            <span class="policy-section-title">Information We Collect</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>We collect two categories of information through the Online Services: information you provide directly to us, and information collected automatically through your use of the platform.</p>
+            <p><strong>Information you provide directly:</strong></p>
+            <ul>
+              <li>Organization and provider account information, including name, email address, business address, National Provider Identifier (NPI), state license numbers, and specialty</li>
+              <li>Patient information submitted when placing orders, including patient name, date of birth, insurance information, diagnosis codes, and wound care history</li>
+              <li>Order details including products selected, shipping destination, billing codes, and required documentation</li>
+              <li>Communications you send to Wound Guard through the portal, including support requests and account inquiries</li>
+            </ul>
+            <p><strong>Information collected automatically:</strong></p>
+            <ul>
+              <li>Login timestamps, session duration, and pages visited within the portal</li>
+              <li>Device type, operating system, and web browser information</li>
+              <li>IP address and approximate geographic location</li>
+              <li>Actions taken within the portal, including orders placed, notifications viewed, and records modified</li>
+            </ul>
+            <div class="policy-callout blue">
+              <div class="policy-callout-title">Patient Data</div>
+              Patient information submitted through the portal is considered Protected Health Information (PHI) under HIPAA. Wound Guard handles all PHI in accordance with its obligations as a HIPAA Business Associate and in compliance with the HIPAA Privacy and Security Rules.
+            </div>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="policy-section" id="section-3">
+          <div class="policy-section-header">
+            <span class="policy-section-num">3</span>
+            <span class="policy-section-title">How We Use Your Information</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>We use the information we collect for the following purposes:</p>
+            <ul>
+              <li>Processing, fulfilling, and tracking wound care product orders placed through the portal</li>
+              <li>Verifying patient insurance eligibility and coordinating authorization where required</li>
+              <li>Sending order status updates and notifications through the portal and via email</li>
+              <li>Authenticating user accounts and maintaining session security</li>
+              <li>Responding to support requests and communications from authorized portal users</li>
+              <li>Maintaining records of transactions and communications as required by law</li>
+              <li>Improving the platform's functionality, performance, and user experience</li>
+              <li>Detecting, investigating, and preventing unauthorized access or fraudulent activity</li>
+              <li>Complying with applicable laws, regulations, and legal process, including HIPAA</li>
+              <li>Protecting the rights, safety, and welfare of patients, providers, and Wound Guard</li>
+            </ul>
+            <p>We will not use your information for purposes materially different from those described above without first notifying you and, where required, obtaining your explicit consent.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="policy-section" id="section-4">
+          <div class="policy-section-header">
+            <span class="policy-section-num">4</span>
+            <span class="policy-section-title">How We Share Your Information</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>Wound Guard does not sell your information or the information of your patients to any third party. We do not share information with advertisers. We share information only in the following limited circumstances:</p>
+            <ul>
+              <li><strong>Subprocessors and vendors:</strong> We share information with third-party service providers who process data on our behalf, including our database infrastructure provider, email delivery services, and authentication provider. All subprocessors who handle PHI are required to execute a Business Associate Agreement with Wound Guard prior to accessing any data</li>
+              <li><strong>Fulfillment and shipping partners:</strong> Order and shipping information is shared with suppliers and carriers solely for the purpose of fulfilling orders placed through the portal</li>
+              <li><strong>Insurance verification services:</strong> Patient insurance information may be shared with eligibility verification services as part of the order workflow</li>
+              <li><strong>Legal compliance:</strong> We may disclose information in response to a valid court order, subpoena, or government request, or as otherwise required by law</li>
+              <li><strong>Business transfers:</strong> If Wound Guard is acquired, merged, or undergoes a similar transaction, information may be transferred as part of that transaction, subject to the same privacy protections described in this policy</li>
+              <li><strong>Safety:</strong> We may share information where necessary to protect the health, safety, or welfare of a patient or other individual</li>
+            </ul>
+            <div class="policy-callout red">
+              <div class="policy-callout-title">We Do Not Sell Data</div>
+              Wound Guard does not sell, rent, or trade your information or patient PHI to any third party for marketing, advertising, or any commercial purpose.
+            </div>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="policy-section" id="section-5">
+          <div class="policy-section-header">
+            <span class="policy-section-num">5</span>
+            <span class="policy-section-title">HIPAA &amp; Business Associates</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>Wound Guard operates as a Business Associate under the Health Insurance Portability and Accountability Act of 1996 (HIPAA) and its implementing regulations. As a Business Associate, Wound Guard is required to:</p>
+            <ul>
+              <li>Use and disclose PHI only as permitted by its Business Associate Agreements and applicable law</li>
+              <li>Implement appropriate administrative, physical, and technical safeguards to protect PHI</li>
+              <li>Report breaches of unsecured PHI to the applicable Covered Entity in accordance with the HIPAA Breach Notification Rule</li>
+              <li>Ensure that any subcontractors who handle PHI on Wound Guard's behalf agree to the same restrictions through their own Business Associate Agreements</li>
+            </ul>
+            <p>The clinics and healthcare providers using the Wound Guard portal are Covered Entities under HIPAA. They maintain the direct patient relationship and are responsible for obtaining appropriate patient authorizations for treatment, payment, and healthcare operations. Wound Guard's access to patient PHI is limited to what is necessary to fulfill its role in the ordering workflow.</p>
+            <div class="policy-callout green">
+              <div class="policy-callout-title">BAA Requirement</div>
+              All organizations must execute a Business Associate Agreement with Wound Guard before accessing the portal. Wound Guard also maintains BAAs with all subprocessors who handle PHI on its behalf, including its database and infrastructure provider.
+            </div>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="policy-section" id="section-6">
+          <div class="policy-section-header">
+            <span class="policy-section-num">6</span>
+            <span class="policy-section-title">Role-Based Access &amp; Audit Logging</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>Access to information within the Wound Guard portal is controlled through a role-based permissions system. This means that each user account is assigned a role that determines which records and functions that user can access. For example, a provider may access only patient records and orders associated with their own organization, while an administrator may have broader access within that organization.</p>
+            <p>No user can access the data of another organization. Data is isolated at the organization level within the platform, and this isolation is enforced at the database level — not solely at the application level.</p>
+            <p>The platform maintains audit logs that record who accessed which records, when, and what actions were taken. These logs are retained in accordance with HIPAA requirements and may be used to investigate unauthorized access or to demonstrate compliance in the event of an audit.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="policy-section" id="section-7">
+          <div class="policy-section-header">
+            <span class="policy-section-num">7</span>
+            <span class="policy-section-title">Data Retention</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>We retain your information for as long as necessary to fulfill the purposes described in this policy, subject to longer retention periods required by law.</p>
+            <ul>
+              <li><strong>Order records and PHI:</strong> Retained for a minimum of six (6) years from the date of creation or the date it was last in effect, in accordance with HIPAA's documentation retention requirements</li>
+              <li><strong>Account information:</strong> Retained for the duration of the active account relationship and for a reasonable period thereafter as required for legal and compliance purposes</li>
+              <li><strong>Audit logs:</strong> Retained for a minimum of six (6) years in accordance with the HIPAA Security Rule</li>
+              <li><strong>Automatically collected data:</strong> Retained for a period necessary to support platform operations, security monitoring, and compliance obligations</li>
+            </ul>
+            <p>When information is no longer required to be retained, it is securely deleted or de-identified in accordance with applicable standards.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 8 -->
+        <div class="policy-section" id="section-8">
+          <div class="policy-section-header">
+            <span class="policy-section-num">8</span>
+            <span class="policy-section-title">Cookies &amp; Tracking</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>The Wound Guard portal uses cookies and similar technologies solely for the purpose of maintaining user sessions and ensuring platform security. We do not use advertising cookies, third-party tracking pixels, or behavioral analytics tools that share your activity with outside parties.</p>
+            <p><strong>Session cookies</strong> are placed on your device when you log in and are used to keep you authenticated during your session. These cookies expire when you log out or close your browser.</p>
+            <p><strong>Persistent cookies</strong> may be used to remember your preferences within the portal, such as sidebar state or display settings. These do not contain PHI and are not shared with third parties.</p>
+            <p>You may disable cookies through your browser settings at any time; however, doing so may prevent you from logging in or using core features of the portal. We do not currently respond to browser "Do Not Track" signals, as there is no universal standard for how such signals should be interpreted.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 9 -->
+        <div class="policy-section" id="section-9">
+          <div class="policy-section-header">
+            <span class="policy-section-num">9</span>
+            <span class="policy-section-title">Protecting Your Information</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>Wound Guard maintains administrative, physical, and technical safeguards designed to protect the information you provide and that we collect. These safeguards include:</p>
+            <ul>
+              <li>Encryption of data in transit using TLS (Transport Layer Security)</li>
+              <li>Encryption of data at rest within our database infrastructure</li>
+              <li>Role-based access controls limiting data access to authorized personnel only</li>
+              <li>Multi-factor authentication for portal accounts</li>
+              <li>Regular security monitoring and audit logging</li>
+              <li>Network isolation of production database environments</li>
+            </ul>
+            <p>While we implement these safeguards, no system can guarantee absolute security. You are responsible for maintaining the confidentiality of your login credentials and for logging out of the portal when your session is complete, particularly on shared or public devices. Wound Guard is not liable for unauthorized access resulting from your failure to secure your account credentials or devices.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 10 -->
+        <div class="policy-section" id="section-10">
+          <div class="policy-section-header">
+            <span class="policy-section-num">10</span>
+            <span class="policy-section-title">Breach Notification</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>In the event of a breach of unsecured Protected Health Information, Wound Guard will fulfill its breach notification obligations as a Business Associate under the HIPAA Breach Notification Rule:</p>
+            <ul>
+              <li>Wound Guard will notify the applicable Covered Entity (the clinic or provider organization) without unreasonable delay and no later than sixty (60) calendar days after discovery of the breach</li>
+              <li>The notification will include, to the extent possible, the nature of the PHI involved, the unauthorized persons involved, whether the PHI was actually acquired or viewed, and the extent to which the risk of harm has been mitigated</li>
+              <li>The Covered Entity is responsible for notifying affected individuals and, where required, the U.S. Department of Health and Human Services (HHS) and applicable media outlets, in accordance with their own HIPAA obligations</li>
+              <li>Wound Guard will cooperate fully with the Covered Entity in its breach notification and remediation obligations</li>
+            </ul>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 11 -->
+        <div class="policy-section" id="section-11">
+          <div class="policy-section-header">
+            <span class="policy-section-num">11</span>
+            <span class="policy-section-title">Your Rights</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>Authorized users of the Wound Guard portal have the following rights with respect to their account information:</p>
+            <ul>
+              <li><strong>Access:</strong> You may request a copy of the account and usage information we hold about you</li>
+              <li><strong>Correction:</strong> You may request that inaccurate information in your account be corrected</li>
+              <li><strong>Deletion:</strong> You may request deletion of your account information, subject to our legal obligation to retain certain records as described in the Data Retention section above</li>
+              <li><strong>Communication preferences:</strong> You may manage your notification and email preferences within the portal account settings</li>
+            </ul>
+            <p>Patient rights with respect to their PHI are governed by the HIPAA Privacy Rule and are administered by the Covered Entity (the clinic or provider organization) — not directly by Wound Guard. Patients should direct PHI access requests to their healthcare provider.</p>
+            <p>To exercise your account rights, contact us at <a href="mailto:privacy@woundguard.com">privacy@woundguard.com</a>. We will acknowledge your request within ten (10) business days and respond within forty-five (45) days, or notify you if additional time is required.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 12 -->
+        <div class="policy-section" id="section-12">
+          <div class="policy-section-header">
+            <span class="policy-section-num">12</span>
+            <span class="policy-section-title">Children Under 13</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>The Wound Guard portal is intended exclusively for use by licensed healthcare providers and authorized clinic staff. It is not directed at or intended for use by individuals under the age of 13. We do not knowingly collect personal information from children under 13 through the Online Services.</p>
+            <p>If you believe that a child under 13 has accessed the portal or that their information has been submitted, please contact us immediately at <a href="mailto:privacy@woundguard.com">privacy@woundguard.com</a>.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 13 -->
+        <div class="policy-section" id="section-13">
+          <div class="policy-section-header">
+            <span class="policy-section-num">13</span>
+            <span class="policy-section-title">California Residents</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>If you are a California resident, you may have additional rights under the California Consumer Privacy Act (CCPA) and the California Privacy Rights Act (CPRA). However, please note that much of the information handled through the Wound Guard portal constitutes PHI governed by HIPAA and CMIA, which are exempt from certain CCPA obligations.</p>
+            <p>For information that is subject to CCPA, California residents have the right to:</p>
+            <ul>
+              <li>Know what personal information we collect, use, disclose, and sell</li>
+              <li>Request deletion of personal information we hold about them</li>
+              <li>Opt out of the sale or sharing of personal information — note that Wound Guard does not sell personal information</li>
+              <li>Non-discrimination for exercising their CCPA rights</li>
+            </ul>
+            <p>To submit a California privacy request, contact us at <a href="mailto:privacy@woundguard.com">privacy@woundguard.com</a> with "California Privacy Request" in the subject line. We will respond within forty-five (45) days of receipt.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 14 -->
+        <div class="policy-section" id="section-14">
+          <div class="policy-section-header">
+            <span class="policy-section-num">14</span>
+            <span class="policy-section-title">Changes to This Policy</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, legal requirements, or other factors. When we make material changes, we will update the "Last Revised" date at the top of this page and, where appropriate, notify affected users through the portal or via email.</p>
+            <p>Your continued use of the Online Services after any update constitutes your acceptance of the revised policy. We encourage you to review this policy periodically. If you have concerns about a change, please contact us before continuing to use the portal.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+        <!-- Section 15 -->
+        <div class="policy-section" id="section-15">
+          <div class="policy-section-header">
+            <span class="policy-section-num">15</span>
+            <span class="policy-section-title">Contact Us</span>
+          </div>
+          <div class="policy-section-divider"></div>
+          <div class="policy-body">
+            <p>If you have questions about this Privacy Policy, wish to exercise your rights, or believe that your information has been misused, please contact us using one of the following:</p>
+            <div class="policy-contact-card">
+              <div class="policy-contact-row">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                General Support: <a href="mailto:support@woundguard.com">support@woundguard.com</a>
+              </div>
+              <div class="policy-contact-row">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Privacy Officer: <a href="mailto:privacy@woundguard.com">privacy@woundguard.com</a>
+              </div>
+              <div class="policy-contact-row">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Wound Guard — United States
+              </div>
+            </div>
+            <p style="margin-top:16px;">For privacy-related requests, please use the Privacy Officer email and include "Privacy Request" in your subject line. We will acknowledge receipt within ten (10) business days.</p>
+          </div>
+          <a href="#policy-top" class="policy-back-top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg> Back to top</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+</div><!-- end .portal-body -->
+
+<!-- FOOTER -->
+<footer class="portal-footer" role="contentinfo">
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="/guard/portal/privacy-policy/" class="footer-link">Privacy Policy</a>
+    <a href="/guard/portal/contact/" class="footer-link">Support Contact</a>
+  </nav>
+  <span class="footer-copy">© <span id="footer-year"></span> Wound Guard</span>
+  <div class="footer-social">
+    <a href="https://www.linkedin.com/company/wound-guard" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="Wound Guard on LinkedIn">
+      <svg viewBox="0 0 24 24">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/template.js"></script>
+
+<script>
+  const now = new Date();
+  const formatted = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('footer-year').textContent   = now.getFullYear();
+  document.getElementById('effective-date').textContent = formatted;
+  document.getElementById('revised-date').textContent   = formatted;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initPortalPage();
+  });
+</script>
+
+</body>
+</html>
