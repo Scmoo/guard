@@ -365,7 +365,7 @@
 
     <div class="header-divider" aria-hidden="true"></div>
 
-    <a href="/guard/portal/settings/" class="header-icon-btn" aria-label="Organization settings">
+    <a href="/guard/portal/account/" class="header-icon-btn" aria-label="Organization settings">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -525,6 +525,11 @@
               <span class="field-label">Organization:</span>
               <span class="field-value-readonly" id="val-org"></span>
             </div>
+
+            <div class="field-row">
+              <span class="field-label">Access Level:</span>
+              <span class="field-value-readonly" id="val-access-level"></span>
+            </div>
           </div>
 
         </div><!-- end .acct-columns -->
@@ -602,7 +607,7 @@
   //    if (!res.ok) throw new Error('API error ' + res.status);
   //    return await res.json();
   //    // Expected shape:
-  //    //   { userName, username, ownerName, phone, email, createdDate, orgName }
+  //    //   { userName, username, ownerName, phone, email, createdDate, orgName, accessLevel }
   // ════════════════════════════════════════════════════════════════════════════
   async function loadAccountData() {
     try {
@@ -615,6 +620,7 @@
         email:       'jsmith@example.com',
         createdDate: 'mm/dd/yy',
         orgName:     'Sunshine Wound Care',
+        accessLevel: 'Contributor',
       });
       // ─────────────────────────────────────────────────────────────────────
 
@@ -627,8 +633,9 @@
       document.getElementById('val-email').textContent    = data.email;
 
       // Read-only fields
-      document.getElementById('val-created').textContent  = data.createdDate;
-      document.getElementById('val-org').textContent      = data.orgName;
+      document.getElementById('val-created').textContent     = data.createdDate;
+      document.getElementById('val-org').textContent         = data.orgName;
+      document.getElementById('val-access-level').textContent = data.accessLevel || '—';
 
     } catch (err) {
       console.error('Failed to load account data:', err);
