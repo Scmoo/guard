@@ -225,6 +225,34 @@
     }
     .btn-resolve:hover { background: #249a2b; border-color: #249a2b; }
 
+    .btn-mark-unread {
+      background: var(--white);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-mark-unread:hover { background: var(--accent); border-color: var(--accent-dark); color: var(--brand); }
+
+    .btn-restore {
+      background: var(--white);
+      border-color: var(--border);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border-width: 1.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.13s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-restore:hover { background: var(--accent); border-color: var(--accent-dark); color: var(--brand); }
+    .btn-restore:active { transform: scale(0.96); }
+
     /* ── Expanded body ── */
     .alert-body {
       display: none;
@@ -459,7 +487,7 @@
             <div id="passive-list">
 
               <!-- Card: green -->
-              <div class="alert-card green" data-id="p1" data-type="passive">
+              <div class="alert-card green" data-id="p1" data-type="passive" data-severity="green">
                 <div class="alert-header" onclick="toggleAlert('p1')">
                   <div class="alert-header-left">
                     <span class="alert-dot"></span>
@@ -469,9 +497,9 @@
                     </div>
                   </div>
                   <div class="alert-actions" onclick="event.stopPropagation()">
-                    <button class="alert-btn btn-read" onclick="markRead('p1')" title="Mark as read">
+                    <button class="alert-btn btn-read" id="read-btn-p1" onclick="toggleRead('p1')" title="Mark as read">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      Read
+                      Mark Read
                     </button>
                     <button class="alert-btn btn-archive" onclick="archiveAlert('p1','passive')" title="Archive">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -485,7 +513,7 @@
               </div>
 
               <!-- Card: yellow -->
-              <div class="alert-card yellow" data-id="p2" data-type="passive">
+              <div class="alert-card yellow" data-id="p2" data-type="passive" data-severity="yellow">
                 <div class="alert-header" onclick="toggleAlert('p2')">
                   <div class="alert-header-left">
                     <span class="alert-dot"></span>
@@ -495,9 +523,9 @@
                     </div>
                   </div>
                   <div class="alert-actions" onclick="event.stopPropagation()">
-                    <button class="alert-btn btn-read" onclick="markRead('p2')" title="Mark as read">
+                    <button class="alert-btn btn-read" id="read-btn-p2" onclick="toggleRead('p2')" title="Mark as read">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      Read
+                      Mark Read
                     </button>
                     <button class="alert-btn btn-archive" onclick="archiveAlert('p2','passive')" title="Archive">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -511,7 +539,7 @@
               </div>
 
               <!-- Card: green -->
-              <div class="alert-card green" data-id="p3" data-type="passive">
+              <div class="alert-card green" data-id="p3" data-type="passive" data-severity="green">
                 <div class="alert-header" onclick="toggleAlert('p3')">
                   <div class="alert-header-left">
                     <span class="alert-dot"></span>
@@ -521,9 +549,9 @@
                     </div>
                   </div>
                   <div class="alert-actions" onclick="event.stopPropagation()">
-                    <button class="alert-btn btn-read" onclick="markRead('p3')" title="Mark as read">
+                    <button class="alert-btn btn-read" id="read-btn-p3" onclick="toggleRead('p3')" title="Mark as read">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      Read
+                      Mark Read
                     </button>
                     <button class="alert-btn btn-archive" onclick="archiveAlert('p3','passive')" title="Archive">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -549,10 +577,14 @@
                 <span class="archive-count" id="passive-archive-count">1</span>
               </button>
               <div class="archive-list" id="passive-archive-list">
-                <div class="archive-card">
+                <div class="archive-card" data-archive-id="pa0" data-type="passive" data-severity="green" data-body="Order #4790 was successfully delivered and no further action is required.">
                   <span class="archive-card-dot"></span>
                   <span class="archive-card-title">Order #4790 delivered successfully</span>
                   <span class="archive-card-date">Mar 5, 2026</span>
+                  <button class="btn-restore" onclick="restoreAlert('pa0','passive')" title="Restore to active list">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                    Restore
+                  </button>
                 </div>
               </div>
             </div>
@@ -677,52 +709,137 @@
     initPortalPage();
   });
 
-  /* ── Toggle alert open/close ── */
+  /* ── Toggle alert body open/close ── */
   function toggleAlert(id) {
     const body = document.getElementById('body-' + id);
     if (body) body.classList.toggle('open');
   }
 
-  /* ── Mark passive alert as read (removes color, dims card) ── */
-  function markRead(id) {
+  /* ── Toggle read / unread on a passive alert ── */
+  function toggleRead(id) {
     const card = document.querySelector('[data-id="' + id + '"]');
-    if (!card) return;
-    card.classList.add('read');
-    // Remove the read button since it's already read
-    const btn = card.querySelector('.btn-read');
-    if (btn) btn.style.display = 'none';
+    const btn  = document.getElementById('read-btn-' + id);
+    if (!card || !btn) return;
+
+    const isRead = card.classList.toggle('read');
+
+    if (isRead) {
+      btn.innerHTML = `
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Mark Unread
+      `;
+      btn.classList.replace('btn-read', 'btn-mark-unread');
+    } else {
+      btn.innerHTML = `
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark Read
+      `;
+      btn.classList.replace('btn-mark-unread', 'btn-read');
+    }
+
     updateBadge('passive');
+    // NOTE: PATCH notif record read: true/false in DynamoDB here
   }
 
-  /* ── Archive a passive alert (moves to archive zone) ── */
+  /* ── Archive a passive alert (moves card to archive zone) ── */
   function archiveAlert(id, type) {
     const card = document.querySelector('[data-id="' + id + '"]');
     if (!card) return;
 
-    // Get title and date for archive entry
-    const title = card.querySelector('.alert-title').textContent;
-    const date  = card.querySelector('.alert-date').textContent;
+    const title    = card.querySelector('.alert-title').textContent;
+    const date     = card.querySelector('.alert-date').textContent;
+    const severity = card.dataset.severity || 'green';
+    const bodyHtml = document.getElementById('body-' + id)?.innerHTML || '';
+    const archiveId = 'arc-' + id;
 
-    // Remove from active list
     card.remove();
 
-    // Add to archive list
     const archiveList = document.getElementById(type + '-archive-list');
     const emptyMsg = archiveList.querySelector('.archive-empty');
     if (emptyMsg) emptyMsg.remove();
 
     const entry = document.createElement('div');
     entry.className = 'archive-card';
+    entry.dataset.archiveId = archiveId;
+    entry.dataset.type      = type;
+    entry.dataset.severity  = severity;
+    entry.dataset.origId    = id;
+    entry.dataset.body      = bodyHtml;
     entry.innerHTML = `
       <span class="archive-card-dot"></span>
       <span class="archive-card-title">${title}</span>
       <span class="archive-card-date">${date}</span>
+      <button class="btn-restore" onclick="restoreAlert('${archiveId}','${type}')" title="Restore to active list">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+        Restore
+      </button>
     `;
     archiveList.appendChild(entry);
 
     updateBadge(type);
     updateArchiveCount(type);
     checkEmpty(type);
+    // NOTE: PATCH notif record archived: true in DynamoDB here
+  }
+
+  /* ── Restore an archived passive alert back to the active list ── */
+  function restoreAlert(archiveId, type) {
+    const entry = document.querySelector('[data-archive-id="' + archiveId + '"]');
+    if (!entry) return;
+
+    const title    = entry.querySelector('.archive-card-title').textContent;
+    const date     = entry.querySelector('.archive-card-date').textContent;
+    const severity = entry.dataset.severity || 'green';
+    const origId   = entry.dataset.origId || archiveId;
+    const bodyHtml = entry.dataset.body || '';
+
+    entry.remove();
+
+    const activeList = document.getElementById(type + '-list');
+    const card = document.createElement('div');
+    card.className        = `alert-card ${severity}`;
+    card.dataset.id       = origId;
+    card.dataset.type     = type;
+    card.dataset.severity = severity;
+
+    const actionButtons = type === 'passive' ? `
+      <button class="alert-btn btn-read" id="read-btn-${origId}" onclick="toggleRead('${origId}')" title="Mark as read">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark Read
+      </button>
+      <button class="alert-btn btn-archive" onclick="archiveAlert('${origId}','${type}')" title="Archive">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Archive
+      </button>
+    ` : `
+      <button class="alert-btn btn-resolve" onclick="resolveAlert('${origId}')" title="Resolve this alert">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Resolve
+      </button>
+    `;
+
+    card.innerHTML = `
+      <div class="alert-header" onclick="toggleAlert('${origId}')">
+        <div class="alert-header-left">
+          <span class="alert-dot"></span>
+          <div class="alert-title-wrap">
+            <div class="alert-title">${title}</div>
+            <div class="alert-date">${date}</div>
+          </div>
+        </div>
+        <div class="alert-actions" onclick="event.stopPropagation()">
+          ${actionButtons}
+        </div>
+      </div>
+      <div class="alert-body" id="body-${origId}">${bodyHtml}</div>
+    `;
+
+    activeList.appendChild(card);
+
+    updateBadge(type);
+    updateArchiveCount(type);
+    checkEmpty(type);
+    // NOTE: PATCH notif record archived: false in DynamoDB here
   }
 
   /* ── Resolve an intervention alert (moves to resolved archive) ── */
@@ -730,11 +847,13 @@
     const card = document.querySelector('[data-id="' + id + '"]');
     if (!card) return;
 
-    // NOTE: Hook into your AWS workflow here before removing the card.
-    // For now, we simulate resolution.
+    // NOTE: Trigger your AWS resolution workflow here before removing the card.
 
-    const title = card.querySelector('.alert-title').textContent;
-    const date  = card.querySelector('.alert-date').textContent;
+    const title    = card.querySelector('.alert-title').textContent;
+    const date     = card.querySelector('.alert-date').textContent;
+    const severity = card.dataset.severity || 'red';
+    const bodyHtml = document.getElementById('body-' + id)?.innerHTML || '';
+    const archiveId = 'arc-' + id;
 
     card.remove();
 
@@ -744,16 +863,26 @@
 
     const entry = document.createElement('div');
     entry.className = 'archive-card';
+    entry.dataset.archiveId = archiveId;
+    entry.dataset.type      = 'intervention';
+    entry.dataset.severity  = severity;
+    entry.dataset.origId    = id;
+    entry.dataset.body      = bodyHtml;
     entry.innerHTML = `
       <span class="archive-card-dot"></span>
       <span class="archive-card-title">${title}</span>
       <span class="archive-card-date">${date}</span>
+      <button class="btn-restore" onclick="restoreAlert('${archiveId}','intervention')" title="Restore to active list">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+        Restore
+      </button>
     `;
     archiveList.appendChild(entry);
 
     updateBadge('intervention');
     updateArchiveCount('intervention');
     checkEmpty('intervention');
+    // NOTE: PATCH notif record resolved: true in DynamoDB here
   }
 
   /* ── Toggle archive dropdown ── */
@@ -764,7 +893,7 @@
     toggle.classList.toggle('open');
   }
 
-  /* ── Update badge count ── */
+  /* ── Update unread badge count ── */
   function updateBadge(type) {
     const list  = document.getElementById(type + '-list');
     const badge = document.getElementById(type + '-badge');
