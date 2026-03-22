@@ -242,43 +242,6 @@
           margin: 0;
         }
 
-        /* ── Period filter ── */
-        .reports-filter-bar {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 32px;
-          flex-wrap: wrap;
-        }
-        .reports-filter-bar__label {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #5a7080;
-          margin-right: 4px;
-        }
-        .period-btn {
-          font-family: 'Sora', sans-serif;
-          font-size: 0.78rem;
-          font-weight: 600;
-          padding: 6px 16px;
-          border-radius: 20px;
-          border: 1.5px solid #d2fcd8;
-          background: #fff;
-          color: #5a7080;
-          cursor: pointer;
-          transition: all 0.18s ease;
-        }
-        .period-btn:hover {
-          border-color: #61ce70;
-          color: #2eb135;
-          background: #f0fff2;
-        }
-        .period-btn.active {
-          background: #2eb135;
-          border-color: #2eb135;
-          color: #fff;
-        }
-
         /* ── KPI strip ── */
         .kpi-strip {
           display: grid;
@@ -343,6 +306,12 @@
         }
         .kpi-card__delta.up   { background: #d2fcd8; color: #2eb135; }
         .kpi-card__delta.down { background: #fee2e2; color: #dc2626; }
+        .kpi-card__note {
+          font-size: 0.7rem;
+          color: #5a7080;
+          margin-top: 6px;
+          font-weight: 400;
+        }
 
         /* ── Chart grid ── */
         .charts-grid {
@@ -506,9 +475,7 @@
           animation: fadeUp 0.45s ease both;
         }
         .reports-header   { animation-delay: 0.00s; }
-        .reports-filter-bar { animation-delay: 0.06s; }
         .kpi-strip        { animation-delay: 0.10s; }
-        .charts-grid--wide { animation-delay: 0.14s; }
         .charts-grid      { animation-delay: 0.18s; }
         .charts-grid--three { animation-delay: 0.22s; }
 
@@ -523,19 +490,8 @@
         <div class="reports-header">
           <div class="reports-header__eyebrow">Analytics</div>
           <h1 class="reports-header__title">Organization Reports</h1>
-          <p class="reports-header__sub">Live insights into your patient activity, diagnosis trends, and order performance.</p>
+          <p class="reports-header__sub">A snapshot of your organization's patient activity, ordering trends, and fulfillment across all specialties.</p>
         </div>
-
-        <!-- Period filter -->
-        <div class="reports-filter-bar">
-          <span class="reports-filter-bar__label">Period:</span>
-          <button class="period-btn" data-period="30">30 Days</button>
-          <button class="period-btn active" data-period="90">90 Days</button>
-          <button class="period-btn" data-period="180">6 Months</button>
-          <button class="period-btn" data-period="365">1 Year</button>
-          <button class="period-btn" data-period="all">All Time</button>
-        </div>
-
         <!-- KPI Strip -->
         <div class="kpi-strip">
           <div class="kpi-card">
@@ -543,49 +499,34 @@
               <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
             <div class="kpi-card__value" id="kpi-orders">—</div>
-            <div class="kpi-card__label">Total Orders</div>
-            <div class="kpi-card__delta up" id="kpi-orders-delta">↑ —</div>
+            <div class="kpi-card__label">Total Orders Placed</div>
+            <div class="kpi-card__note" id="kpi-orders-note">All time</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card__icon">
               <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <div class="kpi-card__value" id="kpi-patients">—</div>
-            <div class="kpi-card__label">Unique Patients</div>
-            <div class="kpi-card__delta up" id="kpi-patients-delta">↑ —</div>
+            <div class="kpi-card__label">Total Patients Served</div>
+            <div class="kpi-card__note" id="kpi-patients-note">Unique patients</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card__icon">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
-            <div class="kpi-card__value" id="kpi-reimbursed">—</div>
-            <div class="kpi-card__label">Reimbursements</div>
-            <div class="kpi-card__delta up" id="kpi-reimb-delta">↑ —</div>
+            <div class="kpi-card__value" id="kpi-successful">—</div>
+            <div class="kpi-card__label">Patients with Successful Orders</div>
+            <div class="kpi-card__note" id="kpi-successful-note">At least one fulfilled order</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card__icon">
-              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <div class="kpi-card__value" id="kpi-approval">—</div>
-            <div class="kpi-card__label">Approval Rate</div>
-            <div class="kpi-card__delta up" id="kpi-approval-delta">↑ —</div>
+            <div class="kpi-card__value" id="kpi-success-rate">—</div>
+            <div class="kpi-card__label">Successful Order Rate</div>
+            <div class="kpi-card__note" id="kpi-rate-note">Orders fulfilled / placed</div>
           </div>
         </div>
-
-        <!-- Row 1: Orders over time (full width) -->
-        <div class="charts-grid--wide">
-          <div class="chart-card">
-            <div class="chart-card__header">
-              <div>
-                <div class="chart-card__title">Orders Over Time</div>
-                <p class="chart-card__subtitle">Monthly order volume across all products</p>
-              </div>
-              <span class="chart-card__badge" id="orders-trend-badge">Loading…</span>
-            </div>
-            <div class="chart-canvas-wrap" style="height:220px">
-              <canvas id="chart-orders-time"></canvas>
-            </div>
-          </div>
         </div>
 
         <!-- Row 2: Diagnosis codes + Insurance breakdown -->
@@ -631,7 +572,7 @@
 
         </div>
 
-        <!-- Row 3: Age Distribution + Patient Gender + Approval by Insurance -->
+        <!-- Row 2 (bottom): Age Groups + Orders by Specialty + Orders by Product -->
         <div class="charts-grid--three">
 
           <!-- Age Distribution (Bar) -->
@@ -647,16 +588,16 @@
             </div>
           </div>
 
-          <!-- Approval Rate by Insurance (Horizontal Bar) -->
+          <!-- Orders by Specialty (Horizontal Bar) -->
           <div class="chart-card">
             <div class="chart-card__header">
               <div>
-                <div class="chart-card__title">Approval Rate by Payer</div>
-                <p class="chart-card__subtitle">% approved per insurance</p>
+                <div class="chart-card__title">Orders by Specialty</div>
+                <p class="chart-card__subtitle">Volume across clinical specialties</p>
               </div>
             </div>
             <div class="chart-canvas-wrap" style="height:200px">
-              <canvas id="chart-approval-rate"></canvas>
+              <canvas id="chart-specialty"></canvas>
             </div>
           </div>
 
@@ -665,7 +606,7 @@
             <div class="chart-card__header">
               <div>
                 <div class="chart-card__title">Orders by Product</div>
-                <p class="chart-card__subtitle">Most-ordered wound care items</p>
+                <p class="chart-card__subtitle">Most-ordered items across all specialties</p>
               </div>
             </div>
             <div class="chart-canvas-wrap" style="height:200px">
@@ -711,33 +652,25 @@
            Replace each section's mock object
            with a fetch() call to your AWS endpoint.
            ══════════════════════════════════════ */
-        function getMockData(period) {
-          // Scale factor so numbers change with period filter
-          const scale = { 30:0.3, 90:1, 180:1.8, 365:3.2, all:4.5 }[period] || 1;
-          const r = v => Math.round(v * scale);
-
+        function getMockData() {
+          // ── MOCK DATA ──
+          // Replace with: fetch(`${AWS_BASE}/reports`, { headers: { Authorization: 'Bearer ' + token } })
+          //   then(r => r.json()).then(data => renderAll(data))
+          // Expected shape: same as the object returned below.
           return {
             kpis: {
-              orders:      r(312),
-              patients:    r(187),
-              reimbursed:  '$' + (r(94800)).toLocaleString(),
-              approvalRate: Math.min(98, Math.round(84 + scale * 2)) + '%',
-              ordersDelta:    '+' + r(14) + ' vs prev',
-              patientsDelta:  '+' + r(9)  + ' vs prev',
-              reimbDelta:     '+' + r(11) + '% vs prev',
-              approvalDelta:  '+' + Math.min(5, Math.round(1.2 * scale)) + 'pts vs prev',
-            },
-            ordersOverTime: {
-              labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-              data:   [r(18),r(22),r(27),r(31),r(29),r(35),r(40),r(38),r(44),r(50),r(47),r(55)]
+              totalOrders:      1847,
+              totalPatients:    1124,
+              successfulPts:    916,
+              successRate:      '82%',
             },
             diagCodes: [
-              { code:'L97.319', desc:'Non-pressure chronic ulcer, lower leg', count: r(98)  },
-              { code:'L97.211', desc:'Non-pressure chronic ulcer, right thigh', count: r(74) },
-              { code:'E11.621', desc:'Type 2 DM with foot ulcer',              count: r(61) },
-              { code:'L89.313', desc:'Pressure ulcer, right buttock',          count: r(44) },
-              { code:'L97.129', desc:'Non-pressure ulcer, left thigh',         count: r(38) },
-              { code:'I83.012', desc:'Varicose veins with ulcer, left leg',    count: r(29) },
+              { code:'L97.319', desc:'Non-pressure chronic ulcer, lower leg',    count: 312 },
+              { code:'N18.3',   desc:'Chronic kidney disease, stage 3',          count: 274 },
+              { code:'E11.621', desc:'Type 2 diabetes mellitus with foot ulcer', count: 198 },
+              { code:'I50.9',   desc:'Heart failure, unspecified',                count: 167 },
+              { code:'L89.313', desc:'Pressure ulcer of right buttock',           count: 131 },
+              { code:'I83.012', desc:'Varicose veins with ulcer, left leg',       count: 94  },
             ],
             insurance: [
               { name:'Medicare',      pct: 48 },
@@ -748,18 +681,19 @@
             ],
             ageGroups: {
               labels: ['<40','40–54','55–64','65–74','75–84','85+'],
-              data:   [r(8), r(22), r(41), r(67), r(53), r(28)]
+              data:   [52, 138, 241, 387, 213, 93]
             },
-            approvalByIns: {
-              labels: ['Medicare','UnitedHealth','Humana','Aetna','Medicaid'],
-              data:   [94, 88, 85, 82, 71]  // percentages — not scaled
+            specialties: {
+              labels: ['Wound Care','Nephrology','Cardiology','Pulmonology','Orthopedics','Other'],
+              data:   [641, 398, 312, 187, 143, 166]
             },
             products: [
-              { name:'Hydrocolloid Dressing',  count: r(105) },
-              { name:'Collagen Matrix',         count: r(88)  },
-              { name:'Foam Dressing',           count: r(64)  },
-              { name:'Bioelectric Membrane',    count: r(43)  },
-              { name:'Other',                   count: r(12)  },
+              { name:'Wound Care Supplies',   count: 641 },
+              { name:'Renal Therapy',          count: 398 },
+              { name:'Cardiac Devices',        count: 312 },
+              { name:'Pulmonary Aids',         count: 187 },
+              { name:'Orthopedic Supports',    count: 143 },
+              { name:'Other',                  count: 166 },
             ]
           };
         }
@@ -770,9 +704,9 @@
            ══════════════════════════════════════
         const AWS_BASE = 'https://YOUR_API_GATEWAY.execute-api.us-east-1.amazonaws.com/prod';
 
-        async function fetchReportsData(period) {
+        async function fetchReportsData() {
           const token = window.portalUser?.accessToken || '';
-          const res = await fetch(`${AWS_BASE}/reports?period=${period}`, {
+          const res = await fetch(`${AWS_BASE}/reports`, {
             headers: { 'Authorization': 'Bearer ' + token }
           });
           if (!res.ok) throw new Error('Failed to load reports');
@@ -784,76 +718,33 @@
         /* ══════════════════════════════════════
            CHART INSTANCES (kept for re-render)
            ══════════════════════════════════════ */
-        let chartOrdersTime, chartInsurance, chartAge, chartApproval, chartProducts;
+        let chartInsurance, chartAge, chartSpecialty, chartProducts;
 
         /* ══════════════════════════════════════
            RENDER FUNCTIONS
            ══════════════════════════════════════ */
 
         function renderKPIs(kpis) {
-          document.getElementById('kpi-orders').textContent        = kpis.orders.toLocaleString();
-          document.getElementById('kpi-patients').textContent      = kpis.patients.toLocaleString();
-          document.getElementById('kpi-reimbursed').textContent    = kpis.reimbursed;
-          document.getElementById('kpi-approval').textContent      = kpis.approvalRate;
-          document.getElementById('kpi-orders-delta').textContent  = kpis.ordersDelta;
-          document.getElementById('kpi-patients-delta').textContent= kpis.patientsDelta;
-          document.getElementById('kpi-reimb-delta').textContent   = kpis.reimbDelta;
-          document.getElementById('kpi-approval-delta').textContent= kpis.approvalDelta;
-        }
-
-        function renderOrdersTime(d) {
-          const ctx = document.getElementById('chart-orders-time').getContext('2d');
-          const grad = ctx.createLinearGradient(0, 0, 0, 220);
-          grad.addColorStop(0,   'rgba(46,177,53,0.18)');
-          grad.addColorStop(1,   'rgba(46,177,53,0)');
-
-          const total = d.data.reduce((a,b)=>a+b,0);
-          const prev  = Math.round(total * 0.88);
-          const change = Math.round((total - prev) / prev * 100);
-          document.getElementById('orders-trend-badge').textContent = `↑ ${change}% vs prev period`;
-
-          if (chartOrdersTime) chartOrdersTime.destroy();
-          chartOrdersTime = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: d.labels,
-              datasets: [{
-                label: 'Orders',
-                data: d.data,
-                borderColor: GREEN_DARK,
-                borderWidth: 2.5,
-                pointBackgroundColor: GREEN_DARK,
-                pointRadius: 4,
-                pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: GREEN_DARK,
-                pointHoverBorderWidth: 2.5,
-                fill: true,
-                backgroundColor: grad,
-                tension: 0.38
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    title: ctx => 'Month: ' + ctx[0].label,
-                    label: ctx => '  Orders: ' + ctx.parsed.y
-                  }
-                }
-              },
-              scales: {
-                x: { grid: { display: false }, ticks: { color: '#5a7080' } },
-                y: {
-                  grid: { color: '#f0fff2', drawBorder: false },
-                  ticks: { color: '#5a7080', stepSize: 10 },
-                  beginAtZero: true
-                }
-              }
-            }
-          });
+          // Animate count-up for each KPI value
+          function countUp(elId, target, prefix, suffix) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const isNum = typeof target === 'number';
+            if (!isNum) { el.textContent = (prefix||'') + target + (suffix||''); return; }
+            let start = 0;
+            const duration = 900;
+            const step = 16;
+            const increment = target / (duration / step);
+            const timer = setInterval(() => {
+              start = Math.min(start + increment, target);
+              el.textContent = (prefix||'') + Math.floor(start).toLocaleString() + (suffix||'');
+              if (start >= target) clearInterval(timer);
+            }, step);
+          }
+          countUp('kpi-orders',       kpis.totalOrders,   '', '');
+          countUp('kpi-patients',     kpis.totalPatients, '', '');
+          countUp('kpi-successful',   kpis.successfulPts, '', '');
+          document.getElementById('kpi-success-rate').textContent = kpis.successRate;
         }
 
         function renderDiagTable(codes) {
@@ -964,19 +855,20 @@
           });
         }
 
-        function renderApprovalByIns(d) {
-          const ctx = document.getElementById('chart-approval-rate').getContext('2d');
-          if (chartApproval) chartApproval.destroy();
-          chartApproval = new Chart(ctx, {
+        function renderSpecialty(d) {
+          const ctx = document.getElementById('chart-specialty').getContext('2d');
+          if (chartSpecialty) chartSpecialty.destroy();
+          chartSpecialty = new Chart(ctx, {
             type: 'bar',
             data: {
               labels: d.labels,
               datasets: [{
-                label: 'Approval %',
+                label: 'Orders',
                 data: d.data,
-                backgroundColor: d.data.map(v =>
-                  v >= 90 ? GREEN_DARK : v >= 80 ? GREEN_MID : GREEN_LIGHT
-                ),
+                backgroundColor: d.data.map((v,i) => {
+                  const max = Math.max(...d.data);
+                  return v === max ? GREEN_DARK : PALETTE[i] || GREEN_LIGHT;
+                }),
                 hoverBackgroundColor: '#061728',
                 borderRadius: 6,
                 borderSkipped: false,
@@ -989,15 +881,15 @@
               plugins: {
                 tooltip: {
                   callbacks: {
-                    label: ctx => `  Approval: ${ctx.parsed.x}%`
+                    label: ctx => \`  Orders: \${ctx.parsed.x.toLocaleString()}\`
                   }
                 }
               },
               scales: {
                 x: {
                   grid: { color: '#f0fff2' },
-                  ticks: { color: '#5a7080', callback: v => v + '%' },
-                  min: 50, max: 100
+                  ticks: { color: '#5a7080' },
+                  beginAtZero: true
                 },
                 y: { grid: { display: false }, ticks: { color: '#5a7080' } }
               }
@@ -1005,7 +897,7 @@
           });
         }
 
-        function renderProducts(products) {
+        function renderProductsfunction renderProducts(products) {
           const ctx = document.getElementById('chart-products').getContext('2d');
           if (chartProducts) chartProducts.destroy();
           chartProducts = new Chart(ctx, {
@@ -1051,34 +943,19 @@
         /* ══════════════════════════════════════
            MAIN LOAD / REFRESH
            ══════════════════════════════════════ */
-        function loadReports(period) {
-          // ── MOCK (swap with fetchReportsData(period).then(...) for AWS) ──
-          const data = getMockData(period);
-
+        function loadReports() {
+          // ── MOCK (swap with fetchReportsData().then(data => renderAll(data)) for AWS) ──
+          const data = getMockData();
           renderKPIs(data.kpis);
-          renderOrdersTime(data.ordersOverTime);
           renderDiagTable(data.diagCodes);
           renderInsurance(data.insurance);
           renderAgeGroups(data.ageGroups);
-          renderApprovalByIns(data.approvalByIns);
+          renderSpecialty(data.specialties);
           renderProducts(data.products);
         }
 
-        /* ══════════════════════════════════════
-           PERIOD FILTER BUTTONS
-           ══════════════════════════════════════ */
-        let activePeriod = '90';
-        document.querySelectorAll('.period-btn').forEach(btn => {
-          btn.addEventListener('click', function () {
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            activePeriod = this.dataset.period;
-            loadReports(activePeriod);
-          });
-        });
-
         /* ── Boot ── */
-        loadReports(activePeriod);
+        loadReports();
 
       })();
       </script>
