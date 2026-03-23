@@ -663,41 +663,41 @@
           // Expected shape: same as the object returned below.
           return {
             kpis: {
-              totalOrders:   0,
-              totalPatients: 0,
-              successfulPts: 0,
-              successRate:   '—',
+              totalOrders:   348,
+              totalPatients: 214,
+              successfulPts: 179,
+              successRate:   '51%',
             },
             diagCodes: [
-              { code:'—', desc:'Awaiting data', count: 0 },
-              { code:'—', desc:'Awaiting data', count: 0 },
-              { code:'—', desc:'Awaiting data', count: 0 },
-              { code:'—', desc:'Awaiting data', count: 0 },
-              { code:'—', desc:'Awaiting data', count: 0 },
-              { code:'—', desc:'Awaiting data', count: 0 },
+              { code:'L97.419', desc:'Non-pressure chronic ulcer of right heel and midfoot', count: 87 },
+              { code:'L89.310', desc:'Pressure ulcer of right buttock, unstageable',         count: 64 },
+              { code:'E11.621', desc:'Type 2 diabetes with foot ulcer',                      count: 51 },
+              { code:'L97.219', desc:'Non-pressure chronic ulcer of right calf',             count: 38 },
+              { code:'I83.009', desc:'Varicose veins of unspecified lower extremity',        count: 29 },
+              { code:'L89.154', desc:'Pressure ulcer of sacral region, stage 4',             count: 19 },
             ],
             insurance: [
-              { name:'Medicare',     pct: 0 },
-              { name:'UnitedHealth', pct: 0 },
-              { name:'Humana',       pct: 0 },
-              { name:'Aetna',        pct: 0 },
-              { name:'Other',        pct: 0 },
+              { name:'Medicare',     pct: 44 },
+              { name:'UnitedHealth', pct: 21 },
+              { name:'Humana',       pct: 15 },
+              { name:'Aetna',        pct: 12 },
+              { name:'Other',        pct:  8 },
             ],
             ageGroups: {
               labels: ['<40','40–54','55–64','65–74','75–84','85+'],
-              data:   [0, 0, 0, 0, 0, 0]
+              data:   [8, 22, 41, 68, 53, 22]
             },
             specialties: {
               labels: ['Wound Care','Nephrology','Cardiology','Pulmonology','Orthopedics','Other'],
-              data:   [0, 0, 0, 0, 0, 0]
+              data:   [142, 58, 47, 39, 34, 28]
             },
             products: [
-              { name:'Wound Care Supplies',  count: 0 },
-              { name:'Renal Therapy',         count: 0 },
-              { name:'Cardiac Devices',       count: 0 },
-              { name:'Pulmonary Aids',        count: 0 },
-              { name:'Orthopedic Supports',   count: 0 },
-              { name:'Other',                 count: 0 },
+              { name:'Wound Care Supplies',  count: 138 },
+              { name:'Renal Therapy',         count:  54 },
+              { name:'Cardiac Devices',       count:  46 },
+              { name:'Pulmonary Aids',        count:  37 },
+              { name:'Orthopedic Supports',   count:  32 },
+              { name:'Other',                 count:  41 },
             ]
           };
         }
@@ -885,7 +885,7 @@
               plugins: {
                 tooltip: {
                   callbacks: {
-                    label: ctx => \`  Orders: \${ctx.parsed.x.toLocaleString()}\`
+                    label: ctx => `  Orders: ${ctx.parsed.x.toLocaleString()}`
                   }
                 }
               },
@@ -901,7 +901,7 @@
           });
         }
 
-        function renderProductsfunction renderProducts(products) {
+        function renderProducts(products) {
           const ctx = document.getElementById('chart-products').getContext('2d');
           if (chartProducts) chartProducts.destroy();
           chartProducts = new Chart(ctx, {
