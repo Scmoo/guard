@@ -212,6 +212,29 @@
           color: #061728;
         }
 
+        /* ── Back Button ── */
+        .back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-muted);
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 6px 4px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          transition: color 0.15s ease, background 0.15s ease, padding 0.15s ease;
+        }
+        .back-btn:hover {
+          color: #061728;
+          background: #f0fff2;
+          padding-left: 8px;
+        }
+
         /* ── Page Header ── */
         .reports-header {
           margin-bottom: 36px;
@@ -487,6 +510,14 @@
            REPORTS PAGE HTML
            ══════════════════════════════════ -->
       <div class="reports-page">
+
+        <!-- Back Button -->
+        <button onclick="goBack()" class="back-btn" aria-label="Go back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back
+        </button>
 
         <!-- Header -->
         <div class="reports-header">
@@ -1015,6 +1046,15 @@
 <script>
   // Fill in copyright year automatically
   document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── Back button ─────────────────────────────────
+  function goBack() {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/guard/portal/home/';
+    }
+  }
 
   // ── REQUIRED on every page ──────────────────────
   // Checks Auth0, fills in org name, enforces roles.
