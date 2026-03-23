@@ -202,9 +202,39 @@
            MEDICARE REIMBURSEMENT UPDATES PAGE
            ══════════════════════════════════════ -->
 
+      <button onclick="goBack()" class="back-btn" aria-label="Go back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back
+      </button>
+
       <style>
         /* ── Google Fonts ── */
         @import url('https://fonts.googleapis.com/css2?family=Krona+One&family=Sora:wght@300;400;500;600;700&display=swap');
+
+        /* ── Back button ── */
+        .back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #4a6074;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 6px 4px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          transition: color 0.15s ease, background 0.15s ease;
+        }
+        .back-btn:hover {
+          color: #2eb135;
+          background: #d2fcd8;
+          padding: 6px 10px;
+        }
 
         /* ── Page variables ── */
         .notif-page {
@@ -869,6 +899,15 @@
 <script>
   // Fill in copyright year automatically
   document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // ── Back button ─────────────────────────────────
+  function goBack() {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/guard/portal/home/';
+    }
+  }
 
   // ── REQUIRED on every page ──────────────────────
   // Checks Auth0, fills in org name, enforces roles.
