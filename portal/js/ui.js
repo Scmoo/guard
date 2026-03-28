@@ -107,7 +107,7 @@ function closeModal(id) {
   if (overlay) overlay.classList.remove('open');
 }
 
-// Close modal when clicking outside
+// Close modal when clicking the backdrop
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     e.target.classList.remove('open');
@@ -115,46 +115,62 @@ document.addEventListener('click', (e) => {
 });
 
 // -----------------------------------------------
-//  Sidebar: hydrate user info + mark active link
+//  Sidebar hydration
+//
+//  Reads the live Supabase session to fill in the
+//  user's name, role, and avatar initials.
+//  Also marks the active nav link.
+//
+//  Note: initPortalPage() in template.js already
+//  handles this on page load. hydrateSidebar() is
+//  here as a standalone utility if you need to
+//  refresh the sidebar after a profile update.
 // -----------------------------------------------
-
 async function hydrateSidebar() {
   // Mark the active nav link
-  const currentPage = window.location.pathname.split('/').pop();
-  document.querySelectorAll('.nav-item').forEach(link => {
-    const href = (link.getAttribute('href') || '').split('/').pop();
+  const currentPage = window.location.pathname.replace(/\/$/, '').split('/').pop();
+  document.querySelectorAll('.nav-item, .sidebar-nav-item').forEach(link => {
+    const href = (link.getAttribute('href') || link.dataset.page || '').split('/').pop();
     if (href === currentPage) link.classList.add('active');
     else link.classList.remove('active');
   });
 
-  // Fill in user name + initials in sidebar footer
+  // Fill in user name, role, and initials from the Supabase session + USR table
   try {
-    const user = await getCurrentUser();
-    if (!user) return;
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) return;
 
-    const nameEl    = document.getElementById('sidebar-user-name');
-    const roleEl    = document.getElementById('sidebar-user-role');
-    const avatarEl  = document.getElementById('sidebar-user-avatar');
-    const topbarEl  = document.getElementById('topbar-user-name');
+    // Pull role from USR table
+    const { data: usrData } = await _supabase
+      .from('USR')
+      .select('role')
+      .eq('"USRID"', session.user.id)
+      .single();
 
-    const name = user.name || user.email || 'User';
-    const role = user['https://yourapp.com/role'] || 'Staff';
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const email    = session.user.email || '';
+    const name     = session.user.user_metadata?.full_name || email;
+    const role     = usrData?.role || 'staff';
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
+
+    const nameEl   = document.getElementById('sidebar-user-name');
+    const roleEl   = document.getElementById('sidebar-user-role');
+    const avatarEl = document.getElementById('sidebar-user-avatar');
+    const topbarEl = document.getElementById('topbar-user-name');
 
     if (nameEl)   nameEl.textContent   = name;
     if (roleEl)   roleEl.textContent   = capitalize(role);
     if (avatarEl) avatarEl.textContent = initials;
     if (topbarEl) topbarEl.textContent = name;
 
-    // Hide pages that the role can't access
     enforceRoleVisibility(role);
   } catch (e) {
     console.error('Sidebar hydration error:', e);
   }
 }
 
+// Hides elements tagged data-roles="admin,provider"
+// if the user's role isn't in the allowed list
 function enforceRoleVisibility(role) {
-  // Elements with data-roles="admin,provider" are hidden if role not in list
   document.querySelectorAll('[data-roles]').forEach(el => {
     const allowed = el.dataset.roles.split(',').map(r => r.trim());
     if (!allowed.includes(role)) {
@@ -164,6 +180,7 @@ function enforceRoleVisibility(role) {
 }
 
 function capitalize(str) {
+  if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
@@ -201,17 +218,17 @@ function formatPhone(phone) {
 //  Confirmation dialog
 // -----------------------------------------------
 
-function confirm(message) {
+function confirmDialog(message) {
   return new Promise(resolve => {
     const overlay = document.createElement('div');
     overlay.classList.add('modal-overlay');
-    overlay.style.opacity = '0';
+    overlay.style.cssText = 'opacity:0; pointer-events:none;';
     overlay.innerHTML = `
       <div class="modal" style="max-width:380px">
         <div class="modal-header">
           <h3 class="card-title">Confirm</h3>
         </div>
-        <p style="font-size:0.9rem;color:var(--text-muted)">${message}</p>
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:4px">${message}</p>
         <div class="modal-actions">
           <button class="btn btn-ghost btn-sm" id="confirm-cancel">Cancel</button>
           <button class="btn btn-danger btn-sm" id="confirm-ok">Confirm</button>
@@ -229,3 +246,13 @@ function confirm(message) {
     overlay.querySelector('#confirm-ok').onclick     = () => { overlay.remove(); resolve(true);  };
   });
 }
+
+// -----------------------------------------------
+//  NOTE — confirm() rename
+//
+//  The previous version overrode the browser's
+//  built-in window.confirm(). Renamed to
+//  confirmDialog() to avoid that conflict.
+//  Update any existing calls in your page scripts:
+//    confirm('…')        → confirmDialog('…')
+// -----------------------------------------------

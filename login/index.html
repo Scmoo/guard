@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Organization Login — Client Ordering Portal</title>
   <link rel="stylesheet" href="css/styles.css" />
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+
+  <!-- ✅ Supabase SDK (replaces Auth0 CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
   /* ── Login-specific layout ── */
@@ -147,7 +149,6 @@
     overflow: visible;
   }
 
-  /* ── kept for future use ── */
   @keyframes pulse-ring {
     0%, 100% { box-shadow: 0 0 0 0 rgba(46,177,53,0.15); }
     50%       { box-shadow: 0 0 0 90px rgba(46,177,53,0); }
@@ -186,14 +187,14 @@
 
     <form class="login-form" id="loginForm" onsubmit="handleSignIn(event)" novalidate>
 
-      <!-- User ID field -->
+      <!-- User ID / Email field -->
       <div class="form-group">
         <div class="input-wrapper">
           <input
             type="text"
             id="userId"
             class="form-input"
-            placeholder="User ID"
+            placeholder="Email / User ID"
             autocomplete="username"
             required
           />
@@ -257,20 +258,20 @@
     <div class="modal-header">
       <div>
         <h3 class="card-title">Password Reset</h3>
-        <p class="card-subtitle" style="margin-top:2px">Enter your User ID to receive a reset link.</p>
+        <p class="card-subtitle" style="margin-top:2px">Enter your email to receive a reset link.</p>
       </div>
       <button class="modal-close" onclick="closeModal('resetModal')">✕</button>
     </div>
     <div class="form-group">
-      <label class="form-label" for="resetUserId">User ID</label>
-      <input type="text" id="resetUserId" class="form-input" placeholder="Enter your User ID" />
+      <label class="form-label" for="resetEmail">Email Address</label>
+      <input type="email" id="resetEmail" class="form-input" placeholder="you@organization.com" />
     </div>
     <div id="reset-success" class="alert alert-success" style="display:none;margin-top:12px">
-      ✓ If that User ID exists, a reset link has been sent.
+      ✓ If that email exists, a reset link has been sent. Check your inbox.
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('resetModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="submitPasswordReset()">Send Reset Link</button>
+      <button class="btn btn-primary btn-sm" id="resetBtn" onclick="submitPasswordReset()">Send Reset Link</button>
     </div>
   </div>
 </div>
@@ -301,9 +302,14 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════
+     JS — auth.js must load first
+     ═══════════════════════════════════ -->
 <script src="js/auth.js"></script>
 <script>
-  // ── Init ──
+
+  // ── On page load ──
+  // If already logged in, skip to portal
   document.addEventListener('DOMContentLoaded', () => {
     initLoginPage();
   });
@@ -311,31 +317,40 @@
   // ── Sign In ──
   async function handleSignIn(e) {
     e.preventDefault();
-    const btn = document.getElementById('signInBtn');
+
+    const btn     = document.getElementById('signInBtn');
     const errorEl = document.getElementById('login-error');
     errorEl.classList.remove('visible');
 
     const userId   = document.getElementById('userId').value.trim();
     const password = document.getElementById('password').value;
 
-    if (!userId) {
-      showFieldError('userId', 'Please enter your User ID.');
-      return;
-    }
-    if (!password) {
-      showFieldError('password', 'Please enter your password.');
-      return;
-    }
+    if (!userId)   { showFieldError('userId',   'Please enter your email or User ID.'); return; }
+    if (!password) { showFieldError('password', 'Please enter your password.');          return; }
 
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Signing in…';
 
     try {
-      await loginWithRedirect();
+      // loginWithCredentials is defined in auth.js
+      await loginWithCredentials(userId, password);
+      // Supabase persists the session automatically — go straight to portal
+      window.location.replace('/guard/portal/home/');
     } catch (err) {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Sign In';
-      showLoginError('Unable to sign in. Please check your credentials and try again.');
+
+      // Supabase returns specific error messages — map common ones to friendly text
+      const msg = err.message || '';
+      if (msg.includes('Invalid login credentials')) {
+        showLoginError('Incorrect email or password. Please try again.');
+      } else if (msg.includes('Email not confirmed')) {
+        showLoginError('Please confirm your email before signing in.');
+      } else if (msg.includes('Too many requests')) {
+        showLoginError('Too many attempts. Please wait a moment and try again.');
+      } else {
+        showLoginError('Unable to sign in. Please try again.');
+      }
     }
   }
 
@@ -348,11 +363,11 @@
     eyeBtn.style.opacity = isHidden ? '0.4' : '1';
   }
 
-  // ── Helper links ──
+  // ── Open modals ──
   function handlePasswordReset(e) {
     e.preventDefault();
     document.getElementById('reset-success').style.display = 'none';
-    document.getElementById('resetUserId').value = '';
+    document.getElementById('resetEmail').value = '';
     openModal('resetModal');
   }
 
@@ -363,19 +378,28 @@
     openModal('forgotIdModal');
   }
 
+  // ── Password Reset — now uses Supabase ──
   async function submitPasswordReset() {
-    const userId = document.getElementById('resetUserId').value.trim();
-    if (!userId) { toast('Please enter your User ID.', 'warning'); return; }
+    const email  = document.getElementById('resetEmail').value.trim();
+    const btn    = document.getElementById('resetBtn');
+    if (!email) { showModalError('Please enter your email address.'); return; }
+
+    btn.disabled    = true;
+    btn.textContent = 'Sending…';
+
     try {
-      await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-    } catch (_) {}
+      // sendPasswordReset is defined in auth.js
+      await sendPasswordReset(email);
+    } catch (_) {
+      // Silently swallow — we always show success to avoid email enumeration
+    }
+
     document.getElementById('reset-success').style.display = 'flex';
+    btn.disabled    = false;
+    btn.textContent = 'Send Reset Link';
   }
 
+  // ── Forgot User ID — calls your own API if you have one ──
   async function submitForgotId() {
     const email = document.getElementById('forgotEmail').value.trim();
     if (!email) { toast('Please enter your email.', 'warning'); return; }
@@ -389,7 +413,7 @@
     document.getElementById('forgot-success').style.display = 'flex';
   }
 
-  // ── Field error ──
+  // ── Field-level error highlight ──
   function showFieldError(fieldId, message) {
     const input = document.getElementById(fieldId);
     input.classList.add('error');
@@ -401,14 +425,20 @@
     }, { once: true });
   }
 
+  function showModalError(message) {
+    toast(message, 'warning');
+  }
+
   // ── Modal helpers ──
   function openModal(id)  { document.getElementById(id).classList.add('open');    }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // Simple toast fallback for the login page (ui.js not loaded here)
   function toast(msg, type) {
-    console.log(`[${type}]`, msg);
     const el = document.getElementById('login-error');
     if (el) { el.textContent = msg; el.classList.add('visible'); }
   }
+
 </script>
 </body>
 </html>

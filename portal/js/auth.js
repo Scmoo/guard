@@ -1,131 +1,131 @@
 // =============================================
-//  auth.js — Auth0 Integration
-//  ⚠ Replace the three YOUR_* values below
-//    with your real Auth0 credentials.
+//  auth.js — Supabase Auth Integration
+//
+//  ✅ SAFE TO COMMIT: The anon key below is
+//  intentionally public. It only grants access
+//  to what your Row Level Security (RLS) policies
+//  allow. Think of it as a "guest pass" — your
+//  RLS rules are the actual lock on the door.
+//
+//  🚫 NEVER commit your service_role key.
+//     That one bypasses RLS and belongs only
+//     on a private server (e.g. AWS Lambda).
 // =============================================
 
-const AUTH_CONFIG = {
-  domain:    'YOUR_AUTH0_DOMAIN',       // e.g. dev-abc123.us.auth0.com
-  clientId:  'YOUR_AUTH0_CLIENT_ID',    // from Auth0 dashboard → Applications
-  audience:  'YOUR_AUTH0_API_AUDIENCE', // e.g. https://api.woundguard.com
-
-  // After login, Auth0 sends the user HERE:
-  redirectUri: window.location.origin + '/guard/portal/home/',
-
-  // After logout, Auth0 sends the user HERE:
-  logoutUri: window.location.origin + '/guard/login/',
-};
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';
 
 // -----------------------------------------------
-//  Internal — Auth0 client (created once, reused)
+//  Internal — Supabase client (created once,
+//  shared across auth.js, template.js, ui.js,
+//  and all portal page scripts via window scope)
 // -----------------------------------------------
-let _auth0Client = null;
-
-async function getAuth0Client() {
-  if (_auth0Client) return _auth0Client;
-
-  _auth0Client = await auth0.createAuth0Client({
-    domain:   AUTH_CONFIG.domain,
-    clientId: AUTH_CONFIG.clientId,
-    authorizationParams: {
-      redirect_uri: AUTH_CONFIG.redirectUri,
-      audience:     AUTH_CONFIG.audience,
-      scope:        'openid profile email',
-    },
-    cacheLocation: 'localstorage', // stays logged in after page refresh
-    useRefreshTokens: true,
-  });
-
-  return _auth0Client;
-}
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: {
+    persistSession:     true,   // stays logged in across page refreshes
+    autoRefreshToken:   true,   // silently renews the JWT before it expires
+    detectSessionInUrl: true,   // handles magic link / password reset callbacks
+  }
+});
 
 // -----------------------------------------------
-//  LOGIN PAGE — call this in login/index.html
+//  LOGIN PAGE
+//  Call initLoginPage() in your login index.html
 // -----------------------------------------------
 
-// Run on login page load — handles the redirect
-// back from Auth0 and checks if already logged in.
+// Runs on login page load.
+// If the user already has a valid session, skip
+// straight to the portal — no need to log in again.
 async function initLoginPage() {
-  const client = await getAuth0Client();
-
-  // Auth0 redirects back with ?code= in the URL after login
-  if (window.location.search.includes('code=') || window.location.search.includes('error=')) {
-    try {
-      await client.handleRedirectCallback();
-      window.history.replaceState({}, document.title, window.location.pathname);
-      window.location.replace(AUTH_CONFIG.redirectUri);
-    } catch (err) {
-      console.error('Auth0 callback error:', err);
-      showLoginError('Login failed. Please try again.');
-    }
-    return;
-  }
-
-  // Already logged in? Skip the login page.
-  const authenticated = await client.isAuthenticated();
-  if (authenticated) {
-    window.location.replace(AUTH_CONFIG.redirectUri);
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session) {
+    window.location.replace('/guard/portal/home/');
   }
 }
 
-// Called when user clicks "Sign In"
-async function loginWithRedirect() {
-  const client = await getAuth0Client();
-  await client.loginWithRedirect();
+// Called when the user submits the login form.
+// userId should be the user's email address.
+// See the note at the bottom of this file if you
+// want to support a non-email User ID field.
+async function loginWithCredentials(userId, password) {
+  const { data, error } = await _supabase.auth.signInWithPassword({
+    email:    userId,
+    password: password,
+  });
+  if (error) throw error;
+  return data;
 }
 
 // -----------------------------------------------
-//  PORTAL PAGES — call requireAuth() on every page
+//  PORTAL PAGES
+//  Called automatically by template.js on every
+//  protected page — you do not need to call this
+//  manually on individual pages.
 // -----------------------------------------------
 
-// Checks login status. If not logged in, redirects
-// to the login page. Returns { user, token } if OK.
+// Checks the Supabase session from localStorage.
+// Fast — no network request unless token has expired.
+// Returns the session object, or null + redirects to login.
 async function requireAuth() {
-  const client = await getAuth0Client();
-  const authenticated = await client.isAuthenticated();
+  const { data: { session }, error } = await _supabase.auth.getSession();
 
-  if (!authenticated) {
-    // Not logged in — send to login page
-    window.location.replace(window.location.origin + '/guard/login/');
+  if (error || !session) {
+    window.location.replace('/guard/login/');
     return null;
   }
 
-  const user  = await client.getUser();
-  const token = await client.getTokenSilently({ audience: AUTH_CONFIG.audience });
-  return { user, token };
+  return session;  // session.user has .id, .email, .user_metadata
 }
 
-// Get the logged-in user object (or null if not logged in)
+// Get the full Supabase user object (or null)
 async function getCurrentUser() {
-  const client = await getAuth0Client();
-  if (!(await client.isAuthenticated())) return null;
-  return client.getUser();
+  const { data: { user } } = await _supabase.auth.getUser();
+  return user || null;
 }
 
-// Get a fresh access token to send to your AWS API
+// Get the current JWT to attach to API calls:
+// fetch('/api/...', { headers: { Authorization: `Bearer ${token}` } })
 async function getAccessToken() {
-  const client = await getAuth0Client();
-  return client.getTokenSilently({ audience: AUTH_CONFIG.audience });
+  const { data: { session } } = await _supabase.auth.getSession();
+  return session?.access_token || null;
 }
 
-// Get the user's role (admin / provider / nurse)
-// This is set in your Auth0 Action — see README
+// Get the user's role from the USR table.
+// Falls back to 'staff' if not found.
 async function getUserRole() {
-  const client = await getAuth0Client();
-  const user   = await client.getUser();
-  return user?.['https://yourapp.com/role'] || 'staff';
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) return 'staff';
+
+  const { data } = await _supabase
+    .from('USR')
+    .select('role')
+    .eq('"USRID"', session.user.id)
+    .single();
+
+  return data?.role || 'staff';
 }
 
-// Sign the user out and return to login page
+// Sign the user out and return to the login page
 async function logout() {
-  const client = await getAuth0Client();
-  await client.logout({
-    logoutParams: { returnTo: AUTH_CONFIG.logoutUri }
-  });
+  await _supabase.auth.signOut();
+  window.location.replace('/guard/login/');
 }
 
 // -----------------------------------------------
-//  Used by login page to show error messages
+//  Password Reset
+//  Sends a reset email. The link in the email
+//  lands on /guard/portal/account/ where you call:
+//  _supabase.auth.updateUser({ password: 'newpass' })
+// -----------------------------------------------
+async function sendPasswordReset(email) {
+  const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/guard/portal/account/',
+  });
+  if (error) throw error;
+}
+
+// -----------------------------------------------
+//  Login page error display helper
 // -----------------------------------------------
 function showLoginError(message) {
   const el = document.getElementById('login-error');
@@ -134,3 +134,20 @@ function showLoginError(message) {
     el.classList.add('visible');
   }
 }
+
+// -----------------------------------------------
+//  NOTE — Non-email User IDs
+//
+//  Supabase auth is email-based. If you want users
+//  to type a short ID (e.g. "WG-1042") instead of
+//  their email, add a lookup first:
+//
+//    const { data } = await _supabase
+//      .from('USR')
+//      .select('email')
+//      .eq('"USRID"', userId)   ← custom ID column
+//      .single();
+//    await loginWithCredentials(data.email, password);
+//
+//  You would need an 'email' column in USR for this.
+// -----------------------------------------------

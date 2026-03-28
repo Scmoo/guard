@@ -1,6 +1,6 @@
 // =============================================
 //  template.js
-//  Handles: sidebar toggle, Auth0 guard,
+//  Handles: sidebar toggle, Supabase auth guard,
 //  user info hydration, active nav state.
 //
 //  Loaded on every portal page after auth.js
@@ -36,8 +36,8 @@
   // On page load, restore saved preference
   // (default: expanded on desktop, collapsed on mobile)
   document.addEventListener('DOMContentLoaded', () => {
-    const saved     = localStorage.getItem(STORAGE_KEY);
-    const isMobile  = window.innerWidth < 768;
+    const saved    = localStorage.getItem(STORAGE_KEY);
+    const isMobile = window.innerWidth < 768;
     const collapsed = saved !== null ? saved === '1' : isMobile;
     setCollapsed(collapsed);
     markActiveNavItem();
@@ -48,17 +48,15 @@
 //  Mark the active sidebar nav item
 //
 //  Since every page is at portal/<pagename>/index.html,
-//  we look at the second-to-last path segment:
-//    /guard/portal/home/  →  "home"
-//    /guard/portal/orders/ → "orders"
+//  we look at the last path segment:
+//    /guard/portal/home/   →  "home"
+//    /guard/portal/orders/ →  "orders"
 // -----------------------------------------------
 function markActiveNavItem() {
-  // Get the folder name of the current page
   const parts   = window.location.pathname.replace(/\/$/, '').split('/');
-  const current = parts[parts.length - 1] || '';  // e.g. "home", "orders"
+  const current = parts[parts.length - 1] || '';
 
   document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(item => {
-    // data-page should match the folder name, e.g. data-page="home"
     if (item.dataset.page === current) {
       item.classList.add('active');
     } else {
@@ -69,49 +67,107 @@ function markActiveNavItem() {
 
 // -----------------------------------------------
 //  Auth guard + user hydration
-//  Called at the bottom of every portal page.
+//
+//  This is the GLOBAL auth guard. It runs on
+//  every protected portal page automatically via
+//  the DOMContentLoaded listener at the bottom.
+//
+//  It does three things:
+//    1. Calls requireAuth() from auth.js — if the
+//       user is not logged in they are immediately
+//       redirected to /guard/login/ and nothing
+//       else runs.
+//    2. Looks up the user's row in the USR table
+//       to get their ORGID and role.
+//    3. Hydrates the page with org name and enforces
+//       role-based visibility on nav/content elements.
 // -----------------------------------------------
 async function initPortalPage() {
-  // Auth check temporarily disabled for testing
-  // const session = await requireAuth();
-  // if (!session) return;
 
-  // const { user } = session;
+  // ── Step 1: Auth check ──────────────────────
+  // requireAuth() is defined in auth.js.
+  // If the session is missing it redirects to login
+  // and returns null — so we stop here immediately.
+  const session = await requireAuth();
+  if (!session) return;
 
-  // Hardcoded test values — remove when Auth0 is ready
-  const user = { 
-    'https://yourapp.com/orgName': 'Test Organization',
-    'https://yourapp.com/role': 'admin'
-  };
+  // ── Step 2: Load user profile from USR table ─
+  // We query the USR row whose USRID matches the
+  // logged-in user's Supabase auth UUID, and join
+  // the ORG table to get the org name.
+  let orgName = 'My Organization';
+  let role    = 'staff';
 
-  // Fill in the org name in the header "Organization" button
-  // (comes from your Auth0 Action custom claim — see README)
-  const orgName = user['https://yourapp.com/orgName'] || 'My Organization';
-  const orgEl   = document.getElementById('header-org-name');
+  try {
+    const { data, error } = await _supabase
+      .from('USR')
+      .select(`
+        role,
+        ORG ( "ORGNAME" )
+      `)
+      .eq('"USRID"', session.user.id)
+      .single();
+
+    // ⚠ Replace "ORGNAME" above with whatever your
+    // org name column is actually called in the ORG table.
+
+    if (!error && data) {
+      role    = data.role         || 'staff';
+      orgName = data.ORG?.ORGNAME || 'My Organization';
+    }
+  } catch (e) {
+    // Non-fatal — page still loads with safe defaults.
+    console.warn('Could not load user profile from USR:', e.message);
+  }
+
+  // ── Step 3: Hydrate the page ─────────────────
+
+  // Header "Organization" button text
+  const orgEl = document.getElementById('header-org-name');
   if (orgEl) orgEl.textContent = orgName;
 
-  // Fill in greeting org name if element exists (home page)
+  // Home page greeting org name
   const greetingOrgEl = document.getElementById('greeting-org-name');
   if (greetingOrgEl) greetingOrgEl.textContent = orgName;
 
-  // Show notification badge if there are unread notifications
-  // Uncomment once your AWS /notifications endpoint is live:
-  //
+  // Sidebar user details — name, role label, avatar initials
+  const email    = session.user.email || '';
+  const name     = session.user.user_metadata?.full_name || email;
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
+
+  const nameEl   = document.getElementById('sidebar-user-name');
+  const roleEl   = document.getElementById('sidebar-user-role');
+  const avatarEl = document.getElementById('sidebar-user-avatar');
+  const topbarEl = document.getElementById('topbar-user-name');
+
+  if (nameEl)   nameEl.textContent   = name;
+  if (roleEl)   roleEl.textContent   = capitalize(role);
+  if (avatarEl) avatarEl.textContent = initials;
+  if (topbarEl) topbarEl.textContent = name;
+
+  // Hide nav items / content sections the user's role can't see
+  enforceRoles(role);
+
+  // ── Notification badge (uncomment when API is ready) ──
   // try {
-  //   const data = await api.get('/notifications/unread-count');
+  //   const token = await getAccessToken();
+  //   const res   = await fetch('/api/notifications/unread-count', {
+  //     headers: { Authorization: `Bearer ${token}` }
+  //   });
+  //   const data = await res.json();
   //   if (data?.count > 0) {
   //     const badge = document.getElementById('notif-badge');
   //     if (badge) badge.style.display = 'block';
   //   }
   // } catch (_) {}
-
-  // Hide nav items / sections the user's role can't access
-  const role = user['https://yourapp.com/role'] || 'staff';
-  enforceRoles(role);
 }
 
-// Hides elements with data-roles="admin,provider"
-// if the logged-in user's role isn't in the list
+// -----------------------------------------------
+//  Role enforcement
+//  Hides elements tagged with data-roles="admin,provider"
+//  if the logged-in user's role isn't in that list.
+//  Example HTML: <li data-roles="admin">Admin Panel</li>
+// -----------------------------------------------
 function enforceRoles(role) {
   document.querySelectorAll('[data-roles]').forEach(el => {
     const allowed = el.dataset.roles.split(',').map(r => r.trim());
@@ -121,7 +177,7 @@ function enforceRoles(role) {
 
 // -----------------------------------------------
 //  Greeting — "Good Morning / Afternoon / Evening"
-//  Any element with id="greeting-time" gets filled in
+//  Any element with id="greeting-time" gets filled in.
 // -----------------------------------------------
 function getGreeting() {
   const h = new Date().getHours();
@@ -130,7 +186,27 @@ function getGreeting() {
   return 'Good Evening';
 }
 
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// -----------------------------------------------
+//  GLOBAL AUTO-GUARD
+//
+//  This DOMContentLoaded listener runs on every
+//  page that loads template.js. You do NOT need
+//  to manually call initPortalPage() on each page —
+//  it fires automatically on every protected page.
+//
+//  The sidebar state is handled separately by the
+//  initSidebar IIFE above.
+// -----------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  const el = document.getElementById('greeting-time');
-  if (el) el.textContent = getGreeting();
+  // Fill greeting time element if it exists on this page
+  const greetEl = document.getElementById('greeting-time');
+  if (greetEl) greetEl.textContent = getGreeting();
+
+  // Run auth guard + page hydration on every portal page
+  initPortalPage();
 });
