@@ -25,6 +25,9 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     persistSession:     true,   // stays logged in across page refreshes
     autoRefreshToken:   true,   // silently renews the JWT before it expires
     detectSessionInUrl: true,   // handles magic link / password reset callbacks
+  },
+  db: {
+    schema: 'phi'   // All tables (USR, ORG, etc.) live in the phi schema
   }
 });
 

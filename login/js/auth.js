@@ -25,6 +25,9 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     persistSession:    true,
     autoRefreshToken:  true,
     detectSessionInUrl: true,
+  },
+  db: {
+    schema: 'phi'   // All tables (USR, ORG, etc.) live in the phi schema
   }
 });
 

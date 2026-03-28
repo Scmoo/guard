@@ -103,17 +103,15 @@ async function initPortalPage() {
       .from('USR')
       .select(`
         role,
-        ORG ( "ORGNAME" )
+        ORG ( "OrgName" )
       `)
       .eq('"USRID"', session.user.id)
       .single();
 
-    // ⚠ Replace "ORGNAME" above with whatever your
-    // org name column is actually called in the ORG table.
 
     if (!error && data) {
       role    = data.role         || 'staff';
-      orgName = data.ORG?.ORGNAME || 'My Organization';
+      orgName = data.ORG?.OrgName || 'My Organization';
     }
   } catch (e) {
     // Non-fatal — page still loads with safe defaults.
