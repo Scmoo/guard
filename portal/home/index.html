@@ -201,17 +201,7 @@
         <h1>
           <span id="greeting-time">Good Morning</span>,
           <!--
-            ── ORG NAME NOTE ────────────────────────────────────────
-            This span is populated by template.js via:
-              const greetingOrgEl = document.getElementById('greeting-org-name');
-              if (greetingOrgEl) greetingOrgEl.textContent = orgName;
-
-            Currently shows 'Test Organization' from the hardcoded
-            user object in template.js. When AWS is connected,
-            uncomment the requireAuth() lines in template.js and
-            the real org name will flow through automatically.
-            ─────────────────────────────────────────────────────── -->
-          <span id="greeting-org-name">[Test Organization]</span>
+          <span id="greeting-org-name">…</span>
         </h1>
         <p>Here's a summary of what's happening today.</p>
       </div>
@@ -303,27 +293,8 @@
   // Copyright year
   document.getElementById('footer-year').textContent = new Date().getFullYear();
 
-  // ── Time-based greeting ──────────────────────────
-  // 5am–11:59am  → Good Morning
-  // 12pm–4:59pm  → Good Afternoon
-  // 5pm–8:59pm   → Good Evening
-  // 9pm–4:59am   → Good Night
-  function setGreeting() {
-    const h = new Date().getHours();
-    let greeting;
-    if      (h >= 5  && h < 12) greeting = 'Good Morning';
-    else if (h >= 12 && h < 17) greeting = 'Good Afternoon';
-    else if (h >= 17 && h < 21) greeting = 'Good Evening';
-    else                         greeting = 'Good Night';
-    const el = document.getElementById('greeting-time');
-    if (el) el.textContent = greeting;
-  }
-  setGreeting();
-
-  // ── Init portal (auth check + org name hydration) ─
-  document.addEventListener('DOMContentLoaded', () => {
-    initPortalPage();
-  });
+  // template.js handles initPortalPage() and greeting automatically via its
+  // own DOMContentLoaded listener — no need to call either one here.
 </script>
 
 </body>

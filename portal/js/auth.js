@@ -12,8 +12,11 @@
 //     on a private server (e.g. AWS Lambda).
 // =============================================
 
-const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';  // ← REPLACE with your Project URL
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';                  // ← REPLACE with your anon/public key
+
+// ⚠️  BOTH values above must be filled in or ALL logins will silently fail.
+//     Find them in: Supabase Dashboard → Project Settings → API
 
 // -----------------------------------------------
 //  Internal — Supabase client (created once,
