@@ -111,7 +111,7 @@ async function logout() {
 
 async function sendPasswordReset(email) {
   const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/guard/portal/account/',
+    redirectTo: 'https://scmoo.github.io/guard/portal/account/',
   });
   if (error) throw error;
 }
