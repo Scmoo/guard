@@ -12,22 +12,22 @@
 //     on a private server (e.g. AWS Lambda).
 // =============================================
 
-const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';  // ← REPLACE with your Project URL
-const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';                  // ← REPLACE with your anon/public key
+const SUPABASE_URL  = 'https://qnrpsbynxawahuwzjwxj.supabase.co';  // ← REPLACE with your Project URL
+const SUPABASE_ANON = 'sb_publishable_wyGhhgvbZ3qwZyYL-Z-g0Q_8AI-3u3d'; // ← REPLACE with your anon/public key
 
 // ⚠️  BOTH values above must be filled in or ALL logins will silently fail.
 //     Find them in: Supabase Dashboard → Project Settings → API
 
 // -----------------------------------------------
-//  Internal — Supabase client (created once,
-//  shared across auth.js, template.js, ui.js,
-//  and all portal page scripts via window scope)
+//  Internal — Supabase client (created once)
 // -----------------------------------------------
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
-    persistSession:     true,   // stays logged in across page refreshes
-    autoRefreshToken:   true,   // silently renews the JWT before it expires
-    detectSessionInUrl: true,   // handles magic link / password reset callbacks
+    // Keeps the user logged in across page refreshes
+    // using localStorage (same behaviour as Auth0's cacheLocation: 'localstorage')
+    persistSession:    true,
+    autoRefreshToken:  true,
+    detectSessionInUrl: true,
   },
   db: {
     schema: 'phi'   // All tables (USR, ORG, etc.) live in the phi schema
@@ -36,23 +36,20 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
 
 // -----------------------------------------------
 //  LOGIN PAGE
-//  Call initLoginPage() in your login index.html
+//  Call initLoginPage() on your login index.html
 // -----------------------------------------------
 
-// Runs on login page load.
-// If the user already has a valid session, skip
-// straight to the portal — no need to log in again.
 async function initLoginPage() {
+  // If the user is already logged in, skip straight to the portal
   const { data: { session } } = await _supabase.auth.getSession();
   if (session) {
     window.location.replace('/guard/portal/home/');
   }
 }
 
-// Called when the user submits the login form.
+// Called when user clicks "Sign In"
 // userId should be the user's email address.
-// See the note at the bottom of this file if you
-// want to support a non-email User ID field.
+// If you want a non-email User ID, see the note below.
 async function loginWithCredentials(userId, password) {
   const { data, error } = await _supabase.auth.signInWithPassword({
     email:    userId,
@@ -64,65 +61,57 @@ async function loginWithCredentials(userId, password) {
 
 // -----------------------------------------------
 //  PORTAL PAGES
-//  Called automatically by template.js on every
-//  protected page — you do not need to call this
-//  manually on individual pages.
+//  Call requireAuth() at the top of every page.
+//  Returns the live session or null + redirects.
 // -----------------------------------------------
 
-// Checks the Supabase session from localStorage.
-// Fast — no network request unless token has expired.
-// Returns the session object, or null + redirects to login.
 async function requireAuth() {
   const { data: { session }, error } = await _supabase.auth.getSession();
 
   if (error || !session) {
+    // Not logged in — bounce to login page
     window.location.replace('/guard/login/');
     return null;
   }
 
-  return session;  // session.user has .id, .email, .user_metadata
+  return session;   // session.user has email, id, user_metadata, etc.
 }
 
-// Get the full Supabase user object (or null)
+// Get the logged-in user object (or null)
 async function getCurrentUser() {
   const { data: { user } } = await _supabase.auth.getUser();
   return user || null;
 }
 
-// Get the current JWT to attach to API calls:
-// fetch('/api/...', { headers: { Authorization: `Bearer ${token}` } })
+// Get the current JWT access token to attach to API requests
+// e.g. Authorization: Bearer <token>
 async function getAccessToken() {
   const { data: { session } } = await _supabase.auth.getSession();
   return session?.access_token || null;
 }
 
-// Get the user's role from the USR table.
-// Falls back to 'staff' if not found.
+// Get the user's role from their metadata
+// Set this in Supabase Dashboard → Authentication → Users
+// or via your server-side logic when creating users.
 async function getUserRole() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (!session) return 'staff';
-
-  const { data } = await _supabase
-    .from('USR')
-    .select('role')
-    .eq('"USRID"', session.user.id)
-    .single();
-
-  return data?.role || 'staff';
+  const user = await getCurrentUser();
+  return user?.user_metadata?.role || 'staff';
 }
 
-// Sign the user out and return to the login page
+// Sign the user out and return to login page
 async function logout() {
   await _supabase.auth.signOut();
   window.location.replace('/guard/login/');
 }
 
 // -----------------------------------------------
-//  Password Reset
+//  PASSWORD RESET
 //  Sends a reset email. The link in the email
-//  lands on /guard/portal/account/ where you call:
-//  _supabase.auth.updateUser({ password: 'newpass' })
+//  should point to an /account/ page where the
+//  user sets their new password via:
+//  _supabase.auth.updateUser({ password: '...' })
 // -----------------------------------------------
+
 async function sendPasswordReset(email) {
   const { error } = await _supabase.auth.resetPasswordForEmail(email, {
     redirectTo: 'https://scmoo.github.io/guard/portal/account/',
@@ -144,16 +133,25 @@ function showLoginError(message) {
 // -----------------------------------------------
 //  NOTE — Non-email User IDs
 //
-//  Supabase auth is email-based. If you want users
-//  to type a short ID (e.g. "WG-1042") instead of
-//  their email, add a lookup first:
+//  Supabase auth is email-based by default. If you
+//  want users to log in with a short User ID (like
+//  "WG-1042") instead of their email, two options:
+//
+//  Option A (simple): Just use email as the login
+//  field and relabel it "User ID" in the UI.
+//  Most orgs use work email anyway.
+//
+//  Option B (custom): Store a userId → email lookup
+//  in a Supabase table, query it first, then call
+//  signInWithPassword with the returned email.
+//  Example:
 //
 //    const { data } = await _supabase
-//      .from('USR')
+//      .from('users')
 //      .select('email')
-//      .eq('"USRID"', userId)   ← custom ID column
+//      .eq('user_id', userId)
 //      .single();
-//    await loginWithCredentials(data.email, password);
-//
-//  You would need an 'email' column in USR for this.
+//    await _supabase.auth.signInWithPassword({
+//      email: data.email, password
+//    });
 // -----------------------------------------------

@@ -16,29 +16,6 @@ You never store passwords yourself. Auth0 handles that securely.
 
 ---
 
-## File Structure
-
-```
-healthcare-portal/
-├── login.html              ← The login page (public)
-├── css/
-│   └── styles.css          ← All styling / design system
-├── js/
-│   ├── auth.js             ← Auth0 login/logout helpers
-│   ├── api.js              ← AWS API data fetching
-│   ├── ui.js               ← Toasts, modals, loaders
-│   └── sidebar.js          ← Shared sidebar navigation
-└── pages/                  ← All protected pages (require login)
-    ├── dashboard.html
-    ├── patients.html
-    ├── appointments.html
-    ├── staff.html
-    ├── settings.html
-    └── 404.html
-```
-
----
-
 ## STEP 1 — Set Up Auth0 (Free)
 
 Auth0 handles login, passwords, and user accounts.
