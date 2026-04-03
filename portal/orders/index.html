@@ -361,9 +361,9 @@
 
 
 <!-- SCRIPTS -->
-<script src="../js/auth.js"></script>
-<script src="../js/ui.js"></script>
-<script src="../js/template.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/ui.js"></script>
+<script src="../../js/template.js"></script>
 
 <script>
   document.getElementById('footer-year').textContent = new Date().getFullYear();
@@ -386,6 +386,11 @@
   // replace them by calling your API endpoint and
   // updating the .order-card-count elements with
   // the real counts from DynamoDB.
+</script>
+
+<script type="module">
+  import { requireAuth } from '../../js/guard.js'
+  await requireAuth()
 </script>
 
 </body>

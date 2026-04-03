@@ -181,11 +181,11 @@
        ═══════════════════════════════════ -->
   <div class="login-left">
     
-    <img src="images/logo.png" alt="Logo" class="login-logo" style="height: 18vh; width: auto;"/>
+    <img src="../../images/logo.png" alt="Logo" class="login-logo" style="height: 18vh; width: auto;"/>
     
     <h2 class="login-heading">Organization Login</h2>
 
-    <form class="login-form" id="loginForm" onsubmit="handleSignIn(event)" novalidate>
+    <form class="login-form" id="loginForm" novalidate>
 
       <!-- User ID / Email field -->
       <div class="form-group">
@@ -305,66 +305,17 @@
 <!-- ═══════════════════════════════════
      JS — auth.js loads first, then ui.js
      ═══════════════════════════════════ -->
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
+<script type="module" src="../../js/auth.js"></script>
+<script src="../../js/ui.js"></script>
 <script>
-
-  // ── On page load ──
-  // If already logged in, skip to portal
-  document.addEventListener('DOMContentLoaded', () => {
-    initLoginPage();
-  });
-
-  // ── Sign In ──
-  async function handleSignIn(e) {
-    e.preventDefault();
-
-    const btn     = document.getElementById('signInBtn');
-    const errorEl = document.getElementById('login-error');
-    errorEl.classList.remove('visible');
-
-    const userId   = document.getElementById('userId').value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!userId)   { showFieldError('userId',   'Please enter your email or User ID.'); return; }
-    if (!password) { showFieldError('password', 'Please enter your password.');          return; }
-
-    btn.disabled    = true;
-    btn.textContent = 'Signing in…';
-
-    try {
-      // loginWithCredentials is defined in auth.js
-      await loginWithCredentials(userId, password);
-      // Supabase persists the session automatically — go straight to portal
-      window.location.replace('/guard/portal/home/');
-    } catch (err) {
-      btn.disabled    = false;
-      btn.textContent = 'Sign In';
-
-      // Supabase returns specific error messages — map common ones to friendly text
-      const msg = err.message || '';
-      if (msg.includes('Invalid login credentials')) {
-        showLoginError('Incorrect email or password. Please try again.');
-      } else if (msg.includes('Email not confirmed')) {
-        showLoginError('Please confirm your email before signing in.');
-      } else if (msg.includes('Too many requests')) {
-        showLoginError('Too many attempts. Please wait a moment and try again.');
-      } else {
-        showLoginError('Unable to sign in. Please try again.');
-      }
-    }
-  }
-
-  // ── Password eye toggle ──
   function togglePassword() {
-    const input  = document.getElementById('password');
+    const input = document.getElementById('password');
     const eyeBtn = document.getElementById('eye-icon');
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
     eyeBtn.style.opacity = isHidden ? '0.4' : '1';
   }
 
-  // ── Open modals ──
   function handlePasswordReset(e) {
     e.preventDefault();
     document.getElementById('reset-success').style.display = 'none';
@@ -379,31 +330,35 @@
     openModal('forgotIdModal');
   }
 
-  // ── Password Reset — now uses Supabase ──
   async function submitPasswordReset() {
-    const email  = document.getElementById('resetEmail').value.trim();
-    const btn    = document.getElementById('resetBtn');
-    if (!email) { showModalError('Please enter your email address.'); return; }
+    const email = document.getElementById('resetEmail').value.trim();
+    const btn = document.getElementById('resetBtn');
+    if (!email) {
+      showModalError('Please enter your email address.');
+      return;
+    }
 
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = 'Sending…';
 
     try {
-      // sendPasswordReset is defined in auth.js
       await sendPasswordReset(email);
     } catch (_) {
-      // Silently swallow — we always show success to avoid email enumeration
+      // Always show success to avoid email enumeration.
     }
 
     document.getElementById('reset-success').style.display = 'flex';
-    btn.disabled    = false;
+    btn.disabled = false;
     btn.textContent = 'Send Reset Link';
   }
 
-  // ── Forgot User ID — calls your own API if you have one ──
   async function submitForgotId() {
     const email = document.getElementById('forgotEmail').value.trim();
-    if (!email) { toast('Please enter your email.', 'warning'); return; }
+    if (!email) {
+      toast('Please enter your email.', 'warning');
+      return;
+    }
+
     try {
       await fetch('/api/auth/forgot-userid', {
         method: 'POST',
@@ -411,26 +366,27 @@
         body: JSON.stringify({ email }),
       });
     } catch (_) {}
+
     document.getElementById('forgot-success').style.display = 'flex';
   }
 
-  // ── Field-level error highlight ──
   function showFieldError(fieldId, message) {
     const input = document.getElementById(fieldId);
+    if (!input) return;
+
     input.classList.add('error');
     showLoginError(message);
     input.focus();
+
     input.addEventListener('input', () => {
       input.classList.remove('error');
-      document.getElementById('login-error').classList.remove('visible');
+      document.getElementById('login-error')?.classList.remove('visible');
     }, { once: true });
   }
 
   function showModalError(message) {
     toast(message, 'warning');
   }
-
-
 </script>
 </body>
 </html>

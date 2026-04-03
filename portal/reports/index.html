@@ -1039,9 +1039,9 @@
        2. ui.js       — toasts, modals, loaders
        3. template.js — sidebar + auth guard
      ═══════════════════════════════════════ -->
-<script src="../js/auth.js"></script>
-<script src="../js/ui.js"></script>
-<script src="../js/template.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/ui.js"></script>
+<script src="../../js/template.js"></script>
 
 <script>
   // Fill in copyright year automatically
@@ -1063,6 +1063,12 @@
     initPortalPage();
   });
 </script>
+
+<script type="module">
+  import { requireAuth } from '../../js/guard.js'
+  await requireAuth()
+</script>
+
 
 </body>
 </html>

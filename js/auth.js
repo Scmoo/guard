@@ -1,157 +1,122 @@
-// =============================================
-//  auth.js — Supabase Auth Integration
-//
-//  ✅ SAFE TO COMMIT: The anon key below is
-//  intentionally public. It only grants access
-//  to what your Row Level Security (RLS) policies
-//  allow. Think of it as a "guest pass" — your
-//  RLS rules are the actual lock on the door.
-//
-//  🚫 NEVER commit your service_role key.
-//     That one bypasses RLS and belongs only
-//     on a private server (e.g. AWS Lambda).
-// =============================================
+import { supabase } from './supabaseClient.js'
 
-const SUPABASE_URL  = 'https://qnrpsbynxawahuwzjwxj.supabase.co';  // ← REPLACE with your Project URL
-const SUPABASE_ANON = 'sb_publishable_wyGhhgvbZ3qwZyYL-Z-g0Q_8AI-3u3d'; // ← REPLACE with your anon/public key
-
-// ⚠️  BOTH values above must be filled in or ALL logins will silently fail.
-//     Find them in: Supabase Dashboard → Project Settings → API
-
-// -----------------------------------------------
-//  Internal — Supabase client (created once)
-// -----------------------------------------------
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: {
-    // Keeps the user logged in across page refreshes
-    // using localStorage (same behaviour as Auth0's cacheLocation: 'localstorage')
-    persistSession:    true,
-    autoRefreshToken:  true,
-    detectSessionInUrl: true,
-  },
-  db: {
-    schema: 'phi'   // All tables (USR, ORG, etc.) live in the phi schema
-  }
-});
-
-// -----------------------------------------------
-//  LOGIN PAGE
-//  Call initLoginPage() on your login index.html
-// -----------------------------------------------
-
-async function initLoginPage() {
-  // If the user is already logged in, skip straight to the portal
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (session) {
-    window.location.replace('/guard/portal/home/');
-  }
+function getErrorElement() {
+  return document.getElementById('login-error')
 }
 
-// Called when user clicks "Sign In"
-// userId should be the user's email address.
-// If you want a non-email User ID, see the note below.
-async function loginWithCredentials(userId, password) {
-  const { data, error } = await _supabase.auth.signInWithPassword({
-    email:    userId,
-    password: password,
-  });
-  if (error) throw error;
-  return data;
+function clearLoginError() {
+  const errorEl = getErrorElement()
+  if (!errorEl) return
+
+  errorEl.textContent = ''
+  errorEl.style.display = 'none'
 }
 
-// -----------------------------------------------
-//  PORTAL PAGES
-//  Call requireAuth() at the top of every page.
-//  Returns the live session or null + redirects.
-// -----------------------------------------------
+function showLoginError(message) {
+  const errorEl = getErrorElement()
+  if (!errorEl) return
 
-async function requireAuth() {
-  const { data: { session }, error } = await _supabase.auth.getSession();
+  errorEl.textContent = message
+  errorEl.style.display = 'block'
+}
 
-  if (error || !session) {
-    // Not logged in — bounce to login page
-    window.location.replace('/guard/login/');
-    return null;
+async function loginWithCredentials(email, password) {
+  return await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+}
+
+async function handleSignIn(event) {
+  if (event) event.preventDefault()
+
+  clearLoginError()
+
+  const email = document.getElementById('userId')?.value.trim()
+  const password = document.getElementById('password')?.value ?? ''
+
+  if (!email || !password) {
+    showLoginError('Please enter your email and password.')
+    return
   }
 
-  return session;   // session.user has email, id, user_metadata, etc.
-}
+  try {
+    const { data, error } = await loginWithCredentials(email, password)
 
-// Get the logged-in user object (or null)
-async function getCurrentUser() {
-  const { data: { user } } = await _supabase.auth.getUser();
-  return user || null;
-}
+    if (error) {
+      showLoginError(error.message || 'Invalid login credentials.')
+      return
+    }
 
-// Get the current JWT access token to attach to API requests
-// e.g. Authorization: Bearer <token>
-async function getAccessToken() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  return session?.access_token || null;
-}
+    if (data?.session) {
+      window.location.href = '/portal/home/'
+      return
+    }
 
-// Get the user's role from their metadata
-// Set this in Supabase Dashboard → Authentication → Users
-// or via your server-side logic when creating users.
-async function getUserRole() {
-  const user = await getCurrentUser();
-  return user?.user_metadata?.role || 'staff';
+    showLoginError('Login failed. Please try again.')
+  } catch (err) {
+    console.error('Sign-in error:', err)
+    showLoginError('Something went wrong while signing in.')
+  }
 }
-
-// Sign the user out and return to login page
-async function logout() {
-  await _supabase.auth.signOut();
-  window.location.replace('/guard/login/');
-}
-
-// -----------------------------------------------
-//  PASSWORD RESET
-//  Sends a reset email. The link in the email
-//  should point to an /account/ page where the
-//  user sets their new password via:
-//  _supabase.auth.updateUser({ password: '...' })
-// -----------------------------------------------
 
 async function sendPasswordReset(email) {
-  const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://scmoo.github.io/guard/portal/account/',
-  });
-  if (error) throw error;
-}
+  if (!email) {
+    showLoginError('Enter your email first to reset your password.')
+    return { error: new Error('Missing email') }
+  }
 
-// -----------------------------------------------
-//  Login page error display helper
-// -----------------------------------------------
-function showLoginError(message) {
-  const el = document.getElementById('login-error');
-  if (el) {
-    el.textContent = message;
-    el.classList.add('visible');
+  clearLoginError()
+
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/portal/login/`
+    })
+
+    if (error) {
+      showLoginError(error.message || 'Could not send reset email.')
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  } catch (err) {
+    console.error('Password reset error:', err)
+    showLoginError('Something went wrong while sending the reset email.')
+    return { data: null, error: err }
   }
 }
 
-// -----------------------------------------------
-//  NOTE — Non-email User IDs
-//
-//  Supabase auth is email-based by default. If you
-//  want users to log in with a short User ID (like
-//  "WG-1042") instead of their email, two options:
-//
-//  Option A (simple): Just use email as the login
-//  field and relabel it "User ID" in the UI.
-//  Most orgs use work email anyway.
-//
-//  Option B (custom): Store a userId → email lookup
-//  in a Supabase table, query it first, then call
-//  signInWithPassword with the returned email.
-//  Example:
-//
-//    const { data } = await _supabase
-//      .from('users')
-//      .select('email')
-//      .eq('user_id', userId)
-//      .single();
-//    await _supabase.auth.signInWithPassword({
-//      email: data.email, password
-//    });
-// -----------------------------------------------
+async function checkExistingSession() {
+  try {
+    const { data, error } = await supabase.auth.getSession()
+
+    if (error) {
+      console.error('Session check error:', error)
+      return
+    }
+
+    if (data?.session) {
+      window.location.href = '/portal/home/'
+    }
+  } catch (err) {
+    console.error('Unexpected session check error:', err)
+  }
+}
+
+function initLoginPage() {
+  const form = document.getElementById('loginForm')
+  if (!form) return
+
+  clearLoginError()
+  form.addEventListener('submit', handleSignIn)
+  checkExistingSession()
+}
+
+// Expose helpers for any existing inline HTML that still calls them
+window.initLoginPage = initLoginPage
+window.handleSignIn = handleSignIn
+window.showLoginError = showLoginError
+window.loginWithCredentials = loginWithCredentials
+window.sendPasswordReset = sendPasswordReset
+
+initLoginPage()
