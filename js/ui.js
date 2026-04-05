@@ -121,7 +121,7 @@ document.addEventListener('click', (e) => {
 //  user's name, role, and avatar initials.
 //  Also marks the active nav link.
 //
-//  Note: initPortalPage() in template.js already
+//  Note: initPortalPage() in layout.js already
 //  handles this on page load. hydrateSidebar() is
 //  here as a standalone utility if you need to
 //  refresh the sidebar after a profile update.

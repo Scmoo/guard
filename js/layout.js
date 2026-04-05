@@ -1,5 +1,5 @@
 // =============================================
-//  template.js
+//  layout.js
 //  Handles: sidebar toggle, Supabase auth guard,
 //  user info hydration, active nav state.
 //
@@ -197,7 +197,7 @@ function capitalize(str) {
 //  GLOBAL AUTO-GUARD
 //
 //  This DOMContentLoaded listener runs on every
-//  page that loads template.js. You do NOT need
+//  page that loads layout.js. You do NOT need
 //  to manually call initPortalPage() on each page —
 //  it fires automatically on every protected page.
 //
